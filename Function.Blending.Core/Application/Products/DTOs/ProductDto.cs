@@ -12,6 +12,4 @@ public class ProductDto
     public Guid TipoProduccionId { get; set; }
     public string TipoProduccionNombre { get; set; } = null!;
     
-    
-    
 }
