@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "blending_web_api": {
-      "commandName": "Project",
-      "commandLineArgs": "--port 7094",
-      "launchBrowser": false
-    }
-  }
-}
