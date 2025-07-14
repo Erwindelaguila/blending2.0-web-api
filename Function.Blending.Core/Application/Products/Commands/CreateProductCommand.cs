@@ -4,10 +4,26 @@ namespace Function.Blending.Core.Application.Products.Commands;
 
 public class CreateProductCommand : IRequest<ProductDto>
 {
-    public string Codigo { get; set; } = default!;
-    public string Nombre { get; set; } = default!;
-    public string Descripcion { get; set; } = default!;
-    public Guid CalidadId { get; set; }
-    public Guid TipoProduccionId { get; set; }
-    public Guid CreadoPorId { get; set; }
+    public string Codigo { get; }
+    public string Nombre { get; }
+    public string Descripcion { get; }
+    public Guid CalidadId { get; }
+    public Guid TipoProduccionId { get; }
+    public Guid CreadoPorId { get; }
+
+    public CreateProductCommand(
+        string codigo,
+        string nombre,
+        string descripcion,
+        Guid calidadId,
+        Guid tipoProduccionId,
+        Guid creadoPorId)
+    {
+        Codigo = codigo;
+        Nombre = nombre;
+        Descripcion = descripcion;
+        CalidadId = calidadId;
+        TipoProduccionId = tipoProduccionId;
+        CreadoPorId = creadoPorId;
+    }
 }

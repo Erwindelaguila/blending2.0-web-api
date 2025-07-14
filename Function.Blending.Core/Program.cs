@@ -37,8 +37,11 @@ var host = new HostBuilder()
         {
             cfg.AddProfile<ProductoProfile>();
             cfg.AddProfile<PlantaProfile>();
+            cfg.AddProfile<CalidadProfile>();
         });
         services.AddScoped<IProductoRepository, ProductoRepository>();
+        services.AddScoped<IPlantaRepository, PlantaRepository>();
+        services.AddScoped<ICalidadRepository, CalidadRepository>();
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
         services.AddMediatR(cfg=>  cfg.RegisterServicesFromAssemblyContaining<Program>());

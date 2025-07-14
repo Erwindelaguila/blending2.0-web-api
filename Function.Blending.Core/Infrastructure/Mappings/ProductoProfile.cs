@@ -11,12 +11,12 @@ public class ProductoProfile : Profile
 {
     public ProductoProfile()
     {
-        CreateMap<Producto, Domain.Entities.Producto>()
+        CreateMap<Producto, Domain.Entities.ProductoEntity>()
             .ForMember(dest => dest.Calidad, opt => opt.MapFrom(src => src.Calidad))
             .ForMember(dest => dest.TipoProduccion, opt => opt.MapFrom(src => src.TipoProduccion))
             .ReverseMap();
 
-        CreateMap<Calidad, Domain.Entities.Calidad>().ReverseMap();
+        CreateMap<Calidad, Domain.Entities.CalidadEntity>().ReverseMap();
         CreateMap<TipoProduccion, Domain.Entities.TipoProduccion>().ReverseMap();
     }
 }

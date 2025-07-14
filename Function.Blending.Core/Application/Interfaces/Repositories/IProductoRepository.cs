@@ -4,9 +4,9 @@ namespace Function.Blending.Core.Application.Interfaces.Repositories;
 
 public interface IProductoRepository
 {
-    Task<List<Producto>> GetAllAsync();
-    Task<Producto?> GetByIdAsync(Guid id);
-    Task AddAsync(Producto producto);
-    Task UpdateAsync(Producto producto);
+    Task<List<ProductoEntity>> GetAllAsync();
+    Task<ProductoEntity?> GetByIdAsync(Guid id);
+    Task AddAsync(ProductoEntity productoEntity);
+    Task UpdateAsync(ProductoEntity productoEntity);
     Task DeleteAsync(Guid id);
 }

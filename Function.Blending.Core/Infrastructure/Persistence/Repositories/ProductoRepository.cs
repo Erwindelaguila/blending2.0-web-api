@@ -19,43 +19,43 @@ public class ProductoRepository : IProductoRepository
         _mapper = mapper;
     }
 
-    public async Task<List<Domain.Entities.Producto>> GetAllAsync()
+    public async Task<List<ProductoEntity>> GetAllAsync()
     {
         return await _context.Productos
             .Include(p => p.Calidad)
             .Include(p => p.TipoProduccion)
             .AsNoTracking()
-            .ProjectTo<Domain.Entities.Producto>(_mapper.ConfigurationProvider)
+            .ProjectTo<ProductoEntity>(_mapper.ConfigurationProvider)
             .ToListAsync();
     }
 
-    public async Task<Domain.Entities.Producto?> GetByIdAsync(Guid id)
+    public async Task<ProductoEntity?> GetByIdAsync(Guid id)
     {
         var model = await _context.Productos.FindAsync(id);
-        return model == null ? null : _mapper.Map<Domain.Entities.Producto>(model);
+        return model == null ? null : _mapper.Map<Domain.Entities.ProductoEntity>(model);
     }
 
-    public async Task AddAsync(Domain.Entities.Producto producto)
+    public async Task AddAsync(ProductoEntity productoEntity)
     {
-        var model = _mapper.Map<Producto>(producto);
+        var model = _mapper.Map<Producto>(productoEntity);
         _context.Productos.Add(model);
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(Domain.Entities.Producto producto)
+    public async Task UpdateAsync(Domain.Entities.ProductoEntity productoEntity)
     {
-        var model = await _context.Productos.FindAsync(producto.Id);
+        var model = await _context.Productos.FindAsync(productoEntity.Id);
         if (model == null) return;
 
         // Mapear manualmente si quieres evitar sobrescribir CreadoEl/CreadoPorId
-        model.Codigo = producto.Codigo;
-        model.Nombre = producto.Nombre;
-        model.Descripcion = producto.Descripcion;
-        model.CalidadId = producto.CalidadId;
-        model.TipoProduccionId = producto.TipoProduccionId;
-        model.Activo = producto.Activo;
-        model.ModificadoPorId = producto.ModificadoPorId;
-        model.ModificadoEl = producto.ModificadoEl ?? DateTime.UtcNow;
+        model.Codigo = productoEntity.Codigo;
+        model.Nombre = productoEntity.Nombre;
+        model.Descripcion = productoEntity.Descripcion;
+        model.CalidadId = productoEntity.CalidadId;
+        model.TipoProduccionId = productoEntity.TipoProduccionId;
+        model.Activo = productoEntity.Activo;
+        model.ModificadoPorId = productoEntity.ModificadoPorId;
+        model.ModificadoEl = productoEntity.ModificadoEl ?? DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
     }

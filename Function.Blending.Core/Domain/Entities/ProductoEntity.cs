@@ -1,6 +1,6 @@
 ﻿namespace Function.Blending.Core.Domain.Entities;
 
-public class Producto
+public class ProductoEntity
 {
     public Guid Id { get; set; }
     public string Codigo { get; set; } = null!;
@@ -14,6 +14,6 @@ public class Producto
     public Guid? ModificadoPorId { get; set; }
     public DateTime? ModificadoEl { get; set; }
     
-    public Calidad? Calidad { get; set; }
+    public CalidadEntity? Calidad { get; set; }
     public TipoProduccion? TipoProduccion { get; set; }
 }

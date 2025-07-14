@@ -19,7 +19,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
     public async Task<ProductDto> Handle(CreateProductCommand request, CancellationToken cancellationToken)
     {
         // Mapeo a mano
-        var producto = new Producto()
+        var producto = new ProductoEntity()
         {
             Id = Guid.NewGuid(),
             Codigo = request.Codigo,
