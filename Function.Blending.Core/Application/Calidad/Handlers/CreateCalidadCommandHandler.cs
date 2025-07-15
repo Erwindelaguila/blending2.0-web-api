@@ -43,6 +43,8 @@ public class CreateCalidadCommandHandler :  IRequestHandler<CreateCalidadCommand
             Activo = Calidad.Activo,
             CreadoPorId = Calidad.CreadoPorId,
             CreadoEl = Calidad.CreadoEl,
+            ModificadoPorId = Calidad.ModificadoPorId,
+            ModificadoEl = Calidad.ModificadoEl
         };
 
     }

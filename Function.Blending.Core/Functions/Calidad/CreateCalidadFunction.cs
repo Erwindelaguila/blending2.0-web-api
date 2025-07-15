@@ -24,11 +24,18 @@ public class CreateCalidadFunction
 
     [Function(FunctionNames.Calidad.Create)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function,HttpMethods.Post, Route = ApiRoutes.core.Production.Calidad)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Post, Route = ApiRoutes.Core.Production.Calidad)] HttpRequestData req)
     {
         try
         {
             var body = await req.ReadAsStringAsync();
+            
+            if (string.IsNullOrEmpty(body))
+            {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req,
+                    BaseResponse<object>.Fail("El cuerpo de la solicitud está vacío.", "Error de validación", 400));
+            }
+            
             var (isValid, errorField) = JsonValidationHelper.ValidateBooleanProperties(body, "activo", "noConforme");
 
             if (!isValid)
@@ -41,6 +48,12 @@ public class CreateCalidadFunction
             {
                 PropertyNameCaseInsensitive = true
             });
+
+            if (command == null)
+            {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req,
+                    BaseResponse<object>.Fail("Error al deserializar el comando.", "Error de validación", 400));
+            }
         
             var result = await _mediator.Send(command);
             

@@ -22,7 +22,7 @@ public partial class BlendingDbContext : DbContext
 
     public virtual DbSet<Parametro> Parametros { get; set; }
 
-    public virtual DbSet<Plantum> Planta { get; set; }
+    public virtual DbSet<Planta> Planta { get; set; }
 
     public virtual DbSet<Producto> Productos { get; set; }
 
@@ -161,7 +161,7 @@ public partial class BlendingDbContext : DbContext
                 .IsUnicode(false);
         });
 
-        modelBuilder.Entity<Plantum>(entity =>
+        modelBuilder.Entity<Planta>(entity =>
         {
             entity.HasIndex(e => new { e.Activo, e.Nombre }, "IX_Planta_Activo_Nombre").HasFilter("([Activo]=(1))");
 

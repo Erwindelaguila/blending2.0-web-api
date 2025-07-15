@@ -20,5 +20,23 @@ public static class FunctionNames
         public const string GetById = "GetProductoById";
     }
 
+    public static class Planta
+    {
+        public const string Create = "CreatePlanta";
+        public const string Update = "UpdatePlanta";
+        public const string Delete = "DeletePlanta";
+        public const string GetAll = "GetAllPlantas";
+        public const string GetById = "GetPlantaById";
+    }
+
+    public static class Parametro
+    {
+        public const string Create = "CreateParametro";
+        public const string Update = "UpdateParametro";
+        public const string Delete = "DeleteParametro";
+        public const string GetAll = "GetAllParametros";
+        public const string GetById = "GetParametroById";
+    }
+
     // Agrega otras funciones según tu dominio...
 }

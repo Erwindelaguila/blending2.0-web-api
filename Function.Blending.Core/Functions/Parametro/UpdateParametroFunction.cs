@@ -1,28 +1,28 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using FluentValidation;
-using Function.Blending.Core.Application.Calidad.Commands;
-using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Parametro.Commands;
+using Function.Blending.Core.Application.Parametro.DTOs;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 
-namespace Function.Blending.Core.Functions.Calidad;
+namespace Function.Blending.Core.Functions.Parametro;
 
-public class UpdateCalidadFunction
+public class UpdateParametroFunction
 {
     private readonly IMediator _mediator;
 
-    public UpdateCalidadFunction(IMediator mediator)
+    public UpdateParametroFunction(IMediator mediator)
     {
         _mediator = mediator;
     }
-    
-     [Function(FunctionNames.Calidad.Update)]
+
+    [Function(FunctionNames.Parametro.Update)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.Production.Calidad)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.Parametro.Base)] HttpRequestData req)
     {
         try
         {
@@ -34,7 +34,7 @@ public class UpdateCalidadFunction
                     BaseResponse<object>.Fail("El cuerpo de la solicitud está vacío.", "Error de validación", 400));
             }
             
-            var (isValid, errorField) = JsonValidationHelper.ValidateBooleanProperties(body, "activo", "noConforme");
+            var (isValid, errorField) = JsonValidationHelper.ValidateBooleanProperties(body, "activo");
 
             if (!isValid)
             {
@@ -42,7 +42,7 @@ public class UpdateCalidadFunction
                     BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false o null).", "Error de validación", 400));
             }
             
-            var command = JsonSerializer.Deserialize<UpdateCalidadCommand>(body, new JsonSerializerOptions()
+            var command = JsonSerializer.Deserialize<UpdateParametroCommand>(body, new JsonSerializerOptions()
             {
                 PropertyNameCaseInsensitive = true
             });
@@ -55,15 +55,15 @@ public class UpdateCalidadFunction
         
             var result = await _mediator.Send(command);
             
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<CalidadDTO>.Success(result,"Create Calidad"));
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<ParametroDTO>.Success(result,"Parametro actualizado exitosamente"));
         }
         catch (ValidationException ex)
         {
-            var errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }).ToList();
+            var validationErrors = ex.Errors.Select(e => new { Field = e.PropertyName, Error = e.ErrorMessage });
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                errors,
-                "Validación fallida. Por favor, revise los campos.",
-                401
+                validationErrors,
+                "Errores de validación",
+                400
             ));
         }
         catch (Exception ex)
@@ -73,7 +73,6 @@ public class UpdateCalidadFunction
                 Message = "Ocurrió un error inesperado.",
                 Exception = ex.Message,
                 InnerException = ex.InnerException?.Message,
-                //StackTrace = ex.StackTrace
             };
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
@@ -83,6 +82,4 @@ public class UpdateCalidadFunction
             ));
         }
     }
-    
-    
 }

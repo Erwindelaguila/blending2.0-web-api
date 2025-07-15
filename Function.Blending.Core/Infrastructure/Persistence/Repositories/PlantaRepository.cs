@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Function.Blending.Core.Application.Interfaces.Repositories;
 using Function.Blending.Core.Domain.Entities;
 using Function.Blending.Core.Infrastructure.Persistence.Models;
@@ -18,33 +17,37 @@ public class PlantaRepository : IPlantaRepository
         _mapper = mapper;
     }
 
-    public async Task<IEnumerable<Planta>> GetAllAsync()
+    public async Task<List<PlantaEntity>> GetAllAsync()
     {
-        return await _context.Planta
-            .Where(p => p.Activo)
-            .ProjectTo<Planta>(_mapper.ConfigurationProvider)
+        var models = await _context.Planta
             .ToListAsync();
+        var entities = _mapper.Map<List<PlantaEntity>>(models);
+        return entities;
     }
 
-    public async Task<Planta?> GetByIdAsync(Guid id)
+    public async Task<PlantaEntity?> GetByIdAsync(Guid id)
     {
-        var entity = await _context.Planta.FindAsync(id);
-        return entity is null ? null : _mapper.Map<Planta>(entity);
+        var model = await _context.Planta
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (model == null)
+            return null;
+
+        var entity = _mapper.Map<PlantaEntity>(model);
+        return entity;
     }
 
-    public async Task AddAsync(Planta planta)
+    public async Task CreateAsync(PlantaEntity plantaEntity)
     {
-        var model = _mapper.Map<Plantum>(planta);
+        var model = _mapper.Map<Planta>(plantaEntity);
         _context.Planta.Add(model);
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(Planta planta)
+    public async Task UpdateAsync(PlantaEntity plantaEntity)
     {
-        var model = await _context.Planta.FindAsync(planta.Id);
-        if (model is null) return;
-
-        _mapper.Map(planta, model);
+        var model = _mapper.Map<Planta>(plantaEntity);
         _context.Planta.Update(model);
         await _context.SaveChangesAsync();
     }

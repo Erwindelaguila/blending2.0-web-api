@@ -1,32 +1,31 @@
-﻿using Function.Blending.Core.Application.Calidad.DTOs;
-using Function.Blending.Core.Application.Calidad.Queries;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Planta.DTOs;
+using Function.Blending.Core.Application.Planta.Queries;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 
-namespace Function.Blending.Core.Functions.Calidad;
+namespace Function.Blending.Core.Functions.Planta;
 
-public class GetAllCalidadFunction
+public class GetAllPlantasFunction
 {
     private readonly IMediator _mediator;
 
-    public GetAllCalidadFunction(IMediator mediator)
+    public GetAllPlantasFunction(IMediator mediator)
     {
         _mediator = mediator;
     }
 
-    [Function(FunctionNames.Calidad.GetAll)]
+    [Function(FunctionNames.Planta.GetAll)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Production.Calidad)]HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Planta.Base)]HttpRequestData req)
     {
         try
         {
-            var result =  await _mediator.Send(new GetAllCalidadesQuery());
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<List<CalidadDTO>>.Success(result,"Calidades obtenidas correctamente"));
-
+            var result = await _mediator.Send(new GetAllPlantasQuery());
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<List<PlantaDTO>>.Success(result, "Plantas obtenidas correctamente"));
         }
         catch (Exception ex)
         {
@@ -35,7 +34,6 @@ public class GetAllCalidadFunction
                 Message = "Ocurrió un error inesperado.",
                 Exception = ex.Message,
                 InnerException = ex.InnerException?.Message,
-                //StackTrace = ex.StackTrace
             };
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(

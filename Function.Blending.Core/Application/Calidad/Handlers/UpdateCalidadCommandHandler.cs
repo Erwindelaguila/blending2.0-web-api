@@ -1,10 +1,8 @@
 ﻿using Function.Blending.Core.Application.Calidad.Commands;
 using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Application.Interfaces.Repositories;
-using Function.Blending.Core.Domain.Entities;
-using Function.Blending.Core.Infrastructure.Persistence;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
+
 
 namespace Function.Blending.Core.Application.Calidad.Handlers;
 
@@ -12,7 +10,7 @@ public class UpdateCalidadCommandHandler : IRequestHandler<UpdateCalidadCommand,
 {
     private readonly ICalidadRepository _repository;
 
-    public UpdateCalidadCommandHandler(ICalidadRepository repository, BlendingDbContext context)
+    public UpdateCalidadCommandHandler(ICalidadRepository repository)
     {
         _repository = repository;
     }

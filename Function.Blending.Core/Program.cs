@@ -38,16 +38,19 @@ var host = new HostBuilder()
             cfg.AddProfile<ProductoProfile>();
             cfg.AddProfile<PlantaProfile>();
             cfg.AddProfile<CalidadProfile>();
+            cfg.AddProfile<ParametroProfile>();
         });
         services.AddScoped<IProductoRepository, ProductoRepository>();
         services.AddScoped<IPlantaRepository, PlantaRepository>();
         services.AddScoped<ICalidadRepository, CalidadRepository>();
+        services.AddScoped<IParametroRepository, ParametroRepository>();
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
         services.AddMediatR(cfg=>  cfg.RegisterServicesFromAssemblyContaining<Program>());
         
         // Registrar validadores
         services.AddValidatorsFromAssemblyContaining<CreateProductValidator>();
+        services.AddValidatorsFromAssemblyContaining<Program>();
         
         // Registrar pipeline de validación
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));

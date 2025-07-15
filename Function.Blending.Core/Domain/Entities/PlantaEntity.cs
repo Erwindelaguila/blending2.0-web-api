@@ -1,6 +1,6 @@
-﻿namespace Function.Blending.Core.Domain.Entities;
+namespace Function.Blending.Core.Domain.Entities;
 
-public class Planta
+public class PlantaEntity
 {
     public Guid Id { get; set; }
     public string Codigo { get; set; } = null!;
