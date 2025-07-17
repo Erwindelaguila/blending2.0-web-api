@@ -25,7 +25,12 @@ public class ApiRoutes
             public const string GetById = "core/parametro/detail";
         }
         
+        // rutas de agregado
+        public static class Agregado
+        {
+            public const string Base = "core/agregado";
+            public const string GetById = "core/agregado/detail";
+        }
         //rutas de administracion 
-        
     }
 }

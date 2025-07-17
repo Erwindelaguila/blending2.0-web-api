@@ -38,5 +38,13 @@ public static class FunctionNames
         public const string GetById = "GetParametroById";
     }
 
+    public static class Agregado
+    {
+        public const string Create = "CreateAgregado";
+        public const string Update = "UpdateAgregado";
+        public const string Delete = "DeleteAgregado";
+        public const string GetAll = "GetAllAgregados";
+        public const string GetById = "GetAgregadoById";
+    }
     // Agrega otras funciones según tu dominio...
 }

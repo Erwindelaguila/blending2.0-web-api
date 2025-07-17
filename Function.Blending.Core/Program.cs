@@ -1,4 +1,4 @@
-using FluentValidation;
+          using FluentValidation;
 using Function.Blending.Core.Application.Common.Behaviors;
 using Function.Blending.Core.Application.Interfaces.Repositories;
 using Function.Blending.Core.Application.Products.Commands;
@@ -39,11 +39,13 @@ var host = new HostBuilder()
             cfg.AddProfile<PlantaProfile>();
             cfg.AddProfile<CalidadProfile>();
             cfg.AddProfile<ParametroProfile>();
+            cfg.AddProfile<AgregadoProfile>();
         });
         services.AddScoped<IProductoRepository, ProductoRepository>();
         services.AddScoped<IPlantaRepository, PlantaRepository>();
         services.AddScoped<ICalidadRepository, CalidadRepository>();
         services.AddScoped<IParametroRepository, ParametroRepository>();
+        services.AddScoped<IAgregadoRepository, AgregadoRepository>();
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
         services.AddMediatR(cfg=>  cfg.RegisterServicesFromAssemblyContaining<Program>());
