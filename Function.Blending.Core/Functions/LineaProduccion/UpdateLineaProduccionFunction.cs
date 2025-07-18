@@ -3,66 +3,60 @@ using FluentValidation;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Planta.Commands;
-using Function.Blending.Core.Application.Planta.DTOs;
+using Function.Blending.Core.Application.LineaProduccion.Commands;
+using Function.Blending.Core.Application.LineaProduccion.DTOs;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 
-namespace Function.Blending.Core.Functions.Planta;
+namespace Function.Blending.Core.Functions.LineaProduccion;
 
-public class CreatePlantaFunction
+public class UpdateLineaProduccionFunction
 {
     private readonly IMediator _mediator;
 
-    public CreatePlantaFunction(IMediator mediator)
+    public UpdateLineaProduccionFunction(IMediator mediator)
     {
         _mediator = mediator;
     }
 
-    [Function(FunctionNames.Planta.Create)]
+    [Function("UpdateLineaProduccion")]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Post, Route = ApiRoutes.Core.Planta.Base)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.LineaProduccion.Base)] HttpRequestData req)
     {
         try
         {
             var body = await req.ReadAsStringAsync();
-            
             if (string.IsNullOrEmpty(body))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail("El cuerpo de la solicitud está vacío.", "Error de validación", 400));
             }
-            
             var (isValid, errorField) = JsonValidationHelper.ValidateBooleanProperties(body, "activo");
-
             if (!isValid)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false o null).", "Error de validación", 400));
             }
-            
-            var command = JsonSerializer.Deserialize<CreatePlantaCommand>(body, new JsonSerializerOptions()
+            var command = JsonSerializer.Deserialize<UpdateLineaProduccionCommand>(body, new JsonSerializerOptions()
             {
                 PropertyNameCaseInsensitive = true
             });
-
             if (command == null)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail("Error al deserializar el comando.", "Error de validación", 400));
             }
-        
             var result = await _mediator.Send(command);
-            
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PlantaDTO>.Success(result,"Planta creada exitosamente"));
+
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<LineaProduccionDTO>.Success(result, "Linea de Producción actualizada exitosamente"));
         }
         catch (ValidationException ex)
         {
-            var errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }).ToList();
+            var validationErrors = ex.Errors.Select(e => new { Field = e.PropertyName, Error = e.ErrorMessage });
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                errors,
-                "Validación fallida. Por favor, revise los campos.",
+                validationErrors,
+                "Errores de validación",
                 400
             ));
         }
@@ -74,7 +68,6 @@ public class CreatePlantaFunction
                 Exception = ex.Message,
                 InnerException = ex.InnerException?.Message,
             };
-            
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 errorMessage,
                 null,

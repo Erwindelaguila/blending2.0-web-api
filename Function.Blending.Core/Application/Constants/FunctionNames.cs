@@ -46,5 +46,13 @@ public static class FunctionNames
         public const string GetAll = "GetAllAgregados";
         public const string GetById = "GetAgregadoById";
     }
+    public static class LineaProduccion
+    {
+        public const string Create = "CreateLineaProduccion";
+        public const string Update = "UpdateLineaProduccion";
+        public const string Delete = "DeleteLineaProduccion";
+        public const string GetAll = "GetAllLineasProduccion";
+        public const string GetById = "GetLineaProduccionById";
+    }
     // Agrega otras funciones según tu dominio...
 }
