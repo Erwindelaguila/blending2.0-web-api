@@ -1,6 +1,4 @@
 ﻿using AutoMapper;
-using Function.Blending.Core.Domain.Entities;
-using Function.Blending.Core.Infrastructure.Persistence.Models;
 using Calidad = Function.Blending.Core.Infrastructure.Persistence.Models.Calidad;
 using Producto = Function.Blending.Core.Infrastructure.Persistence.Models.Producto;
 using TipoProduccion = Function.Blending.Core.Infrastructure.Persistence.Models.TipoProduccion;
@@ -17,6 +15,6 @@ public class ProductoProfile : Profile
             .ReverseMap();
 
         CreateMap<Calidad, Domain.Entities.CalidadEntity>().ReverseMap();
-        CreateMap<TipoProduccion, Domain.Entities.TipoProduccion>().ReverseMap();
+        CreateMap<TipoProduccion, Domain.Entities.TipoProduccionEntity>().ReverseMap();
     }
 }

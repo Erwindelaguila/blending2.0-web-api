@@ -41,6 +41,7 @@ var host = new HostBuilder()
             cfg.AddProfile<ParametroProfile>();
             cfg.AddProfile<AgregadoProfile>();
             cfg.AddProfile<LineaProduccionProfile>();
+            cfg.AddProfile<TipoProduccionProfile>();
         });
         services.AddScoped<IProductoRepository, ProductoRepository>();
         services.AddScoped<IPlantaRepository, PlantaRepository>();
@@ -48,6 +49,7 @@ var host = new HostBuilder()
         services.AddScoped<IParametroRepository, ParametroRepository>();
         services.AddScoped<IAgregadoRepository, AgregadoRepository>();
         services.AddScoped<ILineaProduccionRepository, LineaProduccionRepository>();
+        services.AddScoped<ITipoProduccionRepository, TipoProduccionRepository>();
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
         services.AddMediatR(cfg=>  cfg.RegisterServicesFromAssemblyContaining<Program>());

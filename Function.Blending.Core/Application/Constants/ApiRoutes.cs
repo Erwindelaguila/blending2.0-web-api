@@ -38,6 +38,13 @@ public class ApiRoutes
             public const string Base = "core/lineaproduccion";
             public const string GetById = "core/lineaproduccion/detail";
         }
+
+        // rutas de tipo de produccion
+        public static class TipoProduccion
+        {
+            public const string Base = "core/tipoproduccion";
+            public const string GetById = "core/tipoproduccion/detail";
+        }
         //rutas de administracion 
     }
 }

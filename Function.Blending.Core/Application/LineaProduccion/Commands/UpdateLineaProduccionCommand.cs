@@ -12,7 +12,13 @@ public class UpdateLineaProduccionCommand : IRequest<LineaProduccionDTO>
     public bool? Activo { get; }
     public Guid? ModificadoPorId { get; }
 
-    public UpdateLineaProduccionCommand(Guid id, string codigo, string nombre, string? descripcion, bool? activo, Guid? modificadoPorId)
+    public UpdateLineaProduccionCommand(
+        Guid id,
+     string codigo,
+     string nombre,
+     string? descripcion,
+     bool? activo,
+     Guid? modificadoPorId)
     {
         Id = id;
         Codigo = codigo;

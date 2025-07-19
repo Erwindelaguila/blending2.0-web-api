@@ -38,6 +38,15 @@ public static class FunctionNames
         public const string GetById = "GetParametroById";
     }
 
+    public static class TipoProduccion
+    {
+        public const string Create = "CreateTipoProduccion";
+        public const string Update = "UpdateTipoProduccion";
+        public const string Delete = "DeleteTipoProduccion";
+        public const string GetAll = "GetAllTipoProduccion";
+        public const string GetById = "GetTipoProduccionById";
+    }
+
     public static class Agregado
     {
         public const string Create = "CreateAgregado";

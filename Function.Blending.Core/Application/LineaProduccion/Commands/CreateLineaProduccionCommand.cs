@@ -9,9 +9,14 @@ public class CreateLineaProduccionCommand : IRequest<LineaProduccionDTO>
     public string Nombre { get; }
     public string? Descripcion { get; }
     public bool? Activo { get; }
-    public Guid CreadoPorId { get; }
+     public Guid CreadoPorId { get; }
 
-    public CreateLineaProduccionCommand(string codigo, string nombre, string? descripcion, bool? activo, Guid creadoPorId)
+    public CreateLineaProduccionCommand(
+        string codigo,
+        string nombre,
+        string? descripcion,
+        bool? activo,
+        Guid creadoPorId)
     {
         Codigo = codigo;
         Nombre = nombre;
