@@ -5,5 +5,10 @@ namespace Function.Blending.Core.Application.TipoProduccion.Queries;
 
 public class GetTipoProduccionByIdQuery : IRequest<TipoProduccionDTO?>
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; }
+
+    public GetTipoProduccionByIdQuery(Guid id)
+    {
+        Id = id;
+    }
 }

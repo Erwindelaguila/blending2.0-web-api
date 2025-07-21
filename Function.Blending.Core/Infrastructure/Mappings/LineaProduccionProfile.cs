@@ -12,8 +12,5 @@ public class LineaProduccionProfile : Profile
         CreateMap<LineaProduccion, LineaProduccionEntity>().ReverseMap();
 
         CreateMap<LineaProduccionEntity, LineaProduccionDTO>();
-        
-        CreateMap<CreateLineaProduccionDTO, LineaProduccionEntity>();
-        CreateMap<UpdateLineaProduccionDTO, LineaProduccionEntity>();
     }
 }

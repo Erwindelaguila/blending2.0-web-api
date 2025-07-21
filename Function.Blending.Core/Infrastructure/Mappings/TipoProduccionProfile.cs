@@ -22,7 +22,6 @@ public class TipoProduccionProfile : Profile
 
         // Mapeo entre entidad de dominio y DTOs
         CreateMap<TipoProduccionEntity, TipoProduccionDTO>();
-        CreateMap<CreateTipoProduccionDTO, TipoProduccionEntity>();
-        CreateMap<UpdateTipoProduccionDTO, TipoProduccionEntity>();
+       
     }
 }

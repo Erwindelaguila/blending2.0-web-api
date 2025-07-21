@@ -20,7 +20,7 @@ public class DeleteAgregadoFunction
 
     [Function(FunctionNames.Agregado.Delete)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Agregado.Base)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Production.AgregadoBase)] HttpRequestData req)
     {
         try
         {
@@ -36,7 +36,17 @@ public class DeleteAgregadoFunction
                 ));
             }
 
-            var result = await _mediator.Send(new DeleteAgregadoCommand{Id=agregadoId});
+            var modificadoPorIdString = query["modificadoPorId"];
+            if (string.IsNullOrEmpty(modificadoPorIdString) || !Guid.TryParse(modificadoPorIdString, out var modificadoPorId))
+            {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                    "ID de usuario modificador inválido o no proporcionado",
+                    null,
+                    400
+                ));
+            }
+
+            var result = await _mediator.Send(new DeleteAgregadoCommand(agregadoId, modificadoPorId));
 
             if (!result)
             {

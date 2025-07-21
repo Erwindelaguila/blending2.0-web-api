@@ -15,7 +15,6 @@ public class ParametroProfile : Profile
         // Mapeos para DTOs
         CreateMap<ParametroEntity, ParametroDTO>();
             
-        CreateMap<CreateParametroDTO, ParametroEntity>();
-        CreateMap<UpdateParametroDTO, ParametroEntity>();
+     
     }
 }

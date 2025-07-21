@@ -22,7 +22,7 @@ public class CreateAgregadoFunction
 
     [Function(FunctionNames.Agregado.Create)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Post, Route = ApiRoutes.Core.Agregado.Base)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Post, Route = ApiRoutes.Core.Production.AgregadoBase)] HttpRequestData req)
     {
         try
         {

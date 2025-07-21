@@ -6,46 +6,45 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Calidad.Handlers;
 
-public class CreateCalidadCommandHandler :  IRequestHandler<CreateCalidadCommand, CalidadDTO>
+public class CreateCalidadCommandHandler : IRequestHandler<CreateCalidadCommand, CalidadDTO>
 {
-    private readonly ICalidadRepository _repository;
+    private readonly ICalidadRepository _calidadRepository;
 
-    public CreateCalidadCommandHandler(ICalidadRepository repository)
+    public CreateCalidadCommandHandler(ICalidadRepository calidadRepository)
     {
-        _repository = repository;
+        _calidadRepository = calidadRepository;
     }
 
     public async Task<CalidadDTO> Handle(CreateCalidadCommand request, CancellationToken cancellationToken)
     {
-        var Calidad = new CalidadEntity()
+        var calidad = new CalidadEntity()
         {
             Id = Guid.NewGuid(),
             Codigo = request.Codigo,
             Nombre = request.Nombre,
             CodigoMaterial = request.CodigoMaterial,
             Descripcion = request.Descripcion,
-            NoConforme = request.NoConforme?? false,
+            NoConforme = request.NoConforme ?? false,
             Activo = request.Activo ?? true,
             CreadoPorId = request.CreadoPorId,
             CreadoEl = DateTime.Now
         };
-        
-        await _repository.CreateAsync(Calidad);
+
+        await _calidadRepository.CreateAsync(calidad);
 
         return new CalidadDTO
         {
-            Id = Calidad.Id,
-            Codigo = Calidad.Codigo,
-            Nombre = Calidad.Nombre,
-            CodigoMaterial = Calidad.CodigoMaterial,
-            Descripcion = Calidad.Descripcion,
-            NoConforme = Calidad.NoConforme,
-            Activo = Calidad.Activo,
-            CreadoPorId = Calidad.CreadoPorId,
-            CreadoEl = Calidad.CreadoEl,
-            ModificadoPorId = Calidad.ModificadoPorId,
-            ModificadoEl = Calidad.ModificadoEl
+            Id = calidad.Id,
+            Codigo = calidad.Codigo,
+            Nombre = calidad.Nombre,
+            CodigoMaterial = calidad.CodigoMaterial,
+            Descripcion = calidad.Descripcion,
+            NoConforme = calidad.NoConforme,
+            Activo = calidad.Activo,
+            CreadoPorId = calidad.CreadoPorId,
+            CreadoEl = calidad.CreadoEl,
+            ModificadoPorId = calidad.ModificadoPorId,
+            ModificadoEl = calidad.ModificadoEl
         };
-
     }
 }

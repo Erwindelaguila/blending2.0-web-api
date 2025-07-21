@@ -1,63 +1,55 @@
+
+using System.Threading.Tasks;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Parametro.Commands;
+using Function.Blending.Core.Application.Calidad.DTOs;
+using Function.Blending.Core.Application.Calidad.Queries;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using System.Web;
 
-namespace Function.Blending.Core.Functions.Parametro;
+namespace Function.Blending.Core.Functions.Calidad;
 
-public class DeleteParametroFunction
+public class GetCalidadByIdFunction
 {
     private readonly IMediator _mediator;
 
-    public DeleteParametroFunction(IMediator mediator)
+    public GetCalidadByIdFunction(IMediator mediator)
     {
         _mediator = mediator;
     }
 
-    [Function(FunctionNames.Parametro.Delete)]
+    [Function(FunctionNames.Calidad.GetById)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Parametro.Base)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Production.CalidadGetById)] HttpRequestData req)
     {
         try
         {
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             var idString = query["id"];
-            
-            if (string.IsNullOrEmpty(idString) || !Guid.TryParse(idString, out var parametroId))
+            if (string.IsNullOrEmpty(idString) || !Guid.TryParse(idString, out var calidadId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "ID de parametro inválido o no proporcionado",
+                    "ID de calidad inválido o no proporcionado",
                     null,
                     400
                 ));
             }
 
-            var modificadoPorIdString = query["modificadoPorId"];
-            if (string.IsNullOrEmpty(modificadoPorIdString) || !Guid.TryParse(modificadoPorIdString, out var modificadoPorId))
-            {
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "ID de usuario modificador inválido o no proporcionado",
-                    null,
-                    400
-                ));
-            }
+            var result = await _mediator.Send(new GetCalidadByIdQuery(calidadId));
 
-            var result = await _mediator.Send(new DeleteParametroCommand(parametroId, modificadoPorId));
-            
-            if (!result)
+            if (result == null)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "Parametro no encontrado",
+                    "Calidad no encontrada",
                     null,
                     404
                 ));
             }
 
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<bool>.Success(result, "Parametro eliminado exitosamente"));
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<CalidadDTO>.Success(result, "Calidad obtenida correctamente"));
         }
         catch (Exception ex)
         {
@@ -67,7 +59,7 @@ public class DeleteParametroFunction
                 Exception = ex.Message,
                 InnerException = ex.InnerException?.Message,
             };
-            
+
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 errorMessage,
                 null,

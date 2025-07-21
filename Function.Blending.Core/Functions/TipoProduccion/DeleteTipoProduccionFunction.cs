@@ -20,7 +20,7 @@ public class DeleteTipoProduccionFunction
 
     [Function(FunctionNames.TipoProduccion.Delete)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.TipoProduccion.Base)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Production.TipoProduccionBase)] HttpRequestData req)
     {
         try
         {
@@ -36,7 +36,17 @@ public class DeleteTipoProduccionFunction
                 ));
             }
 
-            var result = await _mediator.Send(new DeleteTipoProduccionCommand { Id = tipoProduccionId });
+            var modificadoPorIdString = query["modificadoPorId"];
+            if (string.IsNullOrEmpty(modificadoPorIdString) || !Guid.TryParse(modificadoPorIdString, out var modificadoPorId))
+            {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                    "ID de usuario modificador inválido o no proporcionado",
+                    null,
+                    400
+                ));
+            }
+
+            var result = await _mediator.Send(new DeleteTipoProduccionCommand(tipoProduccionId, modificadoPorId));
 
             if (!result)
             {

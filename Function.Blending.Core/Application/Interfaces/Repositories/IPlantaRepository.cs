@@ -6,7 +6,7 @@ public interface IPlantaRepository
 {
     Task<List<PlantaEntity>> GetAllAsync();
     Task<PlantaEntity?> GetByIdAsync(Guid id);
-    Task CreateAsync(PlantaEntity plantaEntity);
-    Task UpdateAsync(PlantaEntity plantaEntity);
+    Task CreateAsync(PlantaEntity planta);
+    Task UpdateAsync(PlantaEntity planta);
     Task DeleteAsync(Guid id);
 }

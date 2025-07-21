@@ -22,7 +22,7 @@ public class UpdateLineaProduccionFunction
 
     [Function("UpdateLineaProduccion")]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.LineaProduccion.Base)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.Production.LineaProduccionBase)] HttpRequestData req)
     {
         try
         {

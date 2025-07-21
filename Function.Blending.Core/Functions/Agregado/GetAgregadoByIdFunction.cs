@@ -21,7 +21,7 @@ public class GetAgregadoByIdFunction
 
     [Function(FunctionNames.Agregado.GetById)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Agregado.GetById)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Production.AgregadoGetById)] HttpRequestData req)
     {
         try
         {
@@ -36,7 +36,7 @@ public class GetAgregadoByIdFunction
                 ));
             }
 
-            var result = await _mediator.Send(new GetAgregadoByIdQuery { Id = agregadoId });
+            var result = await _mediator.Send(new GetAgregadoByIdQuery(agregadoId));
 
             if (result == null)
             {

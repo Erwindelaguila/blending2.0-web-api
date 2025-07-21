@@ -37,7 +37,7 @@ public class GetPlantaByIdFunction
                 ));
             }
 
-            var result = await _mediator.Send(new GetPlantaByIdQuery { Id = plantaId });
+            var result = await _mediator.Send(new GetPlantaByIdQuery(plantaId));
             
             if (result == null)
             {

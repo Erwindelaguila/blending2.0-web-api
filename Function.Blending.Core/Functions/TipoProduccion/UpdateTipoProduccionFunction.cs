@@ -22,7 +22,7 @@ public class UpdateTipoProduccionFunction
 
     [Function(FunctionNames.TipoProduccion.Update)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.TipoProduccion.Base)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.Production.TipoProduccionBase)] HttpRequestData req)
     {
         try
         {

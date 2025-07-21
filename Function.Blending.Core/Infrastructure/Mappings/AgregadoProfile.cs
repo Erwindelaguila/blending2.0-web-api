@@ -13,7 +13,5 @@ public class AgregadoProfile : Profile
 
         // Mapeos para DTOs
         CreateMap<AgregadoEntity, AgregadoDTO>();
-        CreateMap<CreateAgregadoDTO, AgregadoEntity>();
-        CreateMap<UpdateAgregadoDTO, AgregadoEntity>();
     }
 }

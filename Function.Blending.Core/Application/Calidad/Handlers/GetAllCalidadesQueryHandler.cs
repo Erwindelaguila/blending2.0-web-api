@@ -17,22 +17,19 @@ public class GetAllCalidadesQueryHandler : IRequestHandler<GetAllCalidadesQuery,
     public async Task<List<CalidadDTO>> Handle(GetAllCalidadesQuery request, CancellationToken cancellationToken)
     {
         var calidades = await _repository.GetAllAsync();
-
-        var calidadesDTO = calidades.Select(calidades => new CalidadDTO
+        return calidades.Select(calidad => new CalidadDTO
         {
-            Id = calidades.Id,
-            Codigo = calidades.Codigo,
-            Nombre = calidades.Nombre,
-            Descripcion = calidades.Descripcion,
-            Activo = calidades.Activo,
-            CodigoMaterial = calidades.CodigoMaterial,
-            ModificadoEl = calidades.ModificadoEl,
-            CreadoEl = calidades.CreadoEl,
-            ModificadoPorId = calidades.ModificadoPorId,
-            NoConforme = calidades.NoConforme,
-            CreadoPorId = calidades.CreadoPorId,
+            Id = calidad.Id,
+            Codigo = calidad.Codigo,
+            Nombre = calidad.Nombre,
+            Descripcion = calidad.Descripcion,
+            Activo = calidad.Activo,
+            CodigoMaterial = calidad.CodigoMaterial,
+            ModificadoEl = calidad.ModificadoEl,
+            CreadoEl = calidad.CreadoEl,
+            ModificadoPorId = calidad.ModificadoPorId,
+            NoConforme = calidad.NoConforme,
+            CreadoPorId = calidad.CreadoPorId,
         }).ToList();
-        
-        return calidadesDTO;
     }
 }

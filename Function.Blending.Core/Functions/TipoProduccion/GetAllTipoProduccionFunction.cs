@@ -20,7 +20,7 @@ public class GetAllTipoProduccionFunction
 
     [Function(FunctionNames.TipoProduccion.GetAll)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.TipoProduccion.Base)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Production.TipoProduccionBase)] HttpRequestData req)
     {
         try
         {

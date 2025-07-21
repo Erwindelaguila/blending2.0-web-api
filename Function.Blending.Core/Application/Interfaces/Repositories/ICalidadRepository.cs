@@ -4,8 +4,10 @@ namespace Function.Blending.Core.Application.Interfaces.Repositories;
 
 public interface ICalidadRepository
 {
-    Task CreateAsync(CalidadEntity calidadEntity);
     Task<List<CalidadEntity>> GetAllAsync();
-    Task UpdateAsync(CalidadEntity calidadEntity);
     Task<CalidadEntity?> GetByIdAsync(Guid id);
+    Task CreateAsync(CalidadEntity calidad);
+   
+    Task UpdateAsync(CalidadEntity calidad);
+    Task DeleteAsync(Guid id);
 }

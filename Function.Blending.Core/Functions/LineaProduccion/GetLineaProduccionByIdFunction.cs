@@ -21,7 +21,7 @@ public class GetLineaProduccionByIdFunction
 
     [Function(FunctionNames.LineaProduccion.GetById)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.LineaProduccion.GetById)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Production.LineaProduccionGetById)] HttpRequestData req)
     {
         try
         {
@@ -36,7 +36,7 @@ public class GetLineaProduccionByIdFunction
                 ));
             }
 
-            var result = await _mediator.Send(new GetLineaProduccionByIdQuery { Id = lineaProduccionId });
+            var result = await _mediator.Send(new GetLineaProduccionByIdQuery(lineaProduccionId));
 
             if (result == null)
             {

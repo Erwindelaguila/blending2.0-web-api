@@ -37,7 +37,7 @@ public class GetParametroByIdFunction
                 ));
             }
 
-            var result = await _mediator.Send(new GetParametroByIdQuery { Id = parametroId });
+            var result = await _mediator.Send(new GetParametroByIdQuery(parametroId));
             
             if (result == null)
             {

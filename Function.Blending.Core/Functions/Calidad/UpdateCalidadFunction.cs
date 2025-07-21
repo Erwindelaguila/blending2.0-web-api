@@ -22,7 +22,7 @@ public class UpdateCalidadFunction
     
      [Function(FunctionNames.Calidad.Update)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.Production.Calidad)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.Production.CalidadBase)] HttpRequestData req)
     {
         try
         {
@@ -73,7 +73,7 @@ public class UpdateCalidadFunction
                 Message = "Ocurrió un error inesperado.",
                 Exception = ex.Message,
                 InnerException = ex.InnerException?.Message,
-                //StackTrace = ex.StackTrace
+    
             };
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(

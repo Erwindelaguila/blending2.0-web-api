@@ -5,5 +5,10 @@ namespace Function.Blending.Core.Application.LineaProduccion.Queries;
 
 public class GetLineaProduccionByIdQuery : IRequest<LineaProduccionDTO?>
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; }
+
+    public GetLineaProduccionByIdQuery(Guid id)
+    {
+        Id = id;
+    }
 }
