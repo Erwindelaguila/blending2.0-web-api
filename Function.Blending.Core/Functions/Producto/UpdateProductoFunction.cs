@@ -3,27 +3,27 @@ using FluentValidation;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.LineaProduccion.Commands;
-using Function.Blending.Core.Application.LineaProduccion.DTOs;
+using Function.Blending.Core.Application.Producto.Commands;
+using Function.Blending.Core.Application.Producto.DTOs;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 
+namespace Function.Blending.Core.Functions.Producto;
 
-namespace Function.Blending.Core.Functions.LineaProduccion;
-
-public class CreateLineaProduccionFunction
+public class UpdateProductoFunction
 {
     private readonly IMediator _mediator;
 
-    public CreateLineaProduccionFunction(IMediator mediator)
+    public UpdateProductoFunction(IMediator mediator)
     {
         _mediator = mediator;
     }
 
-    [Function(FunctionNames.LineaProduccion.Create)]
+    [Function(FunctionNames.Producto.Update)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Post, Route = ApiRoutes.Core.Production.LineaProduccionBase)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.Production.ProductoBase+"/{id}")] HttpRequestData req,
+        string id)
     {
         try
         {
@@ -33,13 +33,15 @@ public class CreateLineaProduccionFunction
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail("El cuerpo de la solicitud está vacío.", "Error de validación", 400));
             }
+
             var (isValid, errorField) = JsonValidationHelper.ValidateBooleanProperties(body, "activo");
             if (!isValid)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false o null).", "Error de validación", 400));
             }
-            var command = JsonSerializer.Deserialize<CreateLineaProduccionCommand>(body, new JsonSerializerOptions()
+
+            var command = JsonSerializer.Deserialize<UpdateProductoCommand>(body, new JsonSerializerOptions()
             {
                 PropertyNameCaseInsensitive = true
             });
@@ -49,7 +51,7 @@ public class CreateLineaProduccionFunction
                     BaseResponse<object>.Fail("Error al deserializar el comando.", "Error de validación", 400));
             }
             var result = await _mediator.Send(command);
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<LineaProduccionDTO>.Success(result, "Linea de Producción creada exitosamente"));
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<ProductoDTO>.Success(result, "Producto actualizado exitosamente"));
         }
         catch (ValidationException ex)
         {

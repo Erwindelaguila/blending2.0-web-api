@@ -6,7 +6,7 @@ public interface IProductoRepository
 {
     Task<List<ProductoEntity>> GetAllAsync();
     Task<ProductoEntity?> GetByIdAsync(Guid id);
-    Task AddAsync(ProductoEntity productoEntity);
-    Task UpdateAsync(ProductoEntity productoEntity);
+    Task CreateAsync(ProductoEntity producto);
+    Task UpdateAsync(ProductoEntity producto);
     Task DeleteAsync(Guid id);
 }

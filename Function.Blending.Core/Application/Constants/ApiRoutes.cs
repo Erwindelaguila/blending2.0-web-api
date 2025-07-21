@@ -8,7 +8,8 @@ public class ApiRoutes
         public static class Production
         {
             // Producto
-            public const string Producto = "core/produccion/producto";
+            public const string ProductoBase = "core/produccion/producto";
+            public const string ProductoGetById = "core/produccion/producto/detail";
 
             // Calidad
             public const string CalidadBase = "core/produccion/calidad";
