@@ -28,7 +28,7 @@ public class UpdatePlantaCommandHandler : IRequestHandler<UpdatePlantaCommand, P
         planta.NumeroRuma = request.NumeroRuma;
         planta.Activo = request.Activo ?? planta.Activo;
         planta.ModificadoPorId = request.ModificadoPorId;
-        planta.ModificadoEl = DateTime.Now;
+        planta.ModificadoEl = DateTime.UtcNow;
 
         await _plantaRepository.UpdateAsync(planta);
         

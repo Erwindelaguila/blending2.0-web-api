@@ -27,7 +27,7 @@ public class CreateCalidadCommandHandler : IRequestHandler<CreateCalidadCommand,
             NoConforme = request.NoConforme ?? false,
             Activo = request.Activo ?? true,
             CreadoPorId = request.CreadoPorId,
-            CreadoEl = DateTime.Now
+            CreadoEl = DateTime.UtcNow
         };
 
         await _calidadRepository.CreateAsync(calidad);

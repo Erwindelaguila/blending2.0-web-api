@@ -25,7 +25,7 @@ namespace Function.Blending.Core.Application.Agregado.Handlers
             agregado.Descripcion = request.Descripcion ?? agregado.Descripcion;
             agregado.Activo = request.Activo ?? agregado.Activo;
             agregado.ModificadoPorId = request.ModificadoPorId;
-            agregado.ModificadoEl = DateTime.Now;
+        agregado.ModificadoEl = DateTime.UtcNow;
 
             await _agregadoRepository.UpdateAsync(agregado);
 

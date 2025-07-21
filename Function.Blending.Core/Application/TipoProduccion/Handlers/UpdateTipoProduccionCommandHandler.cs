@@ -25,7 +25,7 @@ public class UpdateTipoProduccionCommandHandler : IRequestHandler<UpdateTipoProd
         tipo.AgregadoId = request.AgregadoId;
         tipo.Activo = request.Activo;
         tipo.ModificadoPorId = request.ModificadoPorId;
-        tipo.ModificadoEl = DateTime.Now;
+        tipo.ModificadoEl = DateTime.UtcNow;
        
         await _tipoProduccionRepository.UpdateAsync(tipo);
        

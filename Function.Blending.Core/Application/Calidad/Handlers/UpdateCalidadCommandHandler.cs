@@ -30,7 +30,7 @@ public class UpdateCalidadCommandHandler : IRequestHandler<UpdateCalidadCommand,
         calidad.NoConforme = request.NoConforme ?? calidad.NoConforme;
         calidad.Activo = request.Activo ?? calidad.Activo;
         calidad.ModificadoPorId = request.ModificadoPorId;
-        calidad.ModificadoEl = DateTime.Now;
+        calidad.ModificadoEl = DateTime.UtcNow;
 
         await _repository.UpdateAsync(calidad);
 

@@ -26,7 +26,7 @@ public class CreateTipoProduccionCommandHandler : IRequestHandler<CreateTipoProd
             AgregadoId = request.AgregadoId,
             Activo = request.Activo,
             CreadoPorId = request.CreadoPorId,
-            CreadoEl = DateTime.Now
+            CreadoEl = DateTime.UtcNow
         };
         await _tipoProduccionRepository.CreateAsync(tipo);
         return new TipoProduccionDTO

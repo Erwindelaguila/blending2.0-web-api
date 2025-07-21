@@ -24,7 +24,7 @@ public class CreateLineaProduccionCommandHandler : IRequestHandler<CreateLineaPr
             Descripcion = request.Descripcion,
             Activo = request.Activo ?? true,
             CreadoPorId = request.CreadoPorId,
-            CreadoEl = DateTime.Now
+            CreadoEl = DateTime.UtcNow
         };
         await _lineaProduccionRepository.CreateAsync(linea);
         return new LineaProduccionDTO

@@ -24,7 +24,7 @@ namespace Function.Blending.Core.Application.Agregado.Handlers
                 Descripcion = request.Descripcion,
                 Activo = request.Activo ?? true,
                 CreadoPorId = request.CreadoPorId,
-                CreadoEl = DateTime.Now
+                CreadoEl = DateTime.UtcNow
             };
             await _agregadoRepository.CreateAsync(agregado);
             return new AgregadoDTO

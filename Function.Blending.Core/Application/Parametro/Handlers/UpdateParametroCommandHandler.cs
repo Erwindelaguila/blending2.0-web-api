@@ -26,7 +26,7 @@ public class UpdateParametroCommandHandler : IRequestHandler<UpdateParametroComm
         parametro.Descripcion = request.Descripcion ?? parametro.Descripcion;
         parametro.Activo = request.Activo ?? parametro.Activo;
         parametro.ModificadoPorId = request.ModificadoPorId;
-        parametro.ModificadoEl = DateTime.Now;
+        parametro.ModificadoEl = DateTime.UtcNow;
 
         await _parametroRepository.UpdateAsync(parametro);
         

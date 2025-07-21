@@ -25,7 +25,7 @@ public class UpdateLineaProduccionCommandHandler : IRequestHandler<UpdateLineaPr
         linea.Descripcion = request.Descripcion ?? linea.Descripcion;
         linea.Activo = request.Activo ?? linea.Activo;
         linea.ModificadoPorId = request.ModificadoPorId;
-        linea.ModificadoEl = DateTime.Now;
+        linea.ModificadoEl = DateTime.UtcNow;
 
         await _lineaProduccionRepository.UpdateAsync(linea);
         return new LineaProduccionDTO
