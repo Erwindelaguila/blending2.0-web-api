@@ -1,5 +1,6 @@
 ﻿
 using AutoMapper;
+using Function.Blending.Core.Application.Calidad.DTOs;
 using Producto = Function.Blending.Core.Infrastructure.Persistence.Models.Producto;
 using Calidad = Function.Blending.Core.Infrastructure.Persistence.Models.Calidad;
 using TipoProduccionModel = Function.Blending.Core.Infrastructure.Persistence.Models.TipoProduccion;

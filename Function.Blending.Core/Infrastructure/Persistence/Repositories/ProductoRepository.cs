@@ -35,7 +35,7 @@ public class ProductoRepository : IProductoRepository
         return model == null ? null : _mapper.Map<Domain.Entities.ProductoEntity>(model);
     }
 
-    public async Task AddAsync(ProductoEntity productoEntity)
+    public async Task CreateAsync(ProductoEntity productoEntity)
     {
         var model = _mapper.Map<Producto>(productoEntity);
         _context.Productos.Add(model);
@@ -68,4 +68,5 @@ public class ProductoRepository : IProductoRepository
         _context.Productos.Remove(model);
         await _context.SaveChangesAsync();
     }
+    
 }
