@@ -63,7 +63,7 @@ public class CreatePlantaFunction
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 errors,
                 "Validación fallida. Por favor, revise los campos.",
-                401
+                400
             ));
         }
         catch (Exception ex)

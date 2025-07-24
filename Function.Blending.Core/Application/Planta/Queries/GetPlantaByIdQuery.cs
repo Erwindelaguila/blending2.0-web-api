@@ -5,5 +5,10 @@ namespace Function.Blending.Core.Application.Planta.Queries;
 
 public class GetPlantaByIdQuery : IRequest<PlantaDTO?>
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; }
+
+    public GetPlantaByIdQuery(Guid id)
+    {
+        Id = id;
+    }
 }

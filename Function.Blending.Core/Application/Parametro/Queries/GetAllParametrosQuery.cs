@@ -3,6 +3,4 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Parametro.Queries;
 
-public class GetAllParametrosQuery : IRequest<List<ParametroDTO>>
-{
-}
+public class GetAllParametrosQuery : IRequest<List<ParametroDTO>>;

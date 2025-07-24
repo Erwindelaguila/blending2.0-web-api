@@ -46,9 +46,17 @@ public class CalidadRepository: ICalidadRepository
     
     public async Task UpdateAsync(CalidadEntity calidadEntity)
     {
-        // Mapear campos uno a uno o usar AutoMapper:
         var model = _mapper.Map<Calidad>(calidadEntity);
-        _context.Calidads.Update(model); // opcional, EF lo detecta igual
+        _context.Calidads.Update(model);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var entity = await _context.Calidads.FindAsync(id);
+        if (entity is null) return;
+
+        _context.Calidads.Remove(entity);
         await _context.SaveChangesAsync();
     }
 

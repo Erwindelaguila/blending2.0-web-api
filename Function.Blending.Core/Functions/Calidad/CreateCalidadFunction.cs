@@ -3,7 +3,6 @@ using Function.Blending.Core.Application.Calidad.Commands;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using System.Net;
 using FluentValidation;
 using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Application.Common.Helpers;
@@ -24,7 +23,7 @@ public class CreateCalidadFunction
 
     [Function(FunctionNames.Calidad.Create)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Post, Route = ApiRoutes.Core.Production.Calidad)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Post, Route = ApiRoutes.Core.Production.CalidadBase)] HttpRequestData req)
     {
         try
         {
@@ -75,7 +74,6 @@ public class CreateCalidadFunction
                 Message = "Ocurrió un error inesperado.",
                 Exception = ex.Message,
                 InnerException = ex.InnerException?.Message,
-                //StackTrace = ex.StackTrace
             };
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(

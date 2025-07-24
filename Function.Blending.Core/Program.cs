@@ -1,7 +1,7 @@
-using FluentValidation;
+          using FluentValidation;
 using Function.Blending.Core.Application.Common.Behaviors;
 using Function.Blending.Core.Application.Interfaces.Repositories;
-using Function.Blending.Core.Application.Products.Commands;
+using Function.Blending.Core.Application.Producto.Commands;
 using Function.Blending.Core.Application.Validators;
 using Function.Blending.Core.Infrastructure.Mappings;
 using Function.Blending.Core.Infrastructure.Persistence;
@@ -24,8 +24,8 @@ var host = new HostBuilder()
         // Filtro espec�fico para suprimir logs de AutoMapper.LicenseValidator
         logging.AddFilter((category, level) =>
         {
-            if (category.Contains("AutoMapper.LicenseValidator"))
-                return false; // Suprime todo log de esa categor�a
+            if (category != null && category.Contains("AutoMapper.LicenseValidator"))
+                return false; // Suprime todo log de esa categoría
 
             return true; // Permite el resto
         });
@@ -39,17 +39,22 @@ var host = new HostBuilder()
             cfg.AddProfile<PlantaProfile>();
             cfg.AddProfile<CalidadProfile>();
             cfg.AddProfile<ParametroProfile>();
+            cfg.AddProfile<AgregadoProfile>();
+            cfg.AddProfile<LineaProduccionProfile>();
+            cfg.AddProfile<TipoProduccionProfile>();
         });
         services.AddScoped<IProductoRepository, ProductoRepository>();
         services.AddScoped<IPlantaRepository, PlantaRepository>();
         services.AddScoped<ICalidadRepository, CalidadRepository>();
         services.AddScoped<IParametroRepository, ParametroRepository>();
+        services.AddScoped<IAgregadoRepository, AgregadoRepository>();
+        services.AddScoped<ILineaProduccionRepository, LineaProduccionRepository>();
+        services.AddScoped<ITipoProduccionRepository, TipoProduccionRepository>();
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
         services.AddMediatR(cfg=>  cfg.RegisterServicesFromAssemblyContaining<Program>());
         
         // Registrar validadores
-        services.AddValidatorsFromAssemblyContaining<CreateProductValidator>();
         services.AddValidatorsFromAssemblyContaining<Program>();
         
         // Registrar pipeline de validación

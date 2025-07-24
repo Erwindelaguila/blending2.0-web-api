@@ -17,39 +17,36 @@ public class UpdateCalidadCommandHandler : IRequestHandler<UpdateCalidadCommand,
 
     public async Task<CalidadDTO> Handle(UpdateCalidadCommand request, CancellationToken cancellationToken)
     {
-        var calidadExit =  await _repository.GetByIdAsync(request.Id);
+        var calidad =  await _repository.GetByIdAsync(request.Id);
 
-        if (calidadExit == null)
-        {
-            throw new NullReferenceException($"La calidad con el id: {request.Id} no existe");
-        }
-        
+        if (calidad == null)
+            throw new ArgumentException($"Calidad con ID {request.Id} no encontrada");
+
         // Actualiza solo los campos necesarios
-        calidadExit.Codigo = request.Codigo ?? calidadExit.Codigo;
-        calidadExit.Nombre = request.Nombre ?? calidadExit.Nombre;
-        calidadExit.CodigoMaterial = request.CodigoMaterial ?? calidadExit.CodigoMaterial;
-        calidadExit.Descripcion = request.Descripcion ?? calidadExit.Descripcion;
-        calidadExit.NoConforme = request.NoConforme ?? calidadExit.NoConforme;
-        calidadExit.Activo = request.Activo ?? calidadExit.Activo;
-        calidadExit.ModificadoPorId = request.ModificadoPorId;
-        calidadExit.ModificadoEl = DateTime.Now;
-        
-        
-        await _repository.UpdateAsync(calidadExit);
-        
+        calidad.Codigo = request.Codigo ?? calidad.Codigo;
+        calidad.Nombre = request.Nombre ?? calidad.Nombre;
+        calidad.CodigoMaterial = request.CodigoMaterial ?? calidad.CodigoMaterial;
+        calidad.Descripcion = request.Descripcion ?? calidad.Descripcion;
+        calidad.NoConforme = request.NoConforme ?? calidad.NoConforme;
+        calidad.Activo = request.Activo ?? calidad.Activo;
+        calidad.ModificadoPorId = request.ModificadoPorId;
+        calidad.ModificadoEl = DateTime.UtcNow;
+
+        await _repository.UpdateAsync(calidad);
+
         return new CalidadDTO
         {
-            Id = calidadExit.Id,
-            Codigo = calidadExit.Codigo,
-            Nombre = calidadExit.Nombre,
-            CodigoMaterial = calidadExit.CodigoMaterial,
-            Descripcion = calidadExit.Descripcion,
-            NoConforme = calidadExit.NoConforme,
-            Activo = calidadExit.Activo,
-            CreadoPorId = calidadExit.CreadoPorId,
-            CreadoEl = calidadExit.CreadoEl,
-            ModificadoPorId = calidadExit.ModificadoPorId,
-            ModificadoEl = calidadExit.ModificadoEl,
+            Id = calidad.Id,
+            Codigo = calidad.Codigo,
+            Nombre = calidad.Nombre,
+            CodigoMaterial = calidad.CodigoMaterial,
+            Descripcion = calidad.Descripcion,
+            NoConforme = calidad.NoConforme,
+            Activo = calidad.Activo,
+            CreadoPorId = calidad.CreadoPorId,
+            CreadoEl = calidad.CreadoEl,
+            ModificadoPorId = calidad.ModificadoPorId,
+            ModificadoEl = calidad.ModificadoEl,
         };
     }
 }

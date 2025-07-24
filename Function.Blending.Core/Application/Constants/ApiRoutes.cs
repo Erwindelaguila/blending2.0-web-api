@@ -4,28 +4,42 @@ public class ApiRoutes
 {
     public static class Core
     {
-        //rutas de produccion
+        // Rutas de producción (todas las entidades principales agrupadas)
         public static class Production
         {
-            public const string Producto = "core/produccion/producto";
-            public const string Calidad = "core/produccion/calidad";
+            // Producto
+            public const string ProductoBase = "core/produccion/producto";
+            public const string ProductoGetById = "core/produccion/producto/detail";
+
+            // Calidad
+            public const string CalidadBase = "core/produccion/calidad";
+            public const string CalidadGetById = "core/produccion/calidad/detail";
+
+            // Agregado
+            public const string AgregadoBase = "core/produccion/agregado";
+            public const string AgregadoGetById = "core/produccion/agregado/detail";
+
+            // Línea de Producción
+            public const string LineaProduccionBase = "core/produccion/lineaproduccion";
+            public const string LineaProduccionGetById = "core/produccion/lineaproduccion/detail";
+
+            // Tipo de Producción
+            public const string TipoProduccionBase = "core/produccion/tipoproduccion";
+            public const string TipoProduccionGetById = "core/produccion/tipoproduccion/detail";
         }
-        
-        //rutas de planta
+
+        // Rutas de planta
         public static class Planta
         {
             public const string Base = "core/planta";
             public const string GetById = "core/planta/detail";
         }
-        
-        //rutas de parametro
+
+        // Rutas de parámetro
         public static class Parametro
         {
             public const string Base = "core/parametro";
             public const string GetById = "core/parametro/detail";
         }
-        
-        //rutas de administracion 
-        
     }
 }

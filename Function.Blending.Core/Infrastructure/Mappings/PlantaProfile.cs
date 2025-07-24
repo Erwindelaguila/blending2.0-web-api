@@ -15,7 +15,6 @@ public class PlantaProfile : Profile
         // Mapeos para DTOs
         CreateMap<PlantaEntity, PlantaDTO>();
             
-        CreateMap<CreatePlantaDTO, PlantaEntity>();
-        CreateMap<UpdatePlantaDTO, PlantaEntity>();
+       
     }
 }

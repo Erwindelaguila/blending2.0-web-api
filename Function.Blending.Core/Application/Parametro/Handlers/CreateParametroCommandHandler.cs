@@ -25,7 +25,7 @@ public class CreateParametroCommandHandler : IRequestHandler<CreateParametroComm
             Descripcion = request.Descripcion,
             Activo = request.Activo ?? true,
             CreadoPorId = request.CreadoPorId,
-            CreadoEl = DateTime.Now
+            CreadoEl = DateTime.UtcNow
         };
 
         await _parametroRepository.CreateAsync(parametro);

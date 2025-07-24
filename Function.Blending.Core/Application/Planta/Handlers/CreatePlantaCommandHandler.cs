@@ -26,7 +26,7 @@ public class CreatePlantaCommandHandler : IRequestHandler<CreatePlantaCommand, P
             NumeroRuma = request.NumeroRuma,
             Activo = request.Activo ?? true,
             CreadoPorId = request.CreadoPorId,
-            CreadoEl = DateTime.Now
+            CreadoEl = DateTime.UtcNow
         };
 
         await _plantaRepository.CreateAsync(planta);

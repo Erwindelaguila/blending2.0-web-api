@@ -5,5 +5,10 @@ namespace Function.Blending.Core.Application.Parametro.Queries;
 
 public class GetParametroByIdQuery : IRequest<ParametroDTO?>
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; }
+
+    public GetParametroByIdQuery(Guid id)
+    {
+        Id = id;
+    }
 }

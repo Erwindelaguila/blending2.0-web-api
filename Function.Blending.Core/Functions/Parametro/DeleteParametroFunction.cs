@@ -36,7 +36,17 @@ public class DeleteParametroFunction
                 ));
             }
 
-            var result = await _mediator.Send(new DeleteParametroCommand { Id = parametroId });
+            var modificadoPorIdString = query["modificadoPorId"];
+            if (string.IsNullOrEmpty(modificadoPorIdString) || !Guid.TryParse(modificadoPorIdString, out var modificadoPorId))
+            {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                    "ID de usuario modificador inválido o no proporcionado",
+                    null,
+                    400
+                ));
+            }
+
+            var result = await _mediator.Send(new DeleteParametroCommand(parametroId, modificadoPorId));
             
             if (!result)
             {

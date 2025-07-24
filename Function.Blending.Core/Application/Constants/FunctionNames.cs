@@ -38,5 +38,30 @@ public static class FunctionNames
         public const string GetById = "GetParametroById";
     }
 
+    public static class TipoProduccion
+    {
+        public const string Create = "CreateTipoProduccion";
+        public const string Update = "UpdateTipoProduccion";
+        public const string Delete = "DeleteTipoProduccion";
+        public const string GetAll = "GetAllTipoProduccion";
+        public const string GetById = "GetTipoProduccionById";
+    }
+
+    public static class Agregado
+    {
+        public const string Create = "CreateAgregado";
+        public const string Update = "UpdateAgregado";
+        public const string Delete = "DeleteAgregado";
+        public const string GetAll = "GetAllAgregados";
+        public const string GetById = "GetAgregadoById";
+    }
+    public static class LineaProduccion
+    {
+        public const string Create = "CreateLineaProduccion";
+        public const string Update = "UpdateLineaProduccion";
+        public const string Delete = "DeleteLineaProduccion";
+        public const string GetAll = "GetAllLineasProduccion";
+        public const string GetById = "GetLineaProduccionById";
+    }
     // Agrega otras funciones según tu dominio...
 }
