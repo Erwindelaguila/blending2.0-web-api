@@ -34,6 +34,7 @@ public class GetAllPlantasFunction
                 Message = "Ocurrió un error inesperado.",
                 Exception = ex.Message,
                 InnerException = ex.InnerException?.Message,
+                TraceContext = ex.StackTrace,
             };
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
