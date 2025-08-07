@@ -63,5 +63,11 @@ public static class FunctionNames
         public const string GetAll = "GetAllLineasProduccion";
         public const string GetById = "GetLineaProduccionById";
     }
+
+    public static class User
+    {
+        public const string GetMenu = "GetUserMenu";
+    }
+    
     // Agrega otras funciones según tu dominio...
 }

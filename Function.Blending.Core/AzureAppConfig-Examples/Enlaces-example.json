@@ -1,0 +1,83 @@
+{
+  "card-calidad": {
+    "title": "Homogenización de Harina",
+    "description": "Mezclado óptimo de harina", 
+    "url": "/modelos/harina",
+    "icon": "Planet24Regular",
+    "color": "#2196F3",
+    "tipo": "role-card"
+  },
+  "card-logistica": {
+    "title": "Homogenización de Contenedores",
+    "description": "Distribución óptima de rumas",
+    "url": "/modelos/contenedores", 
+    "icon": "PuzzleCube24Filled",
+    "color": "#4CAF50",
+    "tipo": "role-card"
+  },
+  "card-administrador": {
+    "title": "Administración",
+    "description": "Configuración y mantenimiento del sistema",
+    "url": "/configuraciones",
+    "icon": "Settings24Regular", 
+    "color": "#FF9800",
+    "tipo": "role-card"
+  },
+  "modelos": { 
+    "icon": "DataLine24Filled" 
+  },
+  "homo-contenedores": { 
+    "url": "/modelos/contenedores", 
+    "icon": "PuzzleCube24Filled", 
+    "grupo": "modelos" 
+  },
+  "homo-harina": { 
+    "url": "/modelos/harina", 
+    "icon": "ArchiveSettings24Filled", 
+    "grupo": "modelos" 
+  },
+  "consultas": { 
+    "icon": "DocumentTableSearch24Filled" 
+  },
+  "historico-contenedores": { 
+    "url": "/consultas/historico-contenedores", 
+    "icon": "AppsList24Filled", 
+    "grupo": "consultas" 
+  },
+  "historico-harina": { 
+    "url": "/consultas/historico-harina", 
+    "icon": "ClipboardTaskListRtl24Filled", 
+    "grupo": "consultas" 
+  },
+  "mantenimientos": { 
+    "icon": "WrenchSettings24Filled" 
+  },
+  "plantas-homogenizacion": { 
+    "url": "/mantenimientos/plantas", 
+    "icon": "BuildingFactory24Filled", 
+    "grupo": "mantenimientos" 
+  },
+  "produccion": { 
+    "url": "/mantenimientos/produccion", 
+    "icon": "LayerDiagonal24Filled", 
+    "grupo": "mantenimientos" 
+  },
+  "parametros-calidad": { 
+    "url": "/mantenimientos/parametros", 
+    "icon": "ClipboardDataBar24Filled", 
+    "grupo": "mantenimientos" 
+  },
+  "configuraciones": { 
+    "icon": "Options24Color" 
+  },
+  "valores-calidad": { 
+    "url": "/configuraciones/valores-calidad", 
+    "icon": "TableSettings24Filled", 
+    "grupo": "configuraciones" 
+  },
+  "config-aplicacion": { 
+    "url": "/configuraciones/aplicacion", 
+    "icon": "Settings24Filled", 
+    "grupo": "configuraciones" 
+  }
+}

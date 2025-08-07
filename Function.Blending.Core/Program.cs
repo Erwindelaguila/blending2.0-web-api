@@ -1,12 +1,12 @@
           using FluentValidation;
 using Function.Blending.Core.Application.Common.Behaviors;
 using Function.Blending.Core.Application.Interfaces.Repositories;
-using Function.Blending.Core.Application.Producto.Commands;
-using Function.Blending.Core.Application.Validators;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Infrastructure.Mappings;
 using Function.Blending.Core.Infrastructure.Persistence;
 using Function.Blending.Core.Infrastructure.Persistence.Mappings;
 using Function.Blending.Core.Infrastructure.Persistence.Repositories;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
@@ -21,18 +21,25 @@ var host = new HostBuilder()
         logging.ClearProviders();
         logging.AddConsole();
 
-        // Filtro espec�fico para suprimir logs de AutoMapper.LicenseValidator
+
         logging.AddFilter((category, level) =>
         {
             if (category != null && category.Contains("AutoMapper.LicenseValidator"))
-                return false; // Suprime todo log de esa categoría
+                return false; 
 
-            return true; // Permite el resto
+            return true; 
         });
     })
     .ConfigureServices(services =>
     {
         services.AddDbContext<BlendingDbContext>(options => options.UseSqlServer(Environment.GetEnvironmentVariable("SqlConnectionString")));
+        
+        // Memory Cache para optimización de performance
+        services.AddMemoryCache(options =>
+        {
+            options.SizeLimit = 100; 
+        });
+        
         services.AddAutoMapper(cfg =>
         {
             cfg.AddProfile<ProductoProfile>();
@@ -42,6 +49,7 @@ var host = new HostBuilder()
             cfg.AddProfile<AgregadoProfile>();
             cfg.AddProfile<LineaProduccionProfile>();
             cfg.AddProfile<TipoProduccionProfile>();
+            cfg.AddProfile<GraphProfile>(); 
         });
         services.AddScoped<IProductoRepository, ProductoRepository>();
         services.AddScoped<IPlantaRepository, PlantaRepository>();
@@ -50,6 +58,19 @@ var host = new HostBuilder()
         services.AddScoped<IAgregadoRepository, AgregadoRepository>();
         services.AddScoped<ILineaProduccionRepository, LineaProduccionRepository>();
         services.AddScoped<ITipoProduccionRepository, TipoProduccionRepository>();
+        
+
+        services.AddScoped<IAzureAppConfigService, AzureAppConfigService>();
+        
+  
+        services.AddScoped<ITokenClaimExtractor, TokenClaimExtractor>();
+        services.AddScoped<ITokenValidator, TokenValidator>();
+        services.AddHttpClient<IAzureSigningKeyProvider, AzureSigningKeyProvider>();
+        services.AddScoped<ITokenService, TokenService>(); 
+        
+        // Servicio de Microsoft Graph
+        services.AddHttpClient<IGraphService, GraphService>();
+        
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
         services.AddMediatR(cfg=>  cfg.RegisterServicesFromAssemblyContaining<Program>());

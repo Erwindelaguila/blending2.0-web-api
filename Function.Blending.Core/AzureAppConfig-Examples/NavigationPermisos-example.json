@@ -1,0 +1,27 @@
+{
+  "administrador": [
+    "card-administrador",
+    "configuraciones",
+    "valores-calidad",
+    "config-aplicacion"
+  ],
+  "calidad": [
+    "card-calidad",
+    "modelos",
+    "homo-harina",
+    "consultas",
+    "historico-harina",
+    "mantenimientos",
+    "parametros-calidad"
+  ],
+  "logistica": [
+    "card-logistica",
+    "modelos",
+    "homo-contenedores",
+    "consultas",
+    "historico-contenedores",
+    "mantenimientos",
+    "plantas-homogenizacion",
+    "produccion"
+  ]
+}

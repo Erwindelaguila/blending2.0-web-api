@@ -41,5 +41,11 @@ public class ApiRoutes
             public const string Base = "core/parametro";
             public const string GetById = "core/parametro/detail";
         }
+
+        // Rutas de usuario y autenticación
+        public static class User
+        {
+            public const string Menu = "core/user/menu";
+        }
     }
 }
