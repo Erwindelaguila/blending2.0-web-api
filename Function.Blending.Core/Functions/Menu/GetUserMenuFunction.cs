@@ -29,9 +29,6 @@ namespace Function.Blending.Core.Functions.Menu
         public async Task<HttpResponseData> GetUserMenu(
             [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.User.Menu)] HttpRequestData req)
         {
-            // Crear la respuesta inmediatamente para evitar ObjectDisposedException
-            var response = req.CreateResponse();
-            
             try
             {
                 _logger.LogInformation("Iniciando solicitud de menú de usuario");
@@ -40,16 +37,14 @@ namespace Function.Blending.Core.Functions.Menu
                 if (!req.Headers.TryGetValues("Authorization", out var authHeaders))
                 {
                     _logger.LogWarning("Header Authorization no encontrado");
-                    await WriteErrorResponseAsync(response, "Token de autorización requerido", HttpStatusCode.Unauthorized);
-                    return response;
+                    return await CreateErrorResponseAsync(req, "Token de autorización requerido", HttpStatusCode.Unauthorized);
                 }
 
                 var authHeader = authHeaders.FirstOrDefault();
                 if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
                 {
                     _logger.LogWarning("Formato de Authorization header inválido");
-                    await WriteErrorResponseAsync(response, "Formato de token inválido", HttpStatusCode.Unauthorized);
-                    return response;
+                    return await CreateErrorResponseAsync(req, "Formato de token inválido", HttpStatusCode.Unauthorized);
                 }
 
                 var jwtToken = authHeader.Substring("Bearer ".Length).Trim();
@@ -62,32 +57,31 @@ namespace Function.Blending.Core.Functions.Menu
                 if (!result.Success)
                 {
                     _logger.LogWarning("Error al procesar menú: {Message}", result.Message);
-                    await WriteErrorResponseAsync(response, result.Message ?? "Error al procesar menú", (HttpStatusCode)result.StatusCode);
-                    return response;
+                    return await CreateErrorResponseAsync(req, result.Message ?? "Error al procesar menú", (HttpStatusCode)result.StatusCode);
                 }
 
                 // Escribir respuesta exitosa
                 _logger.LogInformation("Menú de usuario obtenido exitosamente");
-                await WriteSuccessResponseAsync(response, result.Data ?? new MenuData(), result.Message);
-                return response;
+                return await CreateSuccessResponseAsync(req, result.Data ?? new MenuData(), result.Message);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error interno al procesar solicitud de menú");
-                await WriteErrorResponseAsync(response, "Error interno del servidor", HttpStatusCode.InternalServerError);
-                return response;
+                return await CreateErrorResponseAsync(req, "Error interno del servidor", HttpStatusCode.InternalServerError);
             }
         }
 
-        /// <summary>
-        /// Escribe una respuesta de error de forma segura
-        /// </summary>
-        private static async Task WriteErrorResponseAsync(HttpResponseData response, string message, HttpStatusCode statusCode)
+     
+        private static async Task<HttpResponseData> CreateErrorResponseAsync(HttpRequestData req, string message, HttpStatusCode statusCode)
         {
             var errorResponse = BaseResponse<object>.Fail(message, (int)statusCode);
+            var response = req.CreateResponse(statusCode);
             
-            response.StatusCode = statusCode;
-            response.Headers.Add("Content-Type", "application/json");
+
+            if (!response.Headers.Contains("Content-Type"))
+            {
+                response.Headers.Add("Content-Type", "application/json");
+            }
             
             var json = JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions 
             { 
@@ -95,17 +89,20 @@ namespace Function.Blending.Core.Functions.Menu
             });
             
             await response.WriteStringAsync(json);
+            return response;
         }
 
-        /// <summary>
-        /// Escribe una respuesta exitosa de forma segura
-        /// </summary>
-        private static async Task WriteSuccessResponseAsync(HttpResponseData response, MenuData data, string? message = null)
+
+        private static async Task<HttpResponseData> CreateSuccessResponseAsync(HttpRequestData req, MenuData data, string? message = null)
         {
             var successResponse = BaseResponse<MenuData>.Success(data, message);
+            var response = req.CreateResponse(HttpStatusCode.OK);
             
-            response.StatusCode = HttpStatusCode.OK;
-            response.Headers.Add("Content-Type", "application/json");
+  
+            if (!response.Headers.Contains("Content-Type"))
+            {
+                response.Headers.Add("Content-Type", "application/json");
+            }
             
             var json = JsonSerializer.Serialize(successResponse, new JsonSerializerOptions 
             { 
@@ -113,6 +110,7 @@ namespace Function.Blending.Core.Functions.Menu
             });
             
             await response.WriteStringAsync(json);
+            return response;
         }
     }
 }

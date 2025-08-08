@@ -20,9 +20,6 @@ namespace Function.Blending.Core.Application.Menu.DTOs
         [JsonPropertyName("color")]
         public string? Color { get; set; }
         
-        [JsonPropertyName("tipo")]
-        public string? Tipo { get; set; }
-        
         [JsonPropertyName("grupo")]
         public string? Grupo { get; set; }
     }
