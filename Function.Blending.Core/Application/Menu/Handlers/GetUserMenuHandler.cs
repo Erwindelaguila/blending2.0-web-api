@@ -117,9 +117,36 @@ namespace Function.Blending.Core.Application.Menu.Handlers
 
                 _logger.LogInformation("Usuario tiene {RoleCount} roles y {PermissionCount} permisos", userRoles.Count, permisosUsuario.Count);
 
+       
+                // Obtener enlaces que el usuario tiene permisos directos
+                var enlacesConPermisoDirecto = enlacesConfig.Enlaces?
+                    .Where(enlace => permisosUsuario.Contains(enlace.Key))
+                    .ToList() ?? new List<KeyValuePair<string, EnlaceItem>>();
+
+                // Obtener grupos padre de enlaces con permisos
+                var gruposPadreNecesarios = enlacesConPermisoDirecto
+                    .Where(enlace => !string.IsNullOrEmpty(enlace.Value.Grupo))
+                    .Select(enlace => enlace.Value.Grupo!)
+                    .Distinct()
+                    .ToList();
+
+                // Incluir grupos padre que no están ya en permisos directos
+                var gruposPadre = enlacesConfig.Enlaces?
+                    .Where(enlace => gruposPadreNecesarios.Contains(enlace.Key) && 
+                                   !permisosUsuario.Contains(enlace.Key))
+                    .ToList() ?? new List<KeyValuePair<string, EnlaceItem>>();
+
+                // Combinar enlaces con permisos directos + grupos padre necesarios
+                var enlacesFiltrados = enlacesConPermisoDirecto
+                    .Concat(gruposPadre)
+                    .ToDictionary(enlace => enlace.Key, enlace => enlace.Value);
+
+                _logger.LogDebug("Enlaces filtrados: {EnlaceCount} directos + {GrupoCount} grupos padre = {TotalCount} de {TotalEnlaces}", 
+                    enlacesConPermisoDirecto.Count, gruposPadre.Count, enlacesFiltrados.Count, enlacesConfig.Enlaces?.Count ?? 0);
+
                 var menuData = new MenuData
                 {
-                    Enlaces = enlacesConfig.Enlaces ?? new Dictionary<string, EnlaceItem>(),
+                    Enlaces = enlacesFiltrados,
                     PermisosUsuario = permisosUsuario,
                     UserInfo = new UserInfo
                     {

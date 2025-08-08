@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -15,6 +16,10 @@ namespace Function.Blending.Core.Infrastructure.Services
     {
         private readonly ConfigurationClient _client;
         private readonly ILogger<AzureAppConfigService> _logger;
+        
+      
+        private static readonly ConcurrentDictionary<string, (object Value, DateTime ExpiresAt)> _cache = new();
+        private static readonly TimeSpan CacheTtl = TimeSpan.FromMinutes(5);
         
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
@@ -97,6 +102,13 @@ namespace Function.Blending.Core.Infrastructure.Services
 
         private async Task<T?> GetConfigValueAsync<T>(string key) where T : class
         {
+            // Verificar caché primero
+            if (_cache.TryGetValue(key, out var cached) && cached.ExpiresAt > DateTime.UtcNow)
+            {
+                _logger.LogDebug("Configuration value retrieved from cache for key '{Key}'", key);
+                return (T?)cached.Value;
+            }
+
             try
             {
                 if (string.IsNullOrWhiteSpace(key))
@@ -129,6 +141,11 @@ namespace Function.Blending.Core.Infrastructure.Services
                 {
                     _logger.LogDebug("Successfully deserialized configuration for key '{Key}' to type {Type}", 
                         key, typeof(T).Name);
+                    
+                    // Guardar en caché
+                    _cache[key] = (result, DateTime.UtcNow.Add(CacheTtl));
+                    _logger.LogDebug("Configuration value cached for key '{Key}' until {ExpiresAt}", 
+                        key, DateTime.UtcNow.Add(CacheTtl));
                 }
 
                 return result;
@@ -137,6 +154,12 @@ namespace Function.Blending.Core.Infrastructure.Services
             {
                 _logger.LogError(ex, "JSON deserialization failed for configuration key '{Key}'. " +
                     "The stored value may have an invalid format for type {Type}", key, typeof(T).Name);
+                return default;
+            }
+            catch (Azure.RequestFailedException ex) when (ex.Status == 429)
+            {
+                _logger.LogWarning("Azure App Configuration rate limit exceeded (HTTP 429) for key '{Key}'. " +
+                    "Consider upgrading to Standard tier or implementing longer cache TTL", key);
                 return default;
             }
             catch (Azure.RequestFailedException ex) when (ex.Status == 404)
