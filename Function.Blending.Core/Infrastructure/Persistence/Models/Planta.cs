@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Function.Blending.Core.Infrastructure.Persistence.Models;
@@ -24,4 +24,14 @@ public partial class Planta
     public Guid? ModificadoPorId { get; set; }
 
     public DateTime? ModificadoEl { get; set; }
+
+    public Guid? EliminadoPorId { get; set; }
+
+    public DateTime? EliminadoEl { get; set; }
+
+    public bool Eliminado { get; set; }
+
+    public virtual ICollection<CalEjecucion> CalEjecucion { get; set; } = new List<CalEjecucion>();
+
+    public virtual ICollection<LogEjecucion> LogEjecucion { get; set; } = new List<LogEjecucion>();
 }

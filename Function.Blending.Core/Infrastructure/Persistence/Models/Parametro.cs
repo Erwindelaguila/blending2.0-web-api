@@ -23,5 +23,15 @@ public partial class Parametro
 
     public DateTime? ModificadoEl { get; set; }
 
-    public virtual ICollection<CalidadParametro> CalidadParametros { get; set; } = new List<CalidadParametro>();
+    public Guid? EliminadoPorId { get; set; }
+
+    public DateTime? EliminadoEl { get; set; }
+
+    public bool Eliminado { get; set; }
+
+    public virtual ICollection<CalInpParametro> CalInpParametro { get; set; } = new List<CalInpParametro>();
+
+    public virtual ICollection<CalidadParametro> CalidadParametro { get; set; } = new List<CalidadParametro>();
+
+    public virtual ICollection<LogInpFilEmparejamiento> LogInpFilEmparejamiento { get; set; } = new List<LogInpFilEmparejamiento>();
 }

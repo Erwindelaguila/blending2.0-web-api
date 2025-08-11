@@ -19,7 +19,7 @@ public class ParametroRepository : IParametroRepository
 
     public async Task<List<ParametroEntity>> GetAllAsync()
     {
-        var models = await _context.Parametros
+        var models = await _context.Parametro
             .ToListAsync();
         var entities = _mapper.Map<List<ParametroEntity>>(models);
         return entities;
@@ -27,7 +27,7 @@ public class ParametroRepository : IParametroRepository
 
     public async Task<ParametroEntity?> GetByIdAsync(Guid id)
     {
-        var model = await _context.Parametros
+        var model = await _context.Parametro
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id);
 
@@ -41,23 +41,23 @@ public class ParametroRepository : IParametroRepository
     public async Task CreateAsync(ParametroEntity parametroEntity)
     {
         var model = _mapper.Map<Parametro>(parametroEntity);
-        _context.Parametros.Add(model);
+        _context.Parametro.Add(model);
         await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(ParametroEntity parametroEntity)
     {
         var model = _mapper.Map<Parametro>(parametroEntity);
-        _context.Parametros.Update(model);
+        _context.Parametro.Update(model);
         await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var entity = await _context.Parametros.FindAsync(id);
+        var entity = await _context.Parametro.FindAsync(id);
         if (entity is null) return;
 
-        _context.Parametros.Remove(entity);
+        _context.Parametro.Remove(entity);
         await _context.SaveChangesAsync();
     }
 }

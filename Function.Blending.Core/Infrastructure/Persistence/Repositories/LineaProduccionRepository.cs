@@ -19,14 +19,14 @@ public class LineaProduccionRepository : ILineaProduccionRepository
 
     public async Task<List<LineaProduccionEntity>> GetAllAsync()
     {
-        var models = await _context.LineaProduccions.ToListAsync();
+        var models = await _context.LineaProduccion.ToListAsync();
         var entities = _mapper.Map<List<LineaProduccionEntity>>(models);
         return entities;
     }
 
     public async Task<LineaProduccionEntity?> GetByIdAsync(Guid id)
     {
-        var model = await _context.LineaProduccions.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        var model = await _context.LineaProduccion.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         if (model == null)
             return null;
         var entity = _mapper.Map<LineaProduccionEntity>(model);
@@ -36,22 +36,22 @@ public class LineaProduccionRepository : ILineaProduccionRepository
     public async Task CreateAsync(LineaProduccionEntity entity)
     {
         var model = _mapper.Map<LineaProduccion>(entity);
-        _context.LineaProduccions.Add(model);
+        _context.LineaProduccion.Add(model);
         await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(LineaProduccionEntity entity)
     {
         var model = _mapper.Map<LineaProduccion>(entity);
-        _context.LineaProduccions.Update(model);
+        _context.LineaProduccion.Update(model);
         await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var entity = await _context.LineaProduccions.FindAsync(id);
+        var entity = await _context.LineaProduccion.FindAsync(id);
         if (entity is null) return;
-        _context.LineaProduccions.Remove(entity);
+        _context.LineaProduccion.Remove(entity);
         await _context.SaveChangesAsync();
     }
 }

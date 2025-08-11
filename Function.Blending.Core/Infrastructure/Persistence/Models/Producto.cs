@@ -27,6 +27,12 @@ public partial class Producto
 
     public DateTime? ModificadoEl { get; set; }
 
+    public Guid? EliminadoPorId { get; set; }
+
+    public DateTime? EliminadoEl { get; set; }
+
+    public bool Eliminado { get; set; }
+
     public virtual Calidad Calidad { get; set; } = null!;
 
     public virtual TipoProduccion TipoProduccion { get; set; } = null!;

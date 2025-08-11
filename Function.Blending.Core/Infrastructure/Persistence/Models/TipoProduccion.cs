@@ -27,9 +27,15 @@ public partial class TipoProduccion
 
     public DateTime? ModificadoEl { get; set; }
 
+    public Guid? EliminadoPorId { get; set; }
+
+    public DateTime? EliminadoEl { get; set; }
+
+    public bool Eliminado { get; set; }
+
     public virtual Agregado Agregado { get; set; } = null!;
 
     public virtual LineaProduccion LineaProduccion { get; set; } = null!;
 
-    public virtual ICollection<Producto> Productos { get; set; } = new List<Producto>();
+    public virtual ICollection<Producto> Producto { get; set; } = new List<Producto>();
 }

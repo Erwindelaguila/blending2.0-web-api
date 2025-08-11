@@ -20,12 +20,12 @@ public class CalidadRepository: ICalidadRepository
     public async Task CreateAsync(CalidadEntity calidadEntity)
     {
         var model = _mapper.Map<Calidad>(calidadEntity);
-        _context.Calidads.Add(model);
+        _context.Calidad.Add(model);
         await _context.SaveChangesAsync();
     }
     public async Task<List<CalidadEntity>> GetAllAsync()
     {
-        var models = await _context.Calidads
+        var models = await _context.Calidad
             .ToListAsync();
         var entities = _mapper.Map<List<CalidadEntity>>(models);
         return entities;
@@ -33,7 +33,7 @@ public class CalidadRepository: ICalidadRepository
 
     public async Task<CalidadEntity?> GetByIdAsync(Guid id)
     {
-        var model = await _context.Calidads
+        var model = await _context.Calidad
             .AsNoTracking() 
             .FirstOrDefaultAsync(c => c.Id == id);
 
@@ -47,16 +47,16 @@ public class CalidadRepository: ICalidadRepository
     public async Task UpdateAsync(CalidadEntity calidadEntity)
     {
         var model = _mapper.Map<Calidad>(calidadEntity);
-        _context.Calidads.Update(model);
+        _context.Calidad.Update(model);
         await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var entity = await _context.Calidads.FindAsync(id);
+        var entity = await _context.Calidad.FindAsync(id);
         if (entity is null) return;
 
-        _context.Calidads.Remove(entity);
+        _context.Calidad.Remove(entity);
         await _context.SaveChangesAsync();
     }
 

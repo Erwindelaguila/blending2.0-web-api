@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 namespace Function.Blending.Core.Infrastructure.Persistence.Models;
 
-public partial class CalidadParametro
+public partial class AuxValue
 {
     public Guid Id { get; set; }
 
-    public Guid CalidadId { get; set; }
+    public string Valor { get; set; } = null!;
 
-    public Guid ParametroId { get; set; }
+    public Guid RowId { get; set; }
 
-    public decimal Valor { get; set; }
+    public Guid PropId { get; set; }
 
     public bool Activo { get; set; }
 
@@ -23,7 +23,7 @@ public partial class CalidadParametro
 
     public DateTime? ModificadoEl { get; set; }
 
-    public virtual Calidad Calidad { get; set; } = null!;
+    public virtual AuxProp Prop { get; set; } = null!;
 
-    public virtual Parametro Parametro { get; set; } = null!;
+    public virtual AuxRow Row { get; set; } = null!;
 }

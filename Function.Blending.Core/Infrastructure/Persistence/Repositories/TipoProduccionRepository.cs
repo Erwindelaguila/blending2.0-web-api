@@ -19,7 +19,7 @@ public class TipoProduccionRepository : ITipoProduccionRepository
 
     public async Task<List<TipoProduccionEntity>> GetAllAsync()
     {
-        var models = await _context.TipoProduccions
+        var models = await _context.TipoProduccion
         .ToListAsync();
         var entities = _mapper.Map<List<TipoProduccionEntity>>(models);
         return entities;
@@ -27,7 +27,7 @@ public class TipoProduccionRepository : ITipoProduccionRepository
 
     public async Task<TipoProduccionEntity?> GetByIdAsync(Guid id)
     {
-        var model = await _context.TipoProduccions
+        var model = await _context.TipoProduccion
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -41,23 +41,23 @@ public class TipoProduccionRepository : ITipoProduccionRepository
     public async Task CreateAsync(TipoProduccionEntity tipoProduccionEntity)
     {
         var model = _mapper.Map<TipoProduccion>(tipoProduccionEntity);
-        _context.TipoProduccions.Add(model);
+        _context.TipoProduccion.Add(model);
         await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(TipoProduccionEntity tipoProduccionEntity)
     {
         var model = _mapper.Map<TipoProduccion>(tipoProduccionEntity);
-        _context.TipoProduccions.Update(model);
+        _context.TipoProduccion.Update(model);
         await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var entity = await _context.TipoProduccions.FindAsync(id);
+        var entity = await _context.TipoProduccion.FindAsync(id);
         if (entity is null) return;
 
-        _context.TipoProduccions.Remove(entity);
+        _context.TipoProduccion.Remove(entity);
         await _context.SaveChangesAsync();
     }
 }

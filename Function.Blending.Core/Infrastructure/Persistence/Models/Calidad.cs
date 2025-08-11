@@ -27,7 +27,15 @@ public partial class Calidad
 
     public DateTime? ModificadoEl { get; set; }
 
-    public virtual ICollection<CalidadParametro> CalidadParametros { get; set; } = new List<CalidadParametro>();
+    public Guid? EliminadoPorId { get; set; }
 
-    public virtual ICollection<Producto> Productos { get; set; } = new List<Producto>();
+    public DateTime? EliminadoEl { get; set; }
+
+    public bool Eliminado { get; set; }
+
+    public virtual ICollection<CalInpParametro> CalInpParametro { get; set; } = new List<CalInpParametro>();
+
+    public virtual ICollection<CalidadParametro> CalidadParametro { get; set; } = new List<CalidadParametro>();
+
+    public virtual ICollection<Producto> Producto { get; set; } = new List<Producto>();
 }

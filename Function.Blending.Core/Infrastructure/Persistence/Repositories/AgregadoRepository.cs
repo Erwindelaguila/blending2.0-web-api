@@ -19,7 +19,7 @@ public class AgregadoRepository : IAgregadoRepository
 
     public async Task<List<AgregadoEntity>> GetAllAsync()
     {
-        var models = await _context.Agregados
+        var models = await _context.Agregado
             .ToListAsync();
         var entities = _mapper.Map<List<AgregadoEntity>>(models);
         return entities;
@@ -27,7 +27,7 @@ public class AgregadoRepository : IAgregadoRepository
 
     public async Task<AgregadoEntity?> GetByIdAsync(Guid id)
     {
-        var model = await _context.Agregados
+        var model = await _context.Agregado
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id);
 
@@ -41,23 +41,23 @@ public class AgregadoRepository : IAgregadoRepository
     public async Task CreateAsync(AgregadoEntity agregadoEntity)
     {
         var model = _mapper.Map<Agregado>(agregadoEntity);
-        _context.Agregados.Add(model);
+        _context.Agregado.Add(model);
         await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(AgregadoEntity agregadoEntity)
     {
         var model = _mapper.Map<Agregado>(agregadoEntity);
-        _context.Agregados.Update(model);
+        _context.Agregado.Update(model);
         await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var entity = await _context.Agregados.FindAsync(id);
+        var entity = await _context.Agregado.FindAsync(id);
         if (entity is null) return;
 
-        _context.Agregados.Remove(entity);
+        _context.Agregado.Remove(entity);
         await _context.SaveChangesAsync();
     }
 }

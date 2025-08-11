@@ -23,6 +23,11 @@ public partial class LineaProduccion
 
     public DateTime? ModificadoEl { get; set; }
 
-    public virtual ICollection<TipoProduccion> TipoProduccions { get; set; } = new List<TipoProduccion>();
-}
+    public Guid? EliminadoPorId { get; set; }
 
+    public DateTime? EliminadoEl { get; set; }
+
+    public bool Eliminado { get; set; }
+
+    public virtual ICollection<TipoProduccion> TipoProduccion { get; set; } = new List<TipoProduccion>();
+}

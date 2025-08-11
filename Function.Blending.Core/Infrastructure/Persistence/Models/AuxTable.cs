@@ -3,15 +3,19 @@ using System.Collections.Generic;
 
 namespace Function.Blending.Core.Infrastructure.Persistence.Models;
 
-public partial class Agregado
+public partial class AuxTable
 {
     public Guid Id { get; set; }
 
-    public string Codigo { get; set; } = null!;
+    public string Clave { get; set; } = null!;
 
     public string Nombre { get; set; } = null!;
 
     public string? Descripcion { get; set; }
+
+    public int Orden { get; set; }
+
+    public Guid? PadreId { get; set; }
 
     public bool Activo { get; set; }
 
@@ -23,11 +27,11 @@ public partial class Agregado
 
     public DateTime? ModificadoEl { get; set; }
 
-    public Guid? EliminadoPorId { get; set; }
+    public virtual ICollection<AuxProp> AuxProp { get; set; } = new List<AuxProp>();
 
-    public DateTime? EliminadoEl { get; set; }
+    public virtual ICollection<AuxRow> AuxRow { get; set; } = new List<AuxRow>();
 
-    public bool Eliminado { get; set; }
+    public virtual ICollection<AuxTable> InversePadre { get; set; } = new List<AuxTable>();
 
-    public virtual ICollection<TipoProduccion> TipoProduccion { get; set; } = new List<TipoProduccion>();
+    public virtual AuxTable? Padre { get; set; }
 }

@@ -21,7 +21,7 @@ public class ProductoRepository : IProductoRepository
 
     public async Task<List<ProductoEntity>> GetAllAsync()
     {
-        return await _context.Productos
+        return await _context.Producto
             .Include(p => p.Calidad)
             .Include(p => p.TipoProduccion)
             .AsNoTracking()
@@ -31,20 +31,20 @@ public class ProductoRepository : IProductoRepository
 
     public async Task<ProductoEntity?> GetByIdAsync(Guid id)
     {
-        var model = await _context.Productos.FindAsync(id);
+        var model = await _context.Producto.FindAsync(id);
         return model == null ? null : _mapper.Map<Domain.Entities.ProductoEntity>(model);
     }
 
     public async Task CreateAsync(ProductoEntity productoEntity)
     {
         var model = _mapper.Map<Producto>(productoEntity);
-        _context.Productos.Add(model);
+        _context.Producto.Add(model);
         await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Domain.Entities.ProductoEntity productoEntity)
     {
-        var model = await _context.Productos.FindAsync(productoEntity.Id);
+        var model = await _context.Producto.FindAsync(productoEntity.Id);
         if (model == null) return;
 
         // Mapear manualmente si quieres evitar sobrescribir CreadoEl/CreadoPorId
@@ -62,10 +62,10 @@ public class ProductoRepository : IProductoRepository
 
     public async Task DeleteAsync(Guid id)
     {
-        var model = await _context.Productos.FindAsync(id);
+        var model = await _context.Producto.FindAsync(id);
         if (model == null) return;
 
-        _context.Productos.Remove(model);
+        _context.Producto.Remove(model);
         await _context.SaveChangesAsync();
     }
     
