@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Agregado.Handlers;
 
-public class GetAllAgregadosQueryHandler : IRequestHandler<GetAllAgregadosQuery, List<AgregadoDTO>>
+public class GetAllAgregadosQueryHandler : IRequestHandler<GetAllAgregadosQuery, object>
 {
     private readonly IAgregadoRepository _agregadoRepository;
 
@@ -14,10 +14,11 @@ public class GetAllAgregadosQueryHandler : IRequestHandler<GetAllAgregadosQuery,
         _agregadoRepository = agregadoRepository;
     }
 
-    public async Task<List<AgregadoDTO>> Handle(GetAllAgregadosQuery request, CancellationToken cancellationToken)
+    public async Task<object> Handle(GetAllAgregadosQuery request, CancellationToken cancellationToken)
     {
-        var agregados = await _agregadoRepository.GetAllAsync();
-        return agregados.Select(agregado => new AgregadoDTO
+        var (entities, total) = await _agregadoRepository.GetPagedAsync(request.Page, request.Size);
+        
+        var dtos = entities.Select(agregado => new AgregadoDTO
         {
             Id = agregado.Id,
             Codigo = agregado.Codigo,
@@ -29,5 +30,14 @@ public class GetAllAgregadosQueryHandler : IRequestHandler<GetAllAgregadosQuery,
             ModificadoPorId = agregado.ModificadoPorId,
             ModificadoEl = agregado.ModificadoEl
         }).ToList();
+
+        return new
+        {
+            Items = dtos,
+            Total = total,
+            Page = request.Page,
+            Size = request.Size,
+            TotalPages = (int)Math.Ceiling((double)total / request.Size)
+        };
     }
 }

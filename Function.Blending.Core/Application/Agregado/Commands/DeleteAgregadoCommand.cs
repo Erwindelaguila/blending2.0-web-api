@@ -6,11 +6,11 @@ namespace Function.Blending.Core.Application.Agregado.Commands;
 public class DeleteAgregadoCommand : IRequest<bool>
 {
     public Guid Id { get; }
-    public Guid ModificadoPorId { get; }
+    public Guid EliminadoPorId { get; }
 
-    public DeleteAgregadoCommand(Guid id, Guid modificadoPorId)
+    public DeleteAgregadoCommand(Guid id, Guid eliminadoPorId)
     {
         Id = id;
-        ModificadoPorId = modificadoPorId;
+        EliminadoPorId = eliminadoPorId;
     }
 }
