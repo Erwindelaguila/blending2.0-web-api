@@ -36,17 +36,17 @@ public class DeleteAgregadoFunction
                 ));
             }
 
-            var modificadoPorIdString = query["modificadoPorId"];
-            if (string.IsNullOrEmpty(modificadoPorIdString) || !Guid.TryParse(modificadoPorIdString, out var modificadoPorId))
+            var eliminadoPorIdString = query["eliminadoPorId"];
+            if (string.IsNullOrEmpty(eliminadoPorIdString) || !Guid.TryParse(eliminadoPorIdString, out var eliminadoPorId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "ID de usuario modificador inválido o no proporcionado",
+                    "ID de usuario eliminador inválido o no proporcionado",
                     null,
                     400
                 ));
             }
 
-            var result = await _mediator.Send(new DeleteAgregadoCommand(agregadoId, modificadoPorId));
+            var result = await _mediator.Send(new DeleteAgregadoCommand(agregadoId, eliminadoPorId));
 
             if (!result)
             {

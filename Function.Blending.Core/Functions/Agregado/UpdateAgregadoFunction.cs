@@ -64,6 +64,26 @@ public class UpdateAgregadoFunction
                 400
             ));
         }
+        catch (ArgumentException ex) when (ex.ParamName == "codigo" && ex.Message.StartsWith("DUPLICATE_CODE"))
+        {
+            var codigo = ex.Message.Split('|')[1];
+            var traceId = Guid.NewGuid().ToString("N")[..8];
+            
+            var error = new
+            {
+                field = "codigo",
+                message = $"Ya existe un agregado activo con el código '{codigo}'",
+                code = "AGREGADO_CODIGO_DUPLICADO",
+                instance = req.Url.LocalPath,
+                traceId = traceId
+            };
+            
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                error,
+                "Código duplicado",
+                409
+            ));
+        }
         catch (Exception ex)
         {
             var errorMessage = new
