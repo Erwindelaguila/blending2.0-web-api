@@ -5,11 +5,11 @@ namespace Function.Blending.Core.Application.LineaProduccion.Commands;
 public class DeleteLineaProduccionCommand : IRequest<bool>
 {
     public Guid Id { get; }
-    public Guid ModificadoPorId { get; }
+    public Guid EliminadoPorId { get; }
 
-    public DeleteLineaProduccionCommand(Guid id, Guid modificadoPorId)
+    public DeleteLineaProduccionCommand(Guid id, Guid eliminadoPorId)
     {
         Id = id;
-        ModificadoPorId = modificadoPorId;
+        EliminadoPorId = eliminadoPorId;
     }
 }

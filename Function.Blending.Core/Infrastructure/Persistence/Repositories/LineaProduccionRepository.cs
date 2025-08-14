@@ -19,39 +19,127 @@ public class LineaProduccionRepository : ILineaProduccionRepository
 
     public async Task<List<LineaProduccionEntity>> GetAllAsync()
     {
-        var models = await _context.LineaProduccion.ToListAsync();
+        var models = await _context.LineaProduccion
+            .Where(l => !l.Eliminado) // Solo registros no eliminados
+            .ToListAsync();
         var entities = _mapper.Map<List<LineaProduccionEntity>>(models);
         return entities;
     }
 
     public async Task<LineaProduccionEntity?> GetByIdAsync(Guid id)
     {
-        var model = await _context.LineaProduccion.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        var model = await _context.LineaProduccion
+            .AsNoTracking()
+            .FirstOrDefaultAsync(l => l.Id == id && !l.Eliminado); // Solo si no está eliminado
+
         if (model == null)
             return null;
+
         var entity = _mapper.Map<LineaProduccionEntity>(model);
         return entity;
     }
 
-    public async Task CreateAsync(LineaProduccionEntity entity)
+    public async Task<bool> ExistsActiveCodigoAsync(string codigo, Guid? excludeId = null)
     {
-        var model = _mapper.Map<LineaProduccion>(entity);
+        var query = _context.LineaProduccion.Where(l => l.Codigo == codigo && !l.Eliminado);
+        
+        if (excludeId.HasValue)
+            query = query.Where(l => l.Id != excludeId.Value);
+            
+        return await query.AnyAsync();
+    }
+
+    public async Task<(IReadOnlyList<LineaProduccionEntity> Items, int Total)> GetPagedAsync(int page, int size)
+    {
+        var baseQuery = _context.LineaProduccion.AsNoTracking()
+            .Where(x => !x.Eliminado)
+            .OrderBy(x => x.CreadoEl);
+
+        var total = await baseQuery.CountAsync();
+        var models = await baseQuery.Skip((page - 1) * size).Take(size).ToListAsync();
+        return (_mapper.Map<List<LineaProduccionEntity>>(models), total);
+    }
+
+    public async Task CreateAsync(LineaProduccionEntity lineaProduccionEntity)
+    {
+        // Validar que el código no exista entre registros activos
+        if (await ExistsActiveCodigoAsync(lineaProduccionEntity.Codigo))
+        {
+            throw new ArgumentException("Código duplicado", "codigo");
+        }
+
+        var model = _mapper.Map<LineaProduccion>(lineaProduccionEntity);
         _context.LineaProduccion.Add(model);
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(LineaProduccionEntity entity)
+    public async Task UpdateAsync(LineaProduccionEntity lineaProduccionEntity)
     {
-        var model = _mapper.Map<LineaProduccion>(entity);
+        // Verificar que el registro existe y no está eliminado (usando AsNoTracking para evitar tracking)
+        var existingEntity = await _context.LineaProduccion
+            .AsNoTracking()
+            .FirstOrDefaultAsync(l => l.Id == lineaProduccionEntity.Id);
+            
+        if (existingEntity == null || existingEntity.Eliminado)
+        {
+            throw new InvalidOperationException("No se puede modificar un registro que no existe o está eliminado.");
+        }
+
+        // Validar que el código no exista entre otros registros activos
+        if (await ExistsActiveCodigoAsync(lineaProduccionEntity.Codigo, lineaProduccionEntity.Id))
+        {
+            throw new ArgumentException("Código duplicado", "codigo");
+        }
+
+        var model = _mapper.Map<LineaProduccion>(lineaProduccionEntity);
         _context.LineaProduccion.Update(model);
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task<LineaProduccionEntity> UpdateAndReturnAsync(LineaProduccionEntity lineaProduccionEntity)
+    {
+        // Obtener el registro actual para validar existencia y preservar datos
+        var currentEntity = await _context.LineaProduccion
+            .AsNoTracking()
+            .FirstOrDefaultAsync(l => l.Id == lineaProduccionEntity.Id);
+            
+        if (currentEntity == null || currentEntity.Eliminado)
+        {
+            throw new InvalidOperationException("No se puede modificar un registro que no existe o está eliminado.");
+        }
+
+        // Validar que el código no exista entre otros registros activos
+        if (await ExistsActiveCodigoAsync(lineaProduccionEntity.Codigo, lineaProduccionEntity.Id))
+        {
+            throw new ArgumentException("Código duplicado", "codigo");
+        }
+
+        // Preservar campos que no deben modificarse
+        lineaProduccionEntity.CreadoPorId = currentEntity.CreadoPorId;
+        lineaProduccionEntity.CreadoEl = currentEntity.CreadoEl;
+        lineaProduccionEntity.Eliminado = currentEntity.Eliminado;
+        lineaProduccionEntity.EliminadoPorId = currentEntity.EliminadoPorId;
+        lineaProduccionEntity.EliminadoEl = currentEntity.EliminadoEl;
+
+        var model = _mapper.Map<LineaProduccion>(lineaProduccionEntity);
+        _context.LineaProduccion.Update(model);
+        await _context.SaveChangesAsync();
+
+        // Retornar la entidad actualizada
+        return lineaProduccionEntity;
+    }
+
+    public async Task DeleteAsync(Guid id, Guid eliminadoPorId)
     {
         var entity = await _context.LineaProduccion.FindAsync(id);
-        if (entity is null) return;
-        _context.LineaProduccion.Remove(entity);
+        if (entity is null || entity.Eliminado) return;
+
+        // Soft delete
+        entity.Eliminado = true;
+        entity.EliminadoPorId = eliminadoPorId;
+        entity.EliminadoEl = DateTime.UtcNow;
+
+        _context.LineaProduccion.Update(entity);
         await _context.SaveChangesAsync();
     }
 }

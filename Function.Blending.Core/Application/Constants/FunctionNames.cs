@@ -27,6 +27,7 @@ public static class FunctionNames
         public const string Delete = "DeletePlanta";
         public const string GetAll = "GetAllPlantas";
         public const string GetById = "GetPlantaById";
+        public const string GetPaged = "GetPagedPlantas";
     }
 
     public static class Parametro
@@ -54,6 +55,7 @@ public static class FunctionNames
         public const string Delete = "DeleteAgregado";
         public const string GetAll = "GetAllAgregados";
         public const string GetById = "GetAgregadoById";
+        public const string GetAllWithoutPagination = "GetAllAgregadosWithoutPagination";
     }
     public static class LineaProduccion
     {

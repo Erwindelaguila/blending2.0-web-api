@@ -55,7 +55,15 @@ public class CreatePlantaFunction
         
             var result = await _mediator.Send(command);
             
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PlantaDTO>.Success(result,"Planta creada exitosamente"));
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(result,"Planta creada exitosamente"));
+        }
+        catch (ArgumentException ex) when (ex.ParamName == "codigo")
+        {
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                "El código de la planta ya existe. Por favor, use un código diferente.",
+                "Código duplicado",
+                409
+            ));
         }
         catch (ValidationException ex)
         {

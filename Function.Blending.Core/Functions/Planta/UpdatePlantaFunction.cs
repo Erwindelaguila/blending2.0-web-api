@@ -55,7 +55,23 @@ public class UpdatePlantaFunction
         
             var result = await _mediator.Send(command);
             
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PlantaDTO>.Success(result,"Planta actualizada exitosamente"));
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(result,"Planta actualizada exitosamente"));
+        }
+        catch (ArgumentException ex) when (ex.ParamName == "codigo")
+        {
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                "El código de la planta ya existe. Por favor, use un código diferente.",
+                "Código duplicado",
+                409
+            ));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                ex.Message,
+                "Operación inválida",
+                400
+            ));
         }
         catch (ValidationException ex)
         {

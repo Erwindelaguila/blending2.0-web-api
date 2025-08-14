@@ -12,4 +12,7 @@ public class PlantaEntity
     public DateTime CreadoEl { get; set; }
     public Guid? ModificadoPorId { get; set; }
     public DateTime? ModificadoEl { get; set; }
+    public bool Eliminado { get; set; }
+    public Guid? EliminadoPorId { get; set; }
+    public DateTime? EliminadoEl { get; set; }
 }

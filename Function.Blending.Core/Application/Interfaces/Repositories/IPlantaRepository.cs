@@ -6,7 +6,10 @@ public interface IPlantaRepository
 {
     Task<List<PlantaEntity>> GetAllAsync();
     Task<PlantaEntity?> GetByIdAsync(Guid id);
+    Task<bool> ExistsActiveCodigoAsync(string codigo, Guid? excludeId = null);
+    Task<(IReadOnlyList<PlantaEntity> Items, int Total)> GetPagedAsync(int page, int size);
     Task CreateAsync(PlantaEntity planta);
     Task UpdateAsync(PlantaEntity planta);
-    Task DeleteAsync(Guid id);
+    Task<PlantaEntity> UpdateAndReturnAsync(PlantaEntity planta);
+    Task DeleteAsync(Guid id, Guid eliminadoPorId);
 }

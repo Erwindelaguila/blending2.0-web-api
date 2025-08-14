@@ -1,11 +1,11 @@
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.LineaProduccion.DTOs;
 using Function.Blending.Core.Application.LineaProduccion.Queries;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using System.Web;
 
 namespace Function.Blending.Core.Functions.LineaProduccion;
 
@@ -24,8 +24,22 @@ public class GetAllLineasProduccionFunction
     {
         try
         {
-            var result = await _mediator.Send(new GetAllLineasProduccionQuery());
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<List<LineaProduccionDTO>>.Success(result, "Líneas de producción obtenidas correctamente"));
+            var query = HttpUtility.ParseQueryString(req.Url.Query);
+            
+            var pageString = query["page"];
+            var sizeString = query["size"];
+            
+            var page = int.TryParse(pageString, out var parsedPage) ? parsedPage : 1;
+            var size = int.TryParse(sizeString, out var parsedSize) ? parsedSize : 10;
+            
+            var getAllQuery = new GetAllLineasProduccionQuery
+            {
+                Page = page,
+                Size = size
+            };
+            
+            var result = await _mediator.Send(getAllQuery);
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(result, "Líneas de producción obtenidas correctamente"));
         }
         catch (Exception ex)
         {

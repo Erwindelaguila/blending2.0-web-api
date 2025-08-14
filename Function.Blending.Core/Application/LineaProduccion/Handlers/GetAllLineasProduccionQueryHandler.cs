@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.LineaProduccion.Handlers;
 
-public class GetAllLineasProduccionQueryHandler : IRequestHandler<GetAllLineasProduccionQuery, List<LineaProduccionDTO>>
+public class GetAllLineasProduccionQueryHandler : IRequestHandler<GetAllLineasProduccionQuery, object>
 {
     private readonly ILineaProduccionRepository _lineaProduccionRepository;
 
@@ -14,10 +14,11 @@ public class GetAllLineasProduccionQueryHandler : IRequestHandler<GetAllLineasPr
         _lineaProduccionRepository = lineaProduccionRepository;
     }
 
-    public async Task<List<LineaProduccionDTO>> Handle(GetAllLineasProduccionQuery request, CancellationToken cancellationToken)
+    public async Task<object> Handle(GetAllLineasProduccionQuery request, CancellationToken cancellationToken)
     {
-        var lineas = await _lineaProduccionRepository.GetAllAsync();
-        return lineas.Select(linea => new LineaProduccionDTO
+        var (entities, total) = await _lineaProduccionRepository.GetPagedAsync(request.Page, request.Size);
+        
+        var dtos = entities.Select(linea => new LineaProduccionDTO
         {
             Id = linea.Id,
             Codigo = linea.Codigo,
@@ -29,5 +30,14 @@ public class GetAllLineasProduccionQueryHandler : IRequestHandler<GetAllLineasPr
             ModificadoPorId = linea.ModificadoPorId,
             ModificadoEl = linea.ModificadoEl
         }).ToList();
+
+        return new
+        {
+            Items = dtos,
+            Total = total,
+            Page = request.Page,
+            Size = request.Size,
+            TotalPages = (int)Math.Ceiling((double)total / request.Size)
+        };
     }
 }

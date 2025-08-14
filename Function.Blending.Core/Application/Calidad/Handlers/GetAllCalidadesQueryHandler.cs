@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Calidad.Handlers;
 
-public class GetAllCalidadesQueryHandler : IRequestHandler<GetAllCalidadesQuery, List<CalidadDTO>>
+public class GetAllCalidadesQueryHandler : IRequestHandler<GetAllCalidadesQuery, object>
 {
     private readonly ICalidadRepository _repository;
 
@@ -14,10 +14,11 @@ public class GetAllCalidadesQueryHandler : IRequestHandler<GetAllCalidadesQuery,
         _repository = repository;
     }
 
-    public async Task<List<CalidadDTO>> Handle(GetAllCalidadesQuery request, CancellationToken cancellationToken)
+    public async Task<object> Handle(GetAllCalidadesQuery request, CancellationToken cancellationToken)
     {
-        var calidades = await _repository.GetAllAsync();
-        return calidades.Select(calidad => new CalidadDTO
+        var (entities, total) = await _repository.GetPagedAsync(request.Page, request.Size);
+
+        var dtos = entities.Select(calidad => new CalidadDTO
         {
             Id = calidad.Id,
             Codigo = calidad.Codigo,
@@ -25,11 +26,20 @@ public class GetAllCalidadesQueryHandler : IRequestHandler<GetAllCalidadesQuery,
             Descripcion = calidad.Descripcion,
             Activo = calidad.Activo,
             CodigoMaterial = calidad.CodigoMaterial,
-            ModificadoEl = calidad.ModificadoEl,
-            CreadoEl = calidad.CreadoEl,
-            ModificadoPorId = calidad.ModificadoPorId,
             NoConforme = calidad.NoConforme,
             CreadoPorId = calidad.CreadoPorId,
+            CreadoEl = calidad.CreadoEl,
+            ModificadoPorId = calidad.ModificadoPorId,
+            ModificadoEl = calidad.ModificadoEl
         }).ToList();
+
+        return new
+        {
+            Items = dtos,
+            Total = total,
+            Page = request.Page,
+            Size = request.Size,
+            TotalPages = (int)Math.Ceiling((double)total / request.Size)
+        };
     }
 }

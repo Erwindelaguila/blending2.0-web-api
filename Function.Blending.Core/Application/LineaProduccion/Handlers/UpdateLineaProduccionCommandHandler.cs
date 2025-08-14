@@ -2,12 +2,14 @@ using MediatR;
 using Function.Blending.Core.Application.LineaProduccion.Commands;
 using Function.Blending.Core.Application.LineaProduccion.DTOs;
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Domain.Entities;
 
 namespace Function.Blending.Core.Application.LineaProduccion.Handlers;
 
 public class UpdateLineaProduccionCommandHandler : IRequestHandler<UpdateLineaProduccionCommand, LineaProduccionDTO>
 {
     private readonly ILineaProduccionRepository _lineaProduccionRepository;
+    
     public UpdateLineaProduccionCommandHandler(ILineaProduccionRepository lineaProduccionRepository)
     {
         _lineaProduccionRepository = lineaProduccionRepository;
@@ -15,30 +17,32 @@ public class UpdateLineaProduccionCommandHandler : IRequestHandler<UpdateLineaPr
 
     public async Task<LineaProduccionDTO> Handle(UpdateLineaProduccionCommand request, CancellationToken cancellationToken)
     {
-        var linea = await _lineaProduccionRepository.GetByIdAsync(request.Id);
-       
-        if (linea == null)
+        // Crear una nueva entidad limpia con los datos del comando
+        var lineaProduccionEntity = new LineaProduccionEntity
+        {
+            Id = request.Id,
+            Codigo = request.Codigo,
+            Nombre = request.Nombre,
+            Descripcion = request.Descripcion,
+            Activo = request.Activo ?? true,
+            ModificadoPorId = request.ModificadoPorId,
+            ModificadoEl = DateTime.UtcNow
+        };
 
-            throw new ArgumentException($"LineaProduccion con ID {request.Id} no encontrada");
-        linea.Codigo = request.Codigo ?? linea.Codigo;
-        linea.Nombre = request.Nombre ?? linea.Nombre;
-        linea.Descripcion = request.Descripcion ?? linea.Descripcion;
-        linea.Activo = request.Activo ?? linea.Activo;
-        linea.ModificadoPorId = request.ModificadoPorId;
-        linea.ModificadoEl = DateTime.UtcNow;
+        // Usar el método UpdateAndReturnAsync que maneja la validación y preserva los campos necesarios
+        var updatedEntity = await _lineaProduccionRepository.UpdateAndReturnAsync(lineaProduccionEntity);
 
-        await _lineaProduccionRepository.UpdateAsync(linea);
         return new LineaProduccionDTO
         {
-            Id = linea.Id,
-            Codigo = linea.Codigo,
-            Nombre = linea.Nombre,
-            Descripcion = linea.Descripcion,
-            Activo = linea.Activo,
-            CreadoPorId = linea.CreadoPorId,
-            CreadoEl = linea.CreadoEl,
-            ModificadoPorId = linea.ModificadoPorId,
-            ModificadoEl = linea.ModificadoEl
+            Id = updatedEntity.Id,
+            Codigo = updatedEntity.Codigo,
+            Nombre = updatedEntity.Nombre,
+            Descripcion = updatedEntity.Descripcion,
+            Activo = updatedEntity.Activo,
+            CreadoPorId = updatedEntity.CreadoPorId,
+            CreadoEl = updatedEntity.CreadoEl,
+            ModificadoPorId = updatedEntity.ModificadoPorId,
+            ModificadoEl = updatedEntity.ModificadoEl
         };
     }
 }

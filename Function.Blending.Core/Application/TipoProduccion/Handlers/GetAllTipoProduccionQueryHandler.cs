@@ -5,7 +5,7 @@ using Function.Blending.Core.Application.Interfaces.Repositories;
 
 namespace Function.Blending.Core.Application.TipoProduccion.Handlers;
 
-public class GetAllTipoProduccionQueryHandler : IRequestHandler<GetAllTipoProduccionQuery, List<TipoProduccionDTO>>
+public class GetAllTipoProduccionQueryHandler : IRequestHandler<GetAllTipoProduccionQuery, object>
 {
     private readonly ITipoProduccionRepository _tipoProduccionRepository;
     public GetAllTipoProduccionQueryHandler(ITipoProduccionRepository tipoProduccionRepository)
@@ -13,10 +13,11 @@ public class GetAllTipoProduccionQueryHandler : IRequestHandler<GetAllTipoProduc
         _tipoProduccionRepository = tipoProduccionRepository;
     }
 
-    public async Task<List<TipoProduccionDTO>> Handle(GetAllTipoProduccionQuery request, CancellationToken cancellationToken)
+    public async Task<object> Handle(GetAllTipoProduccionQuery request, CancellationToken cancellationToken)
     {
-        var tipos = await _tipoProduccionRepository.GetAllAsync();
-        return tipos.Select(tipo => new TipoProduccionDTO
+        var (entities, total) = await _tipoProduccionRepository.GetPagedAsync(request.Page, request.Size);
+        
+        var dtos = entities.Select(tipo => new TipoProduccionDTO
         {
             Id = tipo.Id,
             Codigo = tipo.Codigo,
@@ -30,5 +31,14 @@ public class GetAllTipoProduccionQueryHandler : IRequestHandler<GetAllTipoProduc
             ModificadoPorId = tipo.ModificadoPorId,
             ModificadoEl = tipo.ModificadoEl
         }).ToList();
+
+        return new
+        {
+            Items = dtos,
+            Total = total,
+            Page = request.Page,
+            Size = request.Size,
+            TotalPages = (int)Math.Ceiling((double)total / request.Size)
+        };
     }
 }

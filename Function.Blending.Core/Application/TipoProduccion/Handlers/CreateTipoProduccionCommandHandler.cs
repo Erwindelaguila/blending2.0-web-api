@@ -16,6 +16,12 @@ public class CreateTipoProduccionCommandHandler : IRequestHandler<CreateTipoProd
 
     public async Task<TipoProduccionDTO> Handle(CreateTipoProduccionCommand request, CancellationToken cancellationToken)
     {
+        // Validar que el código no existe
+        if (await _tipoProduccionRepository.ExistsActiveCodigoAsync(request.Codigo))
+        {
+            throw new ArgumentException("El código ya existe", "codigo");
+        }
+
         var tipo = new TipoProduccionEntity
         {
             Id = Guid.NewGuid(),
@@ -24,7 +30,7 @@ public class CreateTipoProduccionCommandHandler : IRequestHandler<CreateTipoProd
             Descripcion = request.Descripcion,
             LineaProduccionId = request.LineaProduccionId,
             AgregadoId = request.AgregadoId,
-            Activo = request.Activo,
+            Activo = request.Activo ?? true,
             CreadoPorId = request.CreadoPorId,
             CreadoEl = DateTime.UtcNow
         };
@@ -39,7 +45,9 @@ public class CreateTipoProduccionCommandHandler : IRequestHandler<CreateTipoProd
             AgregadoId = tipo.AgregadoId,
             Activo = tipo.Activo,
             CreadoPorId = tipo.CreadoPorId,
-            CreadoEl = tipo.CreadoEl
+            CreadoEl = tipo.CreadoEl,
+            ModificadoPorId = tipo.ModificadoPorId,
+            ModificadoEl = tipo.ModificadoEl
         };
     }
 }

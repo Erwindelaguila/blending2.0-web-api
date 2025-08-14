@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Calidad.Handlers;
 
-public class CreateCalidadCommandHandler : IRequestHandler<CreateCalidadCommand, CalidadDTO>
+public class CreateCalidadCommandHandler : IRequestHandler<CreateCalidadCommand, object>
 {
     private readonly ICalidadRepository _calidadRepository;
 
@@ -15,7 +15,7 @@ public class CreateCalidadCommandHandler : IRequestHandler<CreateCalidadCommand,
         _calidadRepository = calidadRepository;
     }
 
-    public async Task<CalidadDTO> Handle(CreateCalidadCommand request, CancellationToken cancellationToken)
+    public async Task<object> Handle(CreateCalidadCommand request, CancellationToken cancellationToken)
     {
         var calidad = new CalidadEntity()
         {
@@ -27,7 +27,8 @@ public class CreateCalidadCommandHandler : IRequestHandler<CreateCalidadCommand,
             NoConforme = request.NoConforme ?? false,
             Activo = request.Activo ?? true,
             CreadoPorId = request.CreadoPorId,
-            CreadoEl = DateTime.UtcNow
+            CreadoEl = DateTime.UtcNow,
+            Eliminado = false
         };
 
         await _calidadRepository.CreateAsync(calidad);

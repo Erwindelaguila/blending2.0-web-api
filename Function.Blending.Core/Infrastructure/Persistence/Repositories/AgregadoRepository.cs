@@ -49,15 +49,26 @@ public class AgregadoRepository : IAgregadoRepository
         return await query.AnyAsync();
     }
 
-    public async Task<(IReadOnlyList<AgregadoEntity> Items, int Total)> GetPagedAsync(int page, int size)
+    public IQueryable<AgregadoEntity> GetQueryable()
     {
-        var baseQuery = _context.Agregado.AsNoTracking()
+        return _context.Agregado
             .Where(x => !x.Eliminado)
+            .Select(a => new AgregadoEntity
+            {
+                Id = a.Id,
+                Codigo = a.Codigo,
+                Nombre = a.Nombre,
+                Descripcion = a.Descripcion,
+                Activo = a.Activo,
+                CreadoPorId = a.CreadoPorId,
+                CreadoEl = a.CreadoEl,
+                ModificadoPorId = a.ModificadoPorId,
+                ModificadoEl = a.ModificadoEl,
+                Eliminado = a.Eliminado,
+                EliminadoPorId = a.EliminadoPorId,
+                EliminadoEl = a.EliminadoEl
+            })
             .OrderBy(x => x.CreadoEl);
-
-        var total = await baseQuery.CountAsync();
-        var models = await baseQuery.Skip((page - 1) * size).Take(size).ToListAsync();
-        return (_mapper.Map<List<AgregadoEntity>>(models), total);
     }
 
     public async Task CreateAsync(AgregadoEntity agregadoEntity)
@@ -65,7 +76,7 @@ public class AgregadoRepository : IAgregadoRepository
         // Validar que el código no exista entre registros activos
         if (await ExistsActiveCodigoAsync(agregadoEntity.Codigo))
         {
-            throw new ArgumentException($"DUPLICATE_CODE|{agregadoEntity.Codigo}", "codigo");
+            throw new ArgumentException("Código duplicado", "codigo");
         }
 
         var model = _mapper.Map<Agregado>(agregadoEntity);
@@ -75,8 +86,11 @@ public class AgregadoRepository : IAgregadoRepository
 
     public async Task UpdateAsync(AgregadoEntity agregadoEntity)
     {
-        // Verificar que el registro existe y no está eliminado
-        var existingEntity = await _context.Agregado.FindAsync(agregadoEntity.Id);
+        // Verificar que el registro existe y no está eliminado (usando AsNoTracking para evitar tracking)
+        var existingEntity = await _context.Agregado
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == agregadoEntity.Id);
+            
         if (existingEntity == null || existingEntity.Eliminado)
         {
             throw new InvalidOperationException("No se puede modificar un registro que no existe o está eliminado.");
@@ -85,7 +99,7 @@ public class AgregadoRepository : IAgregadoRepository
         // Validar que el código no exista entre otros registros activos
         if (await ExistsActiveCodigoAsync(agregadoEntity.Codigo, agregadoEntity.Id))
         {
-            throw new ArgumentException($"DUPLICATE_CODE|{agregadoEntity.Codigo}", "codigo");
+            throw new ArgumentException("Código duplicado", "codigo");
         }
 
         var model = _mapper.Map<Agregado>(agregadoEntity);

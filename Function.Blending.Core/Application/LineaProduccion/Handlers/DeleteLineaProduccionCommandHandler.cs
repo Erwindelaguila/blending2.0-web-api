@@ -20,7 +20,7 @@ public class DeleteLineaProduccionCommandHandler : IRequestHandler<DeleteLineaPr
         if (linea == null)
             return false;
 
-        await _lineaProduccionRepository.DeleteAsync(request.Id);
+        await _lineaProduccionRepository.DeleteAsync(request.Id, request.EliminadoPorId);
         
         return true;
     }

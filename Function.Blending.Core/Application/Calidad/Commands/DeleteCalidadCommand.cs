@@ -4,11 +4,11 @@ namespace Function.Blending.Core.Application.Calidad.Commands;
 public class DeleteCalidadCommand : IRequest<bool>
 {
     public Guid Id { get; }
-    public Guid ModificadoPorId { get; }
+    public Guid EliminadoPorId { get; }
 
-    public DeleteCalidadCommand(Guid id, Guid modificadoPorId)
+    public DeleteCalidadCommand(Guid id, Guid eliminadoPorId)
     {
         Id = id;
-        ModificadoPorId = modificadoPorId;
+        EliminadoPorId = eliminadoPorId;
     }
 }

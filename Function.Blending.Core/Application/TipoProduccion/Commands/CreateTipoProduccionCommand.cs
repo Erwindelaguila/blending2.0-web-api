@@ -10,7 +10,7 @@ public class CreateTipoProduccionCommand : IRequest<TipoProduccionDTO>
     public string? Descripcion { get; }
     public Guid LineaProduccionId { get; }
     public Guid AgregadoId { get; }
-    public bool Activo { get; }
+    public bool? Activo { get; }
     public Guid CreadoPorId { get; }
 
     public CreateTipoProduccionCommand(
@@ -19,7 +19,7 @@ public class CreateTipoProduccionCommand : IRequest<TipoProduccionDTO>
         string? descripcion,
         Guid lineaProduccionId,
         Guid agregadoId,
-        bool activo,
+        bool? activo,
         Guid creadoPorId)
     {
         Codigo = codigo;

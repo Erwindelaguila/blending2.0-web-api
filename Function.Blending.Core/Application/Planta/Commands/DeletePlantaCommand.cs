@@ -5,11 +5,11 @@ namespace Function.Blending.Core.Application.Planta.Commands;
 public class DeletePlantaCommand : IRequest<bool>
 {
     public Guid Id { get; }
-    public Guid ModificadoPorId { get; }
+    public Guid EliminadoPorId { get; }
 
-    public DeletePlantaCommand(Guid id, Guid modificadoPorId)
+    public DeletePlantaCommand(Guid id, Guid eliminadoPorId)
     {
         Id = id;
-        ModificadoPorId = modificadoPorId;
+        EliminadoPorId = eliminadoPorId;
     }
 }
