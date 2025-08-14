@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Planta.Handlers;
 
-public class UpdatePlantaCommandHandler : IRequestHandler<UpdatePlantaCommand, PlantaDTO>
+public class UpdatePlantaCommandHandler : IRequestHandler<UpdatePlantaCommand, object>
 {
     private readonly IPlantaRepository _plantaRepository;
 
@@ -15,35 +15,34 @@ public class UpdatePlantaCommandHandler : IRequestHandler<UpdatePlantaCommand, P
         _plantaRepository = plantaRepository;
     }
 
-    public async Task<PlantaDTO> Handle(UpdatePlantaCommand request, CancellationToken cancellationToken)
+    public async Task<object> Handle(UpdatePlantaCommand request, CancellationToken cancellationToken)
     {
-        var planta = await _plantaRepository.GetByIdAsync(request.Id);
-        
-        if (planta == null)
-            throw new ArgumentException($"Planta con ID {request.Id} no encontrada");
+        var planta = new PlantaEntity
+        {
+            Id = request.Id,
+            Codigo = request.Codigo,
+            Nombre = request.Nombre,
+            Descripcion = request.Descripcion,
+            NumeroRuma = request.NumeroRuma,
+            Activo = request.Activo ?? true,
+            ModificadoPorId = request.ModificadoPorId,
+            ModificadoEl = DateTime.UtcNow
+        };
 
-        planta.Codigo = request.Codigo ?? planta.Codigo;
-        planta.Nombre = request.Nombre ?? planta.Nombre;
-        planta.Descripcion = request.Descripcion ?? planta.Descripcion;
-        planta.NumeroRuma = request.NumeroRuma;
-        planta.Activo = request.Activo ?? planta.Activo;
-        planta.ModificadoPorId = request.ModificadoPorId;
-        planta.ModificadoEl = DateTime.UtcNow;
-
-        await _plantaRepository.UpdateAsync(planta);
+        var plantaActualizada = await _plantaRepository.UpdateAndReturnAsync(planta);
         
         return new PlantaDTO
         {
-            Id = planta.Id,
-            Codigo = planta.Codigo,
-            Nombre = planta.Nombre,
-            Descripcion = planta.Descripcion,
-            NumeroRuma = planta.NumeroRuma,
-            Activo = planta.Activo,
-            CreadoPorId = planta.CreadoPorId,
-            CreadoEl = planta.CreadoEl,
-            ModificadoPorId = planta.ModificadoPorId,
-            ModificadoEl = planta.ModificadoEl
+            Id = plantaActualizada.Id,
+            Codigo = plantaActualizada.Codigo,
+            Nombre = plantaActualizada.Nombre,
+            Descripcion = plantaActualizada.Descripcion,
+            NumeroRuma = plantaActualizada.NumeroRuma,
+            Activo = plantaActualizada.Activo,
+            CreadoPorId = plantaActualizada.CreadoPorId,
+            CreadoEl = plantaActualizada.CreadoEl,
+            ModificadoPorId = plantaActualizada.ModificadoPorId,
+            ModificadoEl = plantaActualizada.ModificadoEl
         };
     }
 }

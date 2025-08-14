@@ -1,6 +1,7 @@
 using Function.Blending.Core.Application.Agregado.Commands;
 using Function.Blending.Core.Application.Agregado.DTOs;
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Domain.Entities;
 using MediatR;
 
 
@@ -15,31 +16,42 @@ namespace Function.Blending.Core.Application.Agregado.Handlers
         }
         public async Task<AgregadoDTO> Handle(UpdateAgregadoCommand request, CancellationToken cancellationToken)
         {
-            var agregado = await _agregadoRepository.GetByIdAsync(request.Id);
+            // Obtener el registro actual para conservar valores
+            var currentAgregado = await _agregadoRepository.GetByIdAsync(request.Id);
+            if (currentAgregado == null)
+                throw new InvalidOperationException("Agregado no encontrado");
 
-            if (agregado == null)
-                throw new ArgumentException($"Agregado con ID {request.Id} no encontrado");
+            // Crear entidad con los nuevos datos, conservando valores actuales cuando no se proporcionan
+            var agregadoToUpdate = new AgregadoEntity
+            {
+                Id = request.Id,
+                Codigo = request.Codigo,
+                Nombre = request.Nombre,
+                Descripcion = request.Descripcion,
+                Activo = request.Activo ?? currentAgregado.Activo, // Conservar valor actual si no se proporciona
+                ModificadoPorId = request.ModificadoPorId,
+                ModificadoEl = DateTime.UtcNow,
+                // Preservar campos que no deben modificarse
+                CreadoPorId = currentAgregado.CreadoPorId,
+                CreadoEl = currentAgregado.CreadoEl,
+                Eliminado = currentAgregado.Eliminado,
+                EliminadoPorId = currentAgregado.EliminadoPorId,
+                EliminadoEl = currentAgregado.EliminadoEl
+            };
 
-            agregado.Codigo = request.Codigo ?? agregado.Codigo;
-            agregado.Nombre = request.Nombre ?? agregado.Nombre;
-            agregado.Descripcion = request.Descripcion ?? agregado.Descripcion;
-            agregado.Activo = request.Activo ?? agregado.Activo;
-            agregado.ModificadoPorId = request.ModificadoPorId;
-        agregado.ModificadoEl = DateTime.UtcNow;
-
-            await _agregadoRepository.UpdateAsync(agregado);
+            await _agregadoRepository.UpdateAsync(agregadoToUpdate);
 
             return new AgregadoDTO
             {
-                Id = agregado.Id,
-                Codigo = agregado.Codigo,
-                Nombre = agregado.Nombre,
-                Descripcion = agregado.Descripcion,
-                Activo = agregado.Activo,
-                CreadoPorId = agregado.CreadoPorId,
-                CreadoEl = agregado.CreadoEl,
-                ModificadoPorId = agregado.ModificadoPorId,
-                ModificadoEl = agregado.ModificadoEl
+                Id = agregadoToUpdate.Id,
+                Codigo = agregadoToUpdate.Codigo,
+                Nombre = agregadoToUpdate.Nombre,
+                Descripcion = agregadoToUpdate.Descripcion,
+                Activo = agregadoToUpdate.Activo,
+                CreadoPorId = agregadoToUpdate.CreadoPorId,
+                CreadoEl = agregadoToUpdate.CreadoEl,
+                ModificadoPorId = agregadoToUpdate.ModificadoPorId,
+                ModificadoEl = agregadoToUpdate.ModificadoEl
             };
         }
     }

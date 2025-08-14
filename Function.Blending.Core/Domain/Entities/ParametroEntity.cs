@@ -11,4 +11,9 @@ public class ParametroEntity
     public DateTime CreadoEl { get; set; }
     public Guid? ModificadoPorId { get; set; }
     public DateTime? ModificadoEl { get; set; }
+    
+    // Soft Delete properties
+    public bool Eliminado { get; set; }
+    public Guid? EliminadoPorId { get; set; }
+    public DateTime? EliminadoEl { get; set; }
 }

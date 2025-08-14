@@ -32,6 +32,12 @@ public class CreateTipoProduccionFunction
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail("El cuerpo de la solicitud está vacío.", "Error de validación", 400));
             }
+            var (isValid, errorField) = JsonValidationHelper.ValidateBooleanProperties(body, "activo");
+            if (!isValid)
+            {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req,
+                    BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false o null).", "Error de validación", 400));
+            }
             var command = JsonSerializer.Deserialize<CreateTipoProduccionCommand>(body, new JsonSerializerOptions()
             {
                 PropertyNameCaseInsensitive = true

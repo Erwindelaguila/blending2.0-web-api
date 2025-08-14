@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Calidad.Commands;
 
-public class UpdateCalidadCommand : IRequest<CalidadDTO>
+public class UpdateCalidadCommand : IRequest<object>
 {
     public Guid Id { get; }
     public string? Codigo { get; }

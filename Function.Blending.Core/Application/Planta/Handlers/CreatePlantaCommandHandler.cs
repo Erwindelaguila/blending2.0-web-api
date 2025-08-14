@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Planta.Handlers;
 
-public class CreatePlantaCommandHandler : IRequestHandler<CreatePlantaCommand, PlantaDTO>
+public class CreatePlantaCommandHandler : IRequestHandler<CreatePlantaCommand, object>
 {
     private readonly IPlantaRepository _plantaRepository;
 
@@ -15,7 +15,7 @@ public class CreatePlantaCommandHandler : IRequestHandler<CreatePlantaCommand, P
         _plantaRepository = plantaRepository;
     }
 
-    public async Task<PlantaDTO> Handle(CreatePlantaCommand request, CancellationToken cancellationToken)
+    public async Task<object> Handle(CreatePlantaCommand request, CancellationToken cancellationToken)
     {
         var planta = new PlantaEntity
         {
@@ -26,7 +26,8 @@ public class CreatePlantaCommandHandler : IRequestHandler<CreatePlantaCommand, P
             NumeroRuma = request.NumeroRuma,
             Activo = request.Activo ?? true,
             CreadoPorId = request.CreadoPorId,
-            CreadoEl = DateTime.UtcNow
+            CreadoEl = DateTime.UtcNow,
+            Eliminado = false
         };
 
         await _plantaRepository.CreateAsync(planta);

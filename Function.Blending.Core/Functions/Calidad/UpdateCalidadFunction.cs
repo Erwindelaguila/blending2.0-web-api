@@ -20,7 +20,7 @@ public class UpdateCalidadFunction
         _mediator = mediator;
     }
     
-     [Function(FunctionNames.Calidad.Update)]
+    [Function(FunctionNames.Calidad.Update)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.Production.CalidadBase)] HttpRequestData req)
     {
@@ -55,7 +55,23 @@ public class UpdateCalidadFunction
         
             var result = await _mediator.Send(command);
             
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<CalidadDTO>.Success(result,"Create Calidad"));
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(result,"Calidad actualizada exitosamente"));
+        }
+        catch (ArgumentException ex) when (ex.ParamName == "codigo")
+        {
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                "El código de la calidad ya existe. Por favor, use un código diferente.",
+                "Código duplicado",
+                409
+            ));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                ex.Message,
+                "Operación inválida",
+                400
+            ));
         }
         catch (ValidationException ex)
         {
@@ -63,7 +79,7 @@ public class UpdateCalidadFunction
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 errors,
                 "Validación fallida. Por favor, revise los campos.",
-                401
+                400
             ));
         }
         catch (Exception ex)
@@ -73,7 +89,6 @@ public class UpdateCalidadFunction
                 Message = "Ocurrió un error inesperado.",
                 Exception = ex.Message,
                 InnerException = ex.InnerException?.Message,
-    
             };
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
@@ -83,6 +98,4 @@ public class UpdateCalidadFunction
             ));
         }
     }
-    
-    
 }

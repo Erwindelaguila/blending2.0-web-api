@@ -1,41 +1,39 @@
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Parametro.DTOs;
-using Function.Blending.Core.Application.Parametro.Queries;
+using Function.Blending.Core.Application.Planta.Queries;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using System.Web;
 
-namespace Function.Blending.Core.Functions.Parametro;
+namespace Function.Blending.Core.Functions.Planta;
 
-public class GetAllParametrosFunction
+public class GetPagedPlantasFunction
 {
     private readonly IMediator _mediator;
 
-    public GetAllParametrosFunction(IMediator mediator)
+    public GetPagedPlantasFunction(IMediator mediator)
     {
         _mediator = mediator;
     }
 
-    [Function(FunctionNames.Parametro.GetAll)]
+    [Function(FunctionNames.Planta.GetPaged)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Parametro.Base)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Planta.Paged)] HttpRequestData req)
     {
         try
         {
-            var query = HttpUtility.ParseQueryString(req.Url.Query);
+            var query = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
             
             if (!int.TryParse(query["page"], out var page) || page <= 0)
                 page = 1;
             
-            if (!int.TryParse(query["size"], out var size) || size <= 0)
+            if (!int.TryParse(query["size"], out var size) || size <= 0 || size > 100)
                 size = 10;
+
+            var result = await _mediator.Send(new GetPagedPlantasQuery(page, size));
             
-            var result = await _mediator.Send(new GetAllParametrosQuery(page, size));
-            
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(result, "Parámetros obtenidos correctamente"));
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(result, "Plantas obtenidas exitosamente"));
         }
         catch (Exception ex)
         {
@@ -43,7 +41,7 @@ public class GetAllParametrosFunction
             {
                 Message = "Ocurrió un error inesperado.",
                 Exception = ex.Message,
-                InnerException = ex.InnerException?.Message,
+                InnerException = ex.InnerException?.Message
             };
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(

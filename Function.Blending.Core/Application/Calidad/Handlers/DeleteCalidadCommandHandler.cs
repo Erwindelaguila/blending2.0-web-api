@@ -17,7 +17,7 @@ public class DeleteCalidadCommandHandler : IRequestHandler<DeleteCalidadCommand,
         if (entity == null)
             return false;
             
-        await _calidadRepository.DeleteAsync(request.Id);
+        await _calidadRepository.DeleteAsync(request.Id, request.EliminadoPorId);
         return true;
     }
 }

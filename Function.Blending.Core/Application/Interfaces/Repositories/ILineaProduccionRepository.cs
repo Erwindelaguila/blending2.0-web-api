@@ -6,7 +6,10 @@ public interface ILineaProduccionRepository
 {
     Task<List<LineaProduccionEntity>> GetAllAsync();
     Task<LineaProduccionEntity?> GetByIdAsync(Guid id);
+    Task<bool> ExistsActiveCodigoAsync(string codigo, Guid? excludeId = null);
+    Task<(IReadOnlyList<LineaProduccionEntity> Items, int Total)> GetPagedAsync(int page, int size);
     Task CreateAsync(LineaProduccionEntity linea);
     Task UpdateAsync(LineaProduccionEntity linea);
-    Task DeleteAsync(Guid id);
+    Task<LineaProduccionEntity> UpdateAndReturnAsync(LineaProduccionEntity linea);
+    Task DeleteAsync(Guid id, Guid eliminadoPorId);
 }

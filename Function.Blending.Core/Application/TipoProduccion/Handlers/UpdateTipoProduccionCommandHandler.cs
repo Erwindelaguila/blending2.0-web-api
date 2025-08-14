@@ -2,6 +2,7 @@ using MediatR;
 using Function.Blending.Core.Application.TipoProduccion.Commands;
 using Function.Blending.Core.Application.TipoProduccion.DTOs;
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Domain.Entities;
 
 namespace Function.Blending.Core.Application.TipoProduccion.Handlers;
 
@@ -15,33 +16,35 @@ public class UpdateTipoProduccionCommandHandler : IRequestHandler<UpdateTipoProd
 
     public async Task<TipoProduccionDTO> Handle(UpdateTipoProduccionCommand request, CancellationToken cancellationToken)
     {
-        var tipo = await _tipoProduccionRepository.GetByIdAsync(request.Id);
-        if (tipo == null)
-            throw new ArgumentException($"TipoProduccion con ID {request.Id} no encontrado");
-        tipo.Codigo = request.Codigo;
-        tipo.Nombre = request.Nombre;
-        tipo.Descripcion = request.Descripcion;
-        tipo.LineaProduccionId = request.LineaProduccionId;
-        tipo.AgregadoId = request.AgregadoId;
-        tipo.Activo = request.Activo;
-        tipo.ModificadoPorId = request.ModificadoPorId;
-        tipo.ModificadoEl = DateTime.UtcNow;
-       
-        await _tipoProduccionRepository.UpdateAsync(tipo);
-       
+        // Crear entidad con los nuevos datos
+        var tipoToUpdate = new TipoProduccionEntity
+        {
+            Id = request.Id,
+            Codigo = request.Codigo,
+            Nombre = request.Nombre,
+            Descripcion = request.Descripcion,
+            LineaProduccionId = request.LineaProduccionId,
+            AgregadoId = request.AgregadoId,
+            Activo = request.Activo ?? true,
+            ModificadoPorId = request.ModificadoPorId,
+            ModificadoEl = DateTime.UtcNow
+        };
+
+        var updatedTipo = await _tipoProduccionRepository.UpdateAndReturnAsync(tipoToUpdate);
+
         return new TipoProduccionDTO
         {
-            Id = tipo.Id,
-            Codigo = tipo.Codigo,
-            Nombre = tipo.Nombre,
-            Descripcion = tipo.Descripcion,
-            LineaProduccionId = tipo.LineaProduccionId,
-            AgregadoId = tipo.AgregadoId,
-            Activo = tipo.Activo,
-            CreadoPorId = tipo.CreadoPorId,
-            CreadoEl = tipo.CreadoEl,
-            ModificadoPorId = tipo.ModificadoPorId,
-            ModificadoEl = tipo.ModificadoEl
+            Id = updatedTipo.Id,
+            Codigo = updatedTipo.Codigo,
+            Nombre = updatedTipo.Nombre,
+            Descripcion = updatedTipo.Descripcion,
+            LineaProduccionId = updatedTipo.LineaProduccionId,
+            AgregadoId = updatedTipo.AgregadoId,
+            Activo = updatedTipo.Activo,
+            CreadoPorId = updatedTipo.CreadoPorId,
+            CreadoEl = updatedTipo.CreadoEl,
+            ModificadoPorId = updatedTipo.ModificadoPorId,
+            ModificadoEl = updatedTipo.ModificadoEl
         };
     }
 }
