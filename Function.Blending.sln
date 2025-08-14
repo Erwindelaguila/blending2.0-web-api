@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Function.Blending.Opt", "Fu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Function.Blending.Upload", "Function.Blending.Upload\Function.Blending.Upload.csproj", "{632C2204-2D61-492C-8489-40D52DF6DD32}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Function.Blending.Auth", "Function.Blending.Auth\Function.Blending.Auth.csproj", "{DEDB48EC-A8A8-46CE-93F4-096A7F2E7C8F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{632C2204-2D61-492C-8489-40D52DF6DD32}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{632C2204-2D61-492C-8489-40D52DF6DD32}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{632C2204-2D61-492C-8489-40D52DF6DD32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEDB48EC-A8A8-46CE-93F4-096A7F2E7C8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEDB48EC-A8A8-46CE-93F4-096A7F2E7C8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEDB48EC-A8A8-46CE-93F4-096A7F2E7C8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEDB48EC-A8A8-46CE-93F4-096A7F2E7C8F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
