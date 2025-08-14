@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "Nuevo perfil",
+    "Projects": [
+      {
+        "Path": "Function.Blending.Core\\Function.Blending.Core.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "Blending.ApiGateway\\Blending.ApiGateway.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

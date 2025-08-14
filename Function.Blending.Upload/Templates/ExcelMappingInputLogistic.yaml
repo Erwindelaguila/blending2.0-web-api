@@ -1,0 +1,69 @@
+version: 1.0
+
+sheetName: "REPORTE"
+contrato: "D7"
+startRowOferta: 21
+columCantidadSacos : "F"
+
+demanda:
+  fijos:
+    pos: "B16"
+    material: "C16"
+    descripcion: "D16"
+    cantidadAsignada : "J16"
+    uMVta : "K16"
+    cantidadAsignadaTemp: "L16"
+    uMAlmac: "M16"
+    tolerancia: "N16"
+  
+  paramentrosCalidad:
+    proteina: "P16"
+    tvnMg100g: "Q16"
+    histaminaPpm : "R16"
+    humedad: "S16"
+    grasa: "T16"
+    cenizas: "U16"
+    salYArena: "V16"
+    arena: "W16"
+    acidez: "X16"
+    aOPpm: "Y16"
+    
+    
+oferta:
+  fijos:
+    pos: "B"
+    descripcionMaterial: "C"
+    descripcionCentro: "D"
+    lote: "E"
+    cantidadAsignada: "F"
+    uMAlmac: "G"
+    fechaCotizacion: "H"
+    fechaFabricacion: "I"
+    cantidadAsignadaTemp : "J"
+    uMVta: "K"
+    fechaAnalisisQuimico: "L"
+    fechaVencimientoQuimico: "M"
+    fechaAnalisisMicro: "N"
+    fechaVencimientoMicro: "O"
+    tipoAlmacen: "AD"
+    ubicacionAlmacen: "AE"
+    
+  parametrosCalidad:
+    proteina: "P"
+    tVnMg100gr: "Q"
+    histaminaPpm: "R"
+    humedad: "S"
+    grasa: "T"
+    cenizas: "U"
+    salYArena: "V"
+    salYArenaTempo: "W"
+    acidez: "X"
+    aOPmm: "Y"
+  
+  otrosParamentros:
+    salmonella: "Z"
+    cincoVias: "AA"
+    shiguella: "AB"
+    enterobact: "AC"
+    
+  
