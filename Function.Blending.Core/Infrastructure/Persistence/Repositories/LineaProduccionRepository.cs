@@ -49,6 +49,28 @@ public class LineaProduccionRepository : ILineaProduccionRepository
         return await query.AnyAsync();
     }
 
+    public IQueryable<LineaProduccionEntity> GetQueryable()
+    {
+        return _context.LineaProduccion
+            .Where(x => !x.Eliminado)
+            .Select(l => new LineaProduccionEntity
+            {
+                Id = l.Id,
+                Codigo = l.Codigo,
+                Nombre = l.Nombre,
+                Descripcion = l.Descripcion,
+                Activo = l.Activo,
+                CreadoPorId = l.CreadoPorId,
+                CreadoEl = l.CreadoEl,
+                ModificadoPorId = l.ModificadoPorId,
+                ModificadoEl = l.ModificadoEl,
+                Eliminado = l.Eliminado,
+                EliminadoPorId = l.EliminadoPorId,
+                EliminadoEl = l.EliminadoEl
+            });
+            // Quito el OrderBy para manejarlo en el handler según los filtros aplicados
+    }
+
     public async Task<(IReadOnlyList<LineaProduccionEntity> Items, int Total)> GetPagedAsync(int page, int size)
     {
         var baseQuery = _context.LineaProduccion.AsNoTracking()

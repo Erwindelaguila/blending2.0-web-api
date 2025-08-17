@@ -64,6 +64,7 @@ public static class FunctionNames
         public const string Delete = "DeleteLineaProduccion";
         public const string GetAll = "GetAllLineasProduccion";
         public const string GetById = "GetLineaProduccionById";
+        public const string GetAllWithoutPagination = "GetAllLineasProduccionWithoutPagination";
     }
 
     public static class User
