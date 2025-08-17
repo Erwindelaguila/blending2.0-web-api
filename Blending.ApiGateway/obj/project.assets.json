@@ -191,32 +191,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\51941\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "/Users/pieers/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Protecso\\TASA\\blending-backend\\Function.Blending\\Blending.ApiGateway\\Blending.ApiGateway.csproj",
+      "projectUniqueName": "/Users/pieers/workspace/protecso/prueba-tasa/blending2.0-web-api/Blending.ApiGateway/Blending.ApiGateway.csproj",
       "projectName": "Blending.ApiGateway",
-      "projectPath": "D:\\Protecso\\TASA\\blending-backend\\Function.Blending\\Blending.ApiGateway\\Blending.ApiGateway.csproj",
-      "packagesPath": "C:\\Users\\51941\\.nuget\\packages\\",
-      "outputPath": "D:\\Protecso\\TASA\\blending-backend\\Function.Blending\\Blending.ApiGateway\\obj\\",
+      "projectPath": "/Users/pieers/workspace/protecso/prueba-tasa/blending2.0-web-api/Blending.ApiGateway/Blending.ApiGateway.csproj",
+      "packagesPath": "/Users/pieers/.nuget/packages/",
+      "outputPath": "/Users/pieers/workspace/protecso/prueba-tasa/blending2.0-web-api/Blending.ApiGateway/obj/",
       "projectStyle": "PackageReference",
-      "UsingMicrosoftNETSdk": false,
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\51941\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "/Users/pieers/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -234,7 +226,8 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      }
+      },
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
       "net8.0": {
@@ -268,8 +261,16 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.301/PortableRuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1900",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Error occurred while getting package vulnerability data: Access to the path '/Users/pieers/.local/share' is denied."
+    }
+  ]
 }

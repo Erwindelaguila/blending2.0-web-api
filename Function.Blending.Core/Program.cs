@@ -1,4 +1,4 @@
-          using FluentValidation;
+using FluentValidation;
 using Function.Blending.Core.Application.Common.Behaviors;
 using Function.Blending.Core.Application.Interfaces.Repositories;
 using Function.Blending.Core.Application.Interfaces.Services;
@@ -62,14 +62,9 @@ var host = new HostBuilder()
 
         services.AddScoped<IAzureAppConfigService, AzureAppConfigService>();
         
-  
+        // Servicios de autenticación simplificados (sin OBO)
         services.AddScoped<ITokenClaimExtractor, TokenClaimExtractor>();
-        services.AddScoped<ITokenValidator, TokenValidator>();
-        services.AddHttpClient<IAzureSigningKeyProvider, AzureSigningKeyProvider>();
-        services.AddScoped<ITokenService, TokenService>(); 
-        
-        // Servicio de Microsoft Graph
-        services.AddHttpClient<IGraphService, GraphService>();
+        services.AddScoped<ITokenService, SimpleTokenService>();
         
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();

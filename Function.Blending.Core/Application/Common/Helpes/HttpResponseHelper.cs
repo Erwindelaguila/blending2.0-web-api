@@ -11,11 +11,11 @@ public static class HttpResponseHelper
     {
         var res = req.CreateResponse((HttpStatusCode)response.StatusCode);
 
-        // Serializar manualmente con opciones en español o camelCase
+        // Serialización JSON normal
         var json = JsonSerializer.Serialize(response, new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = true
+            WriteIndented = false
         });
 
         res.Headers.Add("Content-Type", "application/json; charset=utf-8");

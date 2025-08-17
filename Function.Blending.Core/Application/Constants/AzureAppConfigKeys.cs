@@ -24,31 +24,4 @@ namespace Function.Blending.Core.Application.Constants
         /// </summary>
         public const string NAVIGATION_PERMISOS = "App-Config-Navigation-Permisos";
     }
-
-    /// <summary>
-    /// Constantes para Microsoft Graph API.
-    /// </summary>
-    public static class GraphApiConstants
-    {
-        /// <summary>
-        /// URL base de Microsoft Graph API v1.0.
-        /// </summary>
-        public const string BASE_URL = "https://graph.microsoft.com/v1.0";
-        
-        /// <summary>
-        /// Audience ID para Microsoft Graph en tokens de Azure AD.
-        /// </summary>
-        public const string MICROSOFT_GRAPH_AUDIENCE = "00000003-0000-0000-c000-000000000000";
-    }
-
-    /// <summary>
-    /// Constantes para Azure AD y autenticación.
-    /// </summary>
-    public static class AzureAuthConstants
-    {
-        /// <summary>
-        /// URL base para obtener las claves públicas de Azure AD.
-        /// </summary>
-        public const string AZURE_AD_KEYS_URL = "https://login.microsoftonline.com/common/discovery/keys";
-    }
 }

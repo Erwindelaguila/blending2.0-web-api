@@ -6,6 +6,7 @@ using Function.Blending.Core.Application.Agregado.Queries;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Extensions.Logging;
 using System.Web;
 
 namespace Function.Blending.Core.Functions.Agregado;
@@ -13,10 +14,12 @@ namespace Function.Blending.Core.Functions.Agregado;
 public class GetAllAgregadosFunction
 {
     private readonly IMediator _mediator;
+    private readonly ILogger<GetAllAgregadosFunction> _logger;
 
-    public GetAllAgregadosFunction(IMediator mediator)
+    public GetAllAgregadosFunction(IMediator mediator, ILogger<GetAllAgregadosFunction> logger)
     {
         _mediator = mediator;
+        _logger = logger;
     }
 
     [Function(FunctionNames.Agregado.GetAll)]
@@ -27,6 +30,9 @@ public class GetAllAgregadosFunction
         {
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             
+            // Log para debug - ver qué parámetros llegan
+            _logger.LogInformation("GetAllAgregados called with query: {QueryString}", req.Url.Query);
+            
             // Obtener parámetros de paginación con valores por defecto
             if (!int.TryParse(query["page"], out var page) || page < 1)
                 page = 1;
@@ -34,12 +40,34 @@ public class GetAllAgregadosFunction
             if (!int.TryParse(query["size"], out var size) || size < 1 || size > 100)
                 size = 10; // Por defecto 10 registros por página
 
-            var result = await _mediator.Send(new GetAllAgregadosQuery(page, size));
+            // Parsear filtros desde query parameters - puede lanzar ArgumentException
+            var filters = QueryParameterHelper.ParseAgregadoFilters(query);
+            
+            // Log para debug - ver qué filtros se parsearon
+            _logger.LogInformation("Parsed filters - Codigo: {Codigo}, Estado: {Estado}, FechaDesde: {FechaDesde}, FechaHasta: {FechaHasta}, TipoFecha: {TipoFecha}", 
+                filters.Codigo, filters.Estado, filters.FechaDesde, filters.FechaHasta, filters.TipoFecha);
+            
+            // Solo enviar filtros si al menos uno está activo
+            var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
+
+            var result = await _mediator.Send(new GetAllAgregadosQuery(page, size, filtersToApply));
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<AgregadoDTO>>.Success(result, "Agregados obtenidos correctamente"));
         }
+        catch (ArgumentException ex)
+        {
+            // Error de validación (parámetros inválidos) - devolver 400
+            _logger.LogWarning("Validation error in GetAllAgregados: {Message}", ex.Message);
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                ex.Message,
+                null,
+                400
+            ));
+        }
         catch (Exception ex)
         {
+            // Error interno del servidor - devolver 500
+            _logger.LogError(ex, "Unexpected error in GetAllAgregados");
             var errorMessage = new
             {
                 Message = "Ocurrió un error inesperado.",

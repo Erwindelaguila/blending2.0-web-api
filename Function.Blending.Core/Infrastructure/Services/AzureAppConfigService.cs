@@ -11,13 +11,15 @@ using Microsoft.Extensions.Logging;
 
 namespace Function.Blending.Core.Infrastructure.Services
 {
-   
+    /// <summary>
+    /// Servicio para acceder a la configuración centralizada de Azure App Configuration
+    /// </summary>
     public class AzureAppConfigService : IAzureAppConfigService
     {
         private readonly ConfigurationClient _client;
         private readonly ILogger<AzureAppConfigService> _logger;
         
-      
+        // Caché en memoria para optimizar las consultas
         private static readonly ConcurrentDictionary<string, (object Value, DateTime ExpiresAt)> _cache = new();
         private static readonly TimeSpan CacheTtl = TimeSpan.FromMinutes(5);
         
@@ -35,7 +37,7 @@ namespace Function.Blending.Core.Infrastructure.Services
             
             if (string.IsNullOrWhiteSpace(connectionString))
             {
-                var error = "Azure App Configuration connection string is not configured";
+                var error = "La cadena de conexión de Azure App Configuration no está configurada";
                 _logger.LogError(error);
                 throw new InvalidOperationException(error);
             }
@@ -43,61 +45,82 @@ namespace Function.Blending.Core.Infrastructure.Services
             try
             {
                 _client = new ConfigurationClient(connectionString);
-                _logger.LogDebug("Azure App Configuration client initialized successfully");
+                _logger.LogInformation("Cliente de Azure App Configuration inicializado correctamente");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to initialize Azure App Configuration client");
+                _logger.LogError(ex, "Error al inicializar el cliente de Azure App Configuration");
                 throw;
             }
         }
 
         public async Task<AzureAppConfigModels.AzureGroupMapping> GetAzureGroupMappingAsync()
         {
-            _logger.LogInformation("Retrieving Azure Group Mapping configuration");
-            
-            var groupMapping = await GetConfigValueAsync<Dictionary<string, string>>(
-                AzureAppConfigKeys.AZURE_GROUP_MAPPING);
-            
-            var result = new AzureAppConfigModels.AzureGroupMapping
+            try 
             {
-                GroupToRoleMap = groupMapping ?? new Dictionary<string, string>()
-            };
-            
-            _logger.LogDebug("Retrieved {MappingCount} group mappings", result.GroupToRoleMap.Count);
-            return result;
+                var groupMapping = await GetConfigValueAsync<Dictionary<string, string>>(
+                    AzureAppConfigKeys.AZURE_GROUP_MAPPING);
+                
+                var result = new AzureAppConfigModels.AzureGroupMapping
+                {
+                    GroupToRoleMap = groupMapping ?? new Dictionary<string, string>()
+                };
+                
+                _logger.LogInformation("Configuración de mapeo de grupos obtenida correctamente: {MappingCount} mapeos", 
+                    result.GroupToRoleMap.Count);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener la configuración de mapeo de grupos de Azure");
+                throw;
+            }
         }
         
         public async Task<AzureAppConfigModels.EnlacesConfiguration> GetEnlacesConfigurationAsync()
         {
-            _logger.LogInformation("Retrieving Enlaces configuration");
-            
-            var enlaces = await GetConfigValueAsync<Dictionary<string, EnlaceItem>>(
-                AzureAppConfigKeys.ENLACES);
-            
-            var result = new AzureAppConfigModels.EnlacesConfiguration
+            try 
             {
-                Enlaces = enlaces ?? new Dictionary<string, EnlaceItem>()
-            };
-            
-            _logger.LogDebug("Retrieved {EnlaceCount} enlaces", result.Enlaces.Count);
-            return result;
+                var enlaces = await GetConfigValueAsync<Dictionary<string, EnlaceItem>>(
+                    AzureAppConfigKeys.ENLACES);
+                
+                var result = new AzureAppConfigModels.EnlacesConfiguration
+                {
+                    Enlaces = enlaces ?? new Dictionary<string, EnlaceItem>()
+                };
+                
+                _logger.LogInformation("Configuración de enlaces obtenida correctamente: {EnlaceCount} enlaces", 
+                    result.Enlaces.Count);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener la configuración de enlaces");
+                throw;
+            }
         }
 
         public async Task<AzureAppConfigModels.NavigationPermisos> GetNavigationPermisosAsync()
         {
-            _logger.LogInformation("Retrieving Navigation Permisos configuration");
-            
-            var permisos = await GetConfigValueAsync<Dictionary<string, List<string>>>(
-                AzureAppConfigKeys.NAVIGATION_PERMISOS);
-            
-            var result = new AzureAppConfigModels.NavigationPermisos
+            try 
             {
-                PermisosPorRol = permisos ?? new Dictionary<string, List<string>>()
-            };
-            
-            _logger.LogDebug("Retrieved permissions for {RoleCount} roles", result.PermisosPorRol.Count);
-            return result;
+                var permisos = await GetConfigValueAsync<Dictionary<string, List<string>>>(
+                    AzureAppConfigKeys.NAVIGATION_PERMISOS);
+                
+                var result = new AzureAppConfigModels.NavigationPermisos
+                {
+                    PermisosPorRol = permisos ?? new Dictionary<string, List<string>>()
+                };
+                
+                _logger.LogInformation("Configuración de permisos de navegación obtenida correctamente: {RoleCount} roles", 
+                    result.PermisosPorRol.Count);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener la configuración de permisos de navegación");
+                throw;
+            }
         }
 
         private async Task<T?> GetConfigValueAsync<T>(string key) where T : class
@@ -105,7 +128,6 @@ namespace Function.Blending.Core.Infrastructure.Services
             // Verificar caché primero
             if (_cache.TryGetValue(key, out var cached) && cached.ExpiresAt > DateTime.UtcNow)
             {
-                _logger.LogDebug("Configuration value retrieved from cache for key '{Key}'", key);
                 return (T?)cached.Value;
             }
 
@@ -113,69 +135,52 @@ namespace Function.Blending.Core.Infrastructure.Services
             {
                 if (string.IsNullOrWhiteSpace(key))
                 {
-                    _logger.LogWarning("Configuration key is null or empty");
+                    _logger.LogWarning("La clave de configuración está vacía o es nula");
                     return default;
                 }
 
-                _logger.LogDebug("Retrieving configuration key: {Key}", key);
-                
                 var setting = await _client.GetConfigurationSettingAsync(key);
                 var value = setting?.Value?.Value;
 
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    _logger.LogWarning("Configuration setting '{Key}' is null, empty, or not found", key);
+                    _logger.LogWarning("La configuración '{Key}' no se encontró o está vacía", key);
                     return default;
                 }
 
-                _logger.LogDebug("Retrieved configuration value for key '{Key}' with length {ValueLength}", 
-                    key, value.Length);
-
                 var result = JsonSerializer.Deserialize<T>(value, JsonOptions);
                 
-                if (result == null)
+                if (result != null)
                 {
-                    _logger.LogWarning("Deserialization resulted in null for key '{Key}'", key);
-                }
-                else
-                {
-                    _logger.LogDebug("Successfully deserialized configuration for key '{Key}' to type {Type}", 
-                        key, typeof(T).Name);
-                    
                     // Guardar en caché
                     _cache[key] = (result, DateTime.UtcNow.Add(CacheTtl));
-                    _logger.LogDebug("Configuration value cached for key '{Key}' until {ExpiresAt}", 
-                        key, DateTime.UtcNow.Add(CacheTtl));
                 }
 
                 return result;
             }
             catch (JsonException ex)
             {
-                _logger.LogError(ex, "JSON deserialization failed for configuration key '{Key}'. " +
-                    "The stored value may have an invalid format for type {Type}", key, typeof(T).Name);
+                _logger.LogError(ex, "Error de deserialización JSON para la configuración '{Key}'", key);
                 return default;
             }
             catch (Azure.RequestFailedException ex) when (ex.Status == 429)
             {
-                _logger.LogWarning("Azure App Configuration rate limit exceeded (HTTP 429) for key '{Key}'. " +
-                    "Consider upgrading to Standard tier or implementing longer cache TTL", key);
+                _logger.LogWarning("Límite de velocidad de Azure App Configuration excedido para '{Key}'", key);
                 return default;
             }
             catch (Azure.RequestFailedException ex) when (ex.Status == 404)
             {
-                _logger.LogWarning("Configuration key '{Key}' not found in Azure App Configuration", key);
+                _logger.LogWarning("Configuración '{Key}' no encontrada en Azure App Configuration", key);
                 return default;
             }
             catch (Azure.RequestFailedException ex)
             {
-                _logger.LogError(ex, "Azure App Configuration request failed for key '{Key}'. " +
-                    "Status: {Status}, Error: {ErrorCode}", key, ex.Status, ex.ErrorCode);
+                _logger.LogError(ex, "Error en la solicitud a Azure App Configuration para '{Key}'. Estado: {Status}", key, ex.Status);
                 return default;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error retrieving configuration key '{Key}'", key);
+                _logger.LogError(ex, "Error inesperado al obtener la configuración '{Key}'", key);
                 return default;
             }
         }

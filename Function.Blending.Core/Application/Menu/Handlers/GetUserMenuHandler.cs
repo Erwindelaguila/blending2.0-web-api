@@ -16,18 +16,15 @@ namespace Function.Blending.Core.Application.Menu.Handlers
     {
         private readonly IAzureAppConfigService _appConfigService;
         private readonly ITokenService _tokenService;
-        private readonly IGraphService _graphService;
         private readonly ILogger<GetUserMenuHandler> _logger;
 
         public GetUserMenuHandler(
             IAzureAppConfigService appConfigService,
             ITokenService tokenService,
-            IGraphService graphService,
             ILogger<GetUserMenuHandler> logger)
         {
             _appConfigService = appConfigService;
             _tokenService = tokenService;
-            _graphService = graphService;
             _logger = logger;
         }
 
@@ -41,49 +38,26 @@ namespace Function.Blending.Core.Application.Menu.Handlers
 
             try
             {
-                _logger.LogInformation("Iniciando proceso de obtención de menú de usuario"); 
+                _logger.LogInformation("Iniciando proceso de obtención de menú de usuario con claims del token"); 
 
-     
-                GraphUserInfo userInfo;
-                List<string> userGroups;
+                // Extraer información del usuario desde los claims del token (no Graph)
+                var userId = _tokenService.GetUserObjectId(request.JwtToken);
+                var userName = _tokenService.GetUserName(request.JwtToken);
+                var userGroups = _tokenService.GetUserGroups(request.JwtToken);
 
-                try
+                if (string.IsNullOrEmpty(userId) || userGroups == null || !userGroups.Any())
                 {
-                    _logger.LogInformation("Consultando Microsoft Graph para obtener información del usuario");
-
-                    var userInfoTask = _graphService.GetUserInfoAsync(request.JwtToken);
-                    var userGroupsTask = _graphService.GetUserGroupsAsync(request.JwtToken);
-                    await Task.WhenAll(userInfoTask, userGroupsTask);
-                    (userInfo, userGroups) = (await userInfoTask, await userGroupsTask);
-
-                    _logger.LogInformation("Información obtenida desde Microsoft Graph: Usuario {UserId}, {GroupCount} grupos", userInfo.Id, userGroups.Count);
+                    _logger.LogWarning("Token no contiene información suficiente del usuario (oid o groups)");
+                    return MenuResponse.CreateFailure("Token no contiene información suficiente del usuario", HttpStatusCode.Forbidden);
                 }
-                catch (Exception ex)
+
+                var userInfo = new GraphUserInfo
                 {
-                    _logger.LogWarning(ex, "Error al consultar Microsoft Graph, usando fallback desde token");
+                    Id = userId,
+                    DisplayName = userName ?? "Usuario"
+                };
 
-                    var userId = _tokenService.GetUserObjectId(request.JwtToken);
-                    var userName = _tokenService.GetUserName(request.JwtToken);
-                    var userEmail = _tokenService.GetUserEmail(request.JwtToken);
-                    var tokenGroups = _tokenService.GetUserGroups(request.JwtToken);
-
-                    if (string.IsNullOrEmpty(userId) || tokenGroups == null || !tokenGroups.Any())
-                    {
-                        _logger.LogWarning("Token no contiene información suficiente del usuario y Graph falló");
-                        return MenuResponse.CreateFailure("No se pudo obtener información del usuario", HttpStatusCode.Forbidden);
-                    }
-
-                    userInfo = new GraphUserInfo
-                    {
-                        Id = userId,
-                        DisplayName = userName ?? "Usuario",
-                        Mail = userEmail,
-                        UserPrincipalName = userEmail
-                    };
-                    userGroups = tokenGroups;
-
-                    _logger.LogInformation("Información obtenida desde token como fallback: Usuario {UserId}, {GroupCount} grupos", userInfo.Id, userGroups.Count);
-                }
+                _logger.LogInformation("Información obtenida desde claims del token: Usuario {UserId}, {GroupCount} grupos", userInfo.Id, userGroups.Count);
 
       
                 var groupMapping = await _appConfigService.GetAzureGroupMappingAsync();
@@ -152,8 +126,6 @@ namespace Function.Blending.Core.Application.Menu.Handlers
                     {
                         Id = userInfo.Id,
                         Name = userInfo.GivenName ?? userInfo.DisplayName,
-                        LastName = userInfo.Surname,
-                        Email = userInfo.Mail ?? userInfo.UserPrincipalName,
                         Roles = userRoles
                     }
                 };
