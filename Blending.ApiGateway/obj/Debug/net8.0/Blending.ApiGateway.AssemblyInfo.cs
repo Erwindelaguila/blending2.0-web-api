@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Blending.ApiGateway")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+363be094e8f0b6c8ca10f6fc4b3a4e5e3563dfba")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+09988e643236dea48c15ccefd3b13b69afde0612")]
 [assembly: System.Reflection.AssemblyProductAttribute("Blending.ApiGateway")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Blending.ApiGateway")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
