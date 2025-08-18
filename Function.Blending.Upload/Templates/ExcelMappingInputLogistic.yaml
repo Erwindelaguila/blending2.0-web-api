@@ -18,15 +18,15 @@ demanda:
   
   paramentrosCalidad:
     proteina: "P16"
-    tvnMg100g: "Q16"
-    histaminaPpm : "R16"
+    tvn: "Q16"
+    histamina : "R16"
     humedad: "S16"
     grasa: "T16"
     cenizas: "U16"
-    salYArena: "V16"
+    salArena: "V16"
     arena: "W16"
     acidez: "X16"
-    aOPpm: "Y16"
+    ao: "Y16"
     
     
 oferta:
@@ -50,15 +50,15 @@ oferta:
     
   parametrosCalidad:
     proteina: "P"
-    tVnMg100gr: "Q"
-    histaminaPpm: "R"
+    tvn: "Q"
+    histamina: "R"
     humedad: "S"
     grasa: "T"
     cenizas: "U"
-    salYArena: "V"
-    salYArenaTempo: "W"
+    salArena: "V"
+    arena: "W"
     acidez: "X"
-    aOPmm: "Y"
+    ao: "Y"
   
   otrosParamentros:
     salmonella: "Z"
