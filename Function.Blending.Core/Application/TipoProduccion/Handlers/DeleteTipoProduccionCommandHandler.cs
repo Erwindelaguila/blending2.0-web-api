@@ -18,8 +18,21 @@ public class DeleteTipoProduccionCommandHandler : IRequestHandler<DeleteTipoProd
         if (tipo == null)
             return false;
 
-        await _tipoProduccionRepository.DeleteAsync(request.Id);
-        
-        return true;
+        try
+        {
+            // Validación de negocio: verificar si tiene dependencias activas
+            // TODO: Implementar validación de dependencias según reglas de negocio
+            // Ejemplo: if (await HasActiveDependencies(request.Id))
+            //     throw new InvalidOperationException("No se puede eliminar porque tiene dependencias activas.");
+
+            await _tipoProduccionRepository.DeleteAsync(request.Id, request.EliminadoPorId);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            // TODO: Log la excepción aquí
+            // _logger.LogError(ex, "Error al eliminar tipo de producción con ID {Id}", request.Id);
+            return false;
+        }
     }
 }

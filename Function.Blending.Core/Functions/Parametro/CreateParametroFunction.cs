@@ -66,6 +66,15 @@ public class CreateParametroFunction
                 400
             ));
         }
+        catch (ArgumentException ex) when (ex.ParamName == "codigo")
+        {
+            var error = new { Field = "codigo", Error = "Ya existe un parámetro activo con este código" };
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                error,
+                "Código duplicado",
+                409
+            ));
+        }
         catch (Exception ex)
         {
             var errorMessage = new

@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Planta.Commands;
 
-public class UpdatePlantaCommand : IRequest<PlantaDTO>
+public class UpdatePlantaCommand : IRequest<object>
 {
     public Guid Id { get; }
     public string Codigo { get; }

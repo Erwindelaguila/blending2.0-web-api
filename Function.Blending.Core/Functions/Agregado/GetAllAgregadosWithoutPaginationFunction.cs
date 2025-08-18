@@ -6,37 +6,27 @@ using Function.Blending.Core.Application.Agregado.Queries;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using System.Web;
 
 namespace Function.Blending.Core.Functions.Agregado;
 
-public class GetAllAgregadosFunction
+public class GetAllAgregadosWithoutPaginationFunction
 {
     private readonly IMediator _mediator;
 
-    public GetAllAgregadosFunction(IMediator mediator)
+    public GetAllAgregadosWithoutPaginationFunction(IMediator mediator)
     {
         _mediator = mediator;
     }
 
-    [Function(FunctionNames.Agregado.GetAll)]
+    [Function(FunctionNames.Agregado.GetAllWithoutPagination)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Production.AgregadoBase)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Production.AgregadoBase + "/all")] HttpRequestData req)
     {
         try
         {
-            var query = HttpUtility.ParseQueryString(req.Url.Query);
+            var result = await _mediator.Send(new GetAllAgregadosWithoutPaginationQuery());
             
-            // Obtener parámetros de paginación con valores por defecto
-            if (!int.TryParse(query["page"], out var page) || page < 1)
-                page = 1;
-                
-            if (!int.TryParse(query["size"], out var size) || size < 1 || size > 100)
-                size = 10; // Por defecto 10 registros por página
-
-            var result = await _mediator.Send(new GetAllAgregadosQuery(page, size));
-            
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<AgregadoDTO>>.Success(result, "Agregados obtenidos correctamente"));
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<List<AgregadoDTO>>.Success(result, "Todos los agregados obtenidos correctamente"));
         }
         catch (Exception ex)
         {

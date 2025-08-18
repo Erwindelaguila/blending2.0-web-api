@@ -11,8 +11,8 @@ public class UpdateTipoProduccionCommand : IRequest<TipoProduccionDTO>
     public string? Descripcion { get; }
     public Guid LineaProduccionId { get; }
     public Guid AgregadoId { get; }
-    public bool Activo { get; }
-    public Guid? ModificadoPorId { get; }
+    public bool? Activo { get; }
+    public Guid ModificadoPorId { get; }
 
     public UpdateTipoProduccionCommand(
         Guid id,
@@ -21,8 +21,8 @@ public class UpdateTipoProduccionCommand : IRequest<TipoProduccionDTO>
         string? descripcion,
         Guid lineaProduccionId,
         Guid agregadoId,
-        bool activo,
-        Guid? modificadoPorId)
+        bool? activo,
+        Guid modificadoPorId)
     {
         Id = id;
         Codigo = codigo;

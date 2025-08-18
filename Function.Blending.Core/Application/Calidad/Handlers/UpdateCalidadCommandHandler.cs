@@ -1,12 +1,12 @@
 ﻿using Function.Blending.Core.Application.Calidad.Commands;
 using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Domain.Entities;
 using MediatR;
-
 
 namespace Function.Blending.Core.Application.Calidad.Handlers;
 
-public class UpdateCalidadCommandHandler : IRequestHandler<UpdateCalidadCommand, CalidadDTO>
+public class UpdateCalidadCommandHandler : IRequestHandler<UpdateCalidadCommand, object>
 {
     private readonly ICalidadRepository _repository;
 
@@ -15,38 +15,36 @@ public class UpdateCalidadCommandHandler : IRequestHandler<UpdateCalidadCommand,
         _repository = repository;
     }
 
-    public async Task<CalidadDTO> Handle(UpdateCalidadCommand request, CancellationToken cancellationToken)
+    public async Task<object> Handle(UpdateCalidadCommand request, CancellationToken cancellationToken)
     {
-        var calidad =  await _repository.GetByIdAsync(request.Id);
+        var calidad = new CalidadEntity
+        {
+            Id = request.Id,
+            Codigo = request.Codigo,
+            Nombre = request.Nombre,
+            CodigoMaterial = request.CodigoMaterial,
+            Descripcion = request.Descripcion,
+            NoConforme = request.NoConforme ?? false,
+            Activo = request.Activo ?? true,
+            ModificadoPorId = request.ModificadoPorId,
+            ModificadoEl = DateTime.UtcNow
+        };
 
-        if (calidad == null)
-            throw new ArgumentException($"Calidad con ID {request.Id} no encontrada");
-
-        // Actualiza solo los campos necesarios
-        calidad.Codigo = request.Codigo ?? calidad.Codigo;
-        calidad.Nombre = request.Nombre ?? calidad.Nombre;
-        calidad.CodigoMaterial = request.CodigoMaterial ?? calidad.CodigoMaterial;
-        calidad.Descripcion = request.Descripcion ?? calidad.Descripcion;
-        calidad.NoConforme = request.NoConforme ?? calidad.NoConforme;
-        calidad.Activo = request.Activo ?? calidad.Activo;
-        calidad.ModificadoPorId = request.ModificadoPorId;
-        calidad.ModificadoEl = DateTime.UtcNow;
-
-        await _repository.UpdateAsync(calidad);
+        var calidadActualizada = await _repository.UpdateAndReturnAsync(calidad);
 
         return new CalidadDTO
         {
-            Id = calidad.Id,
-            Codigo = calidad.Codigo,
-            Nombre = calidad.Nombre,
-            CodigoMaterial = calidad.CodigoMaterial,
-            Descripcion = calidad.Descripcion,
-            NoConforme = calidad.NoConforme,
-            Activo = calidad.Activo,
-            CreadoPorId = calidad.CreadoPorId,
-            CreadoEl = calidad.CreadoEl,
-            ModificadoPorId = calidad.ModificadoPorId,
-            ModificadoEl = calidad.ModificadoEl,
+            Id = calidadActualizada.Id,
+            Codigo = calidadActualizada.Codigo,
+            Nombre = calidadActualizada.Nombre,
+            CodigoMaterial = calidadActualizada.CodigoMaterial,
+            Descripcion = calidadActualizada.Descripcion,
+            NoConforme = calidadActualizada.NoConforme,
+            Activo = calidadActualizada.Activo,
+            CreadoPorId = calidadActualizada.CreadoPorId,
+            CreadoEl = calidadActualizada.CreadoEl,
+            ModificadoPorId = calidadActualizada.ModificadoPorId,
+            ModificadoEl = calidadActualizada.ModificadoEl,
         };
     }
 }

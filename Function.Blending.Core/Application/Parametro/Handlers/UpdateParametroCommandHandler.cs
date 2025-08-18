@@ -1,6 +1,7 @@
 using Function.Blending.Core.Application.Interfaces.Repositories;
 using Function.Blending.Core.Application.Parametro.Commands;
 using Function.Blending.Core.Application.Parametro.DTOs;
+using Function.Blending.Core.Domain.Entities;
 using MediatR;
 
 namespace Function.Blending.Core.Application.Parametro.Handlers;
@@ -16,31 +17,31 @@ public class UpdateParametroCommandHandler : IRequestHandler<UpdateParametroComm
 
     public async Task<ParametroDTO> Handle(UpdateParametroCommand request, CancellationToken cancellationToken)
     {
-        var parametro = await _parametroRepository.GetByIdAsync(request.Id);
-        
-        if (parametro == null)
-            throw new ArgumentException($"Parametro con ID {request.Id} no encontrado");
+        // Crear entidad con los nuevos datos
+        var parametroToUpdate = new ParametroEntity
+        {
+            Id = request.Id,
+            Codigo = request.Codigo,
+            Nombre = request.Nombre,
+            Descripcion = request.Descripcion,
+            Activo = request.Activo ?? true,
+            ModificadoPorId = request.ModificadoPorId,
+            ModificadoEl = DateTime.UtcNow
+        };
 
-        parametro.Codigo = request.Codigo ?? parametro.Codigo;
-        parametro.Nombre = request.Nombre ?? parametro.Nombre;
-        parametro.Descripcion = request.Descripcion ?? parametro.Descripcion;
-        parametro.Activo = request.Activo ?? parametro.Activo;
-        parametro.ModificadoPorId = request.ModificadoPorId;
-        parametro.ModificadoEl = DateTime.UtcNow;
-
-        await _parametroRepository.UpdateAsync(parametro);
+        var updatedParametro = await _parametroRepository.UpdateAndReturnAsync(parametroToUpdate);
         
         return new ParametroDTO
         {
-            Id = parametro.Id,
-            Codigo = parametro.Codigo,
-            Nombre = parametro.Nombre,
-            Descripcion = parametro.Descripcion,
-            Activo = parametro.Activo,
-            CreadoPorId = parametro.CreadoPorId,
-            CreadoEl = parametro.CreadoEl,
-            ModificadoPorId = parametro.ModificadoPorId,
-            ModificadoEl = parametro.ModificadoEl
+            Id = updatedParametro.Id,
+            Codigo = updatedParametro.Codigo,
+            Nombre = updatedParametro.Nombre,
+            Descripcion = updatedParametro.Descripcion,
+            Activo = updatedParametro.Activo,
+            CreadoPorId = updatedParametro.CreadoPorId,
+            CreadoEl = updatedParametro.CreadoEl,
+            ModificadoPorId = updatedParametro.ModificadoPorId,
+            ModificadoEl = updatedParametro.ModificadoEl
         };
     }
 }

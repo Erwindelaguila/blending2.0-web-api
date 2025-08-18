@@ -20,7 +20,7 @@ public class DeleteParametroCommandHandler : IRequestHandler<DeleteParametroComm
         if (parametro == null)
             return false;
 
-        await _parametroRepository.DeleteAsync(request.Id);
+        await _parametroRepository.DeleteAsync(request.Id, request.EliminadoPorId);
         
         return true;
     }

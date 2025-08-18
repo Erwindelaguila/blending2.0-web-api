@@ -47,6 +47,7 @@ public class UpdateLineaProduccionFunction
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail("Error al deserializar el comando.", "Error de validación", 400));
             }
+
             var result = await _mediator.Send(command);
 
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<LineaProduccionDTO>.Success(result, "Linea de Producción actualizada exitosamente"));
@@ -58,6 +59,15 @@ public class UpdateLineaProduccionFunction
                 validationErrors,
                 "Errores de validación",
                 400
+            ));
+        }
+        catch (ArgumentException ex) when (ex.ParamName == "codigo")
+        {
+            var error = new { Field = "codigo", Error = "Ya existe una línea de producción activa con este código" };
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                error,
+                "Código duplicado",
+                409
             ));
         }
         catch (Exception ex)

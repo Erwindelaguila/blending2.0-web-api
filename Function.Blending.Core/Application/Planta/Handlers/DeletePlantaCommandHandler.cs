@@ -20,7 +20,7 @@ public class DeletePlantaCommandHandler : IRequestHandler<DeletePlantaCommand, b
         if (planta == null)
             return false;
 
-        await _plantaRepository.DeleteAsync(request.Id);
+        await _plantaRepository.DeleteAsync(request.Id, request.EliminadoPorId);
         
         return true;
     }

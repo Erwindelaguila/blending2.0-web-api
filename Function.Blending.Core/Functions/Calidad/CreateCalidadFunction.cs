@@ -9,7 +9,6 @@ using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 
-
 namespace Function.Blending.Core.Functions.Calidad;
 
 public class CreateCalidadFunction
@@ -56,7 +55,15 @@ public class CreateCalidadFunction
         
             var result = await _mediator.Send(command);
             
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<CalidadDTO>.Success(result,"Create Calidad"));
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(result,"Calidad creada exitosamente"));
+        }
+        catch (ArgumentException ex) when (ex.ParamName == "codigo")
+        {
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                "El código de la calidad ya existe. Por favor, use un código diferente.",
+                "Código duplicado",
+                409
+            ));
         }
         catch (ValidationException ex)
         {
@@ -64,7 +71,7 @@ public class CreateCalidadFunction
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 errors,
                 "Validación fallida. Por favor, revise los campos.",
-                401
+                400
             ));
         }
         catch (Exception ex)
@@ -82,6 +89,5 @@ public class CreateCalidadFunction
                 500
             ));
         }
-        
     }
 }

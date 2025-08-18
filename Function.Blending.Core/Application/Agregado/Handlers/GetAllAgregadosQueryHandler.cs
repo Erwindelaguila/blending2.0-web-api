@@ -1,11 +1,12 @@
 using Function.Blending.Core.Application.Agregado.DTOs;
 using Function.Blending.Core.Application.Agregado.Queries;
+using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Interfaces.Repositories;
 using MediatR;
 
 namespace Function.Blending.Core.Application.Agregado.Handlers;
 
-public class GetAllAgregadosQueryHandler : IRequestHandler<GetAllAgregadosQuery, object>
+public class GetAllAgregadosQueryHandler : IRequestHandler<GetAllAgregadosQuery, PagedResponse<AgregadoDTO>>
 {
     private readonly IAgregadoRepository _agregadoRepository;
 
@@ -14,30 +15,23 @@ public class GetAllAgregadosQueryHandler : IRequestHandler<GetAllAgregadosQuery,
         _agregadoRepository = agregadoRepository;
     }
 
-    public async Task<object> Handle(GetAllAgregadosQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResponse<AgregadoDTO>> Handle(GetAllAgregadosQuery request, CancellationToken cancellationToken)
     {
-        var (entities, total) = await _agregadoRepository.GetPagedAsync(request.Page, request.Size);
-        
-        var dtos = entities.Select(agregado => new AgregadoDTO
-        {
-            Id = agregado.Id,
-            Codigo = agregado.Codigo,
-            Nombre = agregado.Nombre,
-            Descripcion = agregado.Descripcion,
-            Activo = agregado.Activo,
-            CreadoPorId = agregado.CreadoPorId,
-            CreadoEl = agregado.CreadoEl,
-            ModificadoPorId = agregado.ModificadoPorId,
-            ModificadoEl = agregado.ModificadoEl
-        }).ToList();
+        var agregadosQuery = _agregadoRepository.GetQueryable()
+            .Select(agregado => new AgregadoDTO
+            {
+                Id = agregado.Id,
+                Codigo = agregado.Codigo,
+                Nombre = agregado.Nombre,
+                Descripcion = agregado.Descripcion,
+                Activo = agregado.Activo,
+                CreadoPorId = agregado.CreadoPorId,
+                CreadoEl = agregado.CreadoEl,
+                ModificadoPorId = agregado.ModificadoPorId,
+                ModificadoEl = agregado.ModificadoEl
+            });
 
-        return new
-        {
-            Items = dtos,
-            Total = total,
-            Page = request.Page,
-            Size = request.Size,
-            TotalPages = (int)Math.Ceiling((double)total / request.Size)
-        };
+        var pagedResult = await agregadosQuery.ToPagedResultAsync(request.Page, request.Size, cancellationToken);
+        return pagedResult.ToPagedResponse();
     }
 }

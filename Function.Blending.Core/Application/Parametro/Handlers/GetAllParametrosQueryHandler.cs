@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Parametro.Handlers;
 
-public class GetAllParametrosQueryHandler : IRequestHandler<GetAllParametrosQuery, List<ParametroDTO>>
+public class GetAllParametrosQueryHandler : IRequestHandler<GetAllParametrosQuery, object>
 {
     private readonly IParametroRepository _parametroRepository;
 
@@ -14,11 +14,11 @@ public class GetAllParametrosQueryHandler : IRequestHandler<GetAllParametrosQuer
         _parametroRepository = parametroRepository;
     }
 
-    public async Task<List<ParametroDTO>> Handle(GetAllParametrosQuery request, CancellationToken cancellationToken)
+    public async Task<object> Handle(GetAllParametrosQuery request, CancellationToken cancellationToken)
     {
-        var parametros = await _parametroRepository.GetAllAsync();
+        var (entities, total) = await _parametroRepository.GetPagedAsync(request.Page, request.Size);
         
-        return parametros.Select(parametro => new ParametroDTO
+        var dtos = entities.Select(parametro => new ParametroDTO
         {
             Id = parametro.Id,
             Codigo = parametro.Codigo,
@@ -30,5 +30,14 @@ public class GetAllParametrosQueryHandler : IRequestHandler<GetAllParametrosQuer
             ModificadoPorId = parametro.ModificadoPorId,
             ModificadoEl = parametro.ModificadoEl
         }).ToList();
+
+        return new
+        {
+            Items = dtos,
+            Total = total,
+            Page = request.Page,
+            Size = request.Size,
+            TotalPages = (int)Math.Ceiling((double)total / request.Size)
+        };
     }
 }
