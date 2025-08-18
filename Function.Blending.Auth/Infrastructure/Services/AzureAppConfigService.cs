@@ -4,22 +4,19 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.Data.AppConfiguration;
-using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
-using Function.Blending.Core.Application.Menu.DTOs;
+using Function.Blending.Auth.Application.Constants;
+using Function.Blending.Auth.Application.Interfaces.Services;
+using Function.Blending.Auth.Application.Menu.DTOs;
 using Microsoft.Extensions.Logging;
 
-namespace Function.Blending.Core.Infrastructure.Services
+namespace Function.Blending.Auth.Infrastructure.Services
 {
-    /// <summary>
-    /// Servicio para acceder a la configuración centralizada de Azure App Configuration
-    /// </summary>
+
     public class AzureAppConfigService : IAzureAppConfigService
     {
         private readonly ConfigurationClient _client;
         private readonly ILogger<AzureAppConfigService> _logger;
         
-        // Caché en memoria para optimizar las consultas
         private static readonly ConcurrentDictionary<string, (object Value, DateTime ExpiresAt)> _cache = new();
         private static readonly TimeSpan CacheTtl = TimeSpan.FromMinutes(5);
         

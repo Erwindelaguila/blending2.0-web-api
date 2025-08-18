@@ -2,15 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Auth.Application.Constants;
+using Function.Blending.Auth.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 
-namespace Function.Blending.Core.Infrastructure.Services
+namespace Function.Blending.Auth.Infrastructure.Services
 {
-    /// <summary>
-    /// Extractor de claims de tokens JWT para obtener información del usuario
-    /// </summary>
+   
     public class TokenClaimExtractor : ITokenClaimExtractor
     {
         private readonly ILogger<TokenClaimExtractor> _logger;
@@ -35,15 +33,6 @@ namespace Function.Blending.Core.Infrastructure.Services
                 _logger.LogWarning(ex, "Error al analizar el token JWT");
                 return null;
             }
-        }
-
-        public string? GetClaimValue(string jwtToken, string claimType)
-        {
-            var jwt = ReadJwt(jwtToken);
-            if (jwt == null) return null;
-
-            var claim = jwt.Claims.FirstOrDefault(c => c.Type == claimType);
-            return claim?.Value;
         }
 
         public List<string>? GetUserGroupsOrRoles(string jwtToken)

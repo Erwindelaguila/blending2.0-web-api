@@ -1,11 +1,7 @@
 using System.Net;
 
-namespace Function.Blending.Core.Application.Menu.DTOs
+namespace Function.Blending.Auth.Application.Menu.DTOs
 {
-    /// <summary>
-    /// Response model for menu operations with immutable properties
-    /// Follows the same pattern as BaseResponse for consistency
-    /// </summary>
     public class MenuResponse
     {
         public bool Success { get; }

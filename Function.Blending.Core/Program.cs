@@ -1,12 +1,10 @@
 using FluentValidation;
 using Function.Blending.Core.Application.Common.Behaviors;
 using Function.Blending.Core.Application.Interfaces.Repositories;
-using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Infrastructure.Mappings;
 using Function.Blending.Core.Infrastructure.Persistence;
 using Function.Blending.Core.Infrastructure.Persistence.Mappings;
 using Function.Blending.Core.Infrastructure.Persistence.Repositories;
-using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
@@ -58,13 +56,6 @@ var host = new HostBuilder()
         services.AddScoped<IAgregadoRepository, AgregadoRepository>();
         services.AddScoped<ILineaProduccionRepository, LineaProduccionRepository>();
         services.AddScoped<ITipoProduccionRepository, TipoProduccionRepository>();
-        
-
-        services.AddScoped<IAzureAppConfigService, AzureAppConfigService>();
-        
-        // Servicios de autenticación simplificados (sin OBO)
-        services.AddScoped<ITokenClaimExtractor, TokenClaimExtractor>();
-        services.AddScoped<ITokenService, SimpleTokenService>();
         
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();

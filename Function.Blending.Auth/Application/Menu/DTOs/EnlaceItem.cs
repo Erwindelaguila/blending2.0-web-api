@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Function.Blending.Core.Application.Menu.DTOs
+namespace Function.Blending.Auth.Application.Menu.DTOs
 {
     
     public class EnlaceItem

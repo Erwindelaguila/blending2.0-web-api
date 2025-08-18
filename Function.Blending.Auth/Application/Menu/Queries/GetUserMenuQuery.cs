@@ -1,7 +1,7 @@
-using Function.Blending.Core.Application.Menu.DTOs;
+using Function.Blending.Auth.Application.Menu.DTOs;
 using MediatR;
 
-namespace Function.Blending.Core.Application.Menu.Queries
+namespace Function.Blending.Auth.Application.Menu.Queries
 {
     public class GetUserMenuQuery(string jwtToken) : IRequest<MenuResponse>
     {
