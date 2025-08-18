@@ -23,4 +23,9 @@ public class PlantaFilterDTO : IBaseEntityFilter
     /// Fecha de fin para filtro por rango (inclusive)
     /// </summary>
     public DateTime? FechaHasta { get; set; }
+
+    /// <summary>
+    /// Tipo de fecha para el filtro: "creados" | "modificados"
+    /// </summary>
+    public string? TipoFecha { get; set; }
 }

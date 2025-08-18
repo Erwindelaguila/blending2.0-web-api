@@ -33,7 +33,6 @@ public class ApiRoutes
         {
             public const string Base = "core/planta";
             public const string GetById = "core/planta/detail";
-            public const string Paged = "core/planta/paged";
         }
 
         // Rutas de parámetro

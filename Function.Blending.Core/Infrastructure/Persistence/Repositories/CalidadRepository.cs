@@ -49,6 +49,30 @@ public class CalidadRepository : ICalidadRepository
         return await query.AnyAsync();
     }
 
+    public IQueryable<CalidadEntity> GetQueryable()
+    {
+        return _context.Calidad
+            .Where(x => !x.Eliminado)
+            .Select(c => new CalidadEntity
+            {
+                Id = c.Id,
+                Codigo = c.Codigo,
+                Nombre = c.Nombre,
+                CodigoMaterial = c.CodigoMaterial,
+                Descripcion = c.Descripcion,
+                NoConforme = c.NoConforme,
+                Activo = c.Activo,
+                CreadoPorId = c.CreadoPorId,
+                CreadoEl = c.CreadoEl,
+                ModificadoPorId = c.ModificadoPorId,
+                ModificadoEl = c.ModificadoEl,
+                Eliminado = c.Eliminado,
+                EliminadoPorId = c.EliminadoPorId,
+                EliminadoEl = c.EliminadoEl
+            });
+            // Quito el OrderBy para manejarlo en el handler según los filtros aplicados
+    }
+
     public async Task<(IReadOnlyList<CalidadEntity> Items, int Total)> GetPagedAsync(int page, int size)
     {
         var baseQuery = _context.Calidad.AsNoTracking()

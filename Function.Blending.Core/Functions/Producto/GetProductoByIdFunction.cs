@@ -1,5 +1,3 @@
-using System.Text.Json;
-using FluentValidation;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
@@ -8,6 +6,7 @@ using Function.Blending.Core.Application.Producto.Queries;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using System.Web;
 
 namespace Function.Blending.Core.Functions.Producto;
 
@@ -22,21 +21,33 @@ public class GetProductoByIdFunction
 
     [Function(FunctionNames.Producto.GetById)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Production.ProductoGetById+"/{id}")] HttpRequestData req,
-        string id)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Production.ProductoGetById)] HttpRequestData req)
     {
         try
         {
-            if (!Guid.TryParse(id, out var guid))
+            var query = HttpUtility.ParseQueryString(req.Url.Query);
+            var idString = query["id"];
+            if (string.IsNullOrEmpty(idString) || !Guid.TryParse(idString, out var productoId))
             {
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail("Id inválido", "Error de validación", 400));
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                    "ID de producto inválido o no proporcionado",
+                    null,
+                    400
+                ));
             }
-            var result = await _mediator.Send(new GetProductoByIdQuery(guid));
+
+            var result = await _mediator.Send(new GetProductoByIdQuery(productoId));
+
             if (result == null)
             {
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail("Producto no encontrado", null, 404));
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                    "Producto no encontrado",
+                    null,
+                    404
+                ));
             }
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<ProductoDTO>.Success(result));
+
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<ProductoDTO>.Success(result, "Producto obtenido correctamente"));
         }
         catch (Exception ex)
         {
@@ -44,11 +55,11 @@ public class GetProductoByIdFunction
             {
                 Message = "Ocurrió un error inesperado.",
                 Exception = ex.Message,
-                InnerException = ex.InnerException?.Message,
+                InnerException = ex.InnerException?.Message
             };
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 errorMessage,
-                null,
+                "Error interno del servidor",
                 500
             ));
         }

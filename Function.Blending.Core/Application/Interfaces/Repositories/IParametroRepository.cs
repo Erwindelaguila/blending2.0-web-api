@@ -7,6 +7,7 @@ public interface IParametroRepository
     Task<List<ParametroEntity>> GetAllAsync();
     Task<ParametroEntity?> GetByIdAsync(Guid id);
     Task<bool> ExistsActiveCodigoAsync(string codigo, Guid? excludeId = null);
+    IQueryable<ParametroEntity> GetQueryable();
     Task<(IReadOnlyList<ParametroEntity> Items, int Total)> GetPagedAsync(int page, int size);
     Task CreateAsync(ParametroEntity parametro);
     Task UpdateAsync(ParametroEntity parametro);

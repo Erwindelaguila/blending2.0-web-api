@@ -7,6 +7,7 @@ public interface ICalidadRepository
     Task<List<CalidadEntity>> GetAllAsync();
     Task<CalidadEntity?> GetByIdAsync(Guid id);
     Task<bool> ExistsActiveCodigoAsync(string codigo, Guid? excludeId = null);
+    IQueryable<CalidadEntity> GetQueryable();
     Task<(IReadOnlyList<CalidadEntity> Items, int Total)> GetPagedAsync(int page, int size);
     Task CreateAsync(CalidadEntity calidad);
     Task UpdateAsync(CalidadEntity calidad);

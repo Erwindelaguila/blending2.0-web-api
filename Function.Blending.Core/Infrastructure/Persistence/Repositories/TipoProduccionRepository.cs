@@ -49,6 +49,27 @@ public class TipoProduccionRepository : ITipoProduccionRepository
         return await query.AnyAsync();
     }
 
+    public IQueryable<TipoProduccionEntity> GetQueryable()
+    {
+        return _context.TipoProduccion
+            .Where(x => !x.Eliminado)
+            .Select(t => new TipoProduccionEntity
+            {
+                Id = t.Id,
+                Codigo = t.Codigo,
+                Nombre = t.Nombre,
+                Descripcion = t.Descripcion,
+                LineaProduccionId = t.LineaProduccionId,
+                AgregadoId = t.AgregadoId,
+                Activo = t.Activo,
+                CreadoPorId = t.CreadoPorId,
+                CreadoEl = t.CreadoEl,
+                ModificadoPorId = t.ModificadoPorId,
+                ModificadoEl = t.ModificadoEl
+            });
+            // Quito el OrderBy para manejarlo en el handler según los filtros aplicados
+    }
+
     public async Task<(IReadOnlyList<TipoProduccionEntity> Items, int Total)> GetPagedAsync(int page, int size)
     {
         var baseQuery = _context.TipoProduccion.AsNoTracking()

@@ -6,6 +6,7 @@ using Function.Blending.Core.Application.Parametro.Queries;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Extensions.Logging;
 using System.Web;
 
 namespace Function.Blending.Core.Functions.Parametro;
@@ -13,10 +14,12 @@ namespace Function.Blending.Core.Functions.Parametro;
 public class GetAllParametrosFunction
 {
     private readonly IMediator _mediator;
+    private readonly ILogger<GetAllParametrosFunction> _logger;
 
-    public GetAllParametrosFunction(IMediator mediator)
+    public GetAllParametrosFunction(IMediator mediator, ILogger<GetAllParametrosFunction> logger)
     {
         _mediator = mediator;
+        _logger = logger;
     }
 
     [Function(FunctionNames.Parametro.GetAll)]
@@ -27,25 +30,50 @@ public class GetAllParametrosFunction
         {
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             
-            if (!int.TryParse(query["page"], out var page) || page <= 0)
+            // Log para debug - ver qué parámetros llegan
+            _logger.LogInformation("GetAllParametros called with query: {QueryString}", req.Url.Query);
+            
+            // Obtener parámetros de paginación con valores por defecto
+            if (!int.TryParse(query["page"], out var page) || page < 1)
                 page = 1;
+                
+            if (!int.TryParse(query["size"], out var size) || size < 1 || size > 100)
+                size = 10; // Por defecto 10 registros por página
+
+            // Parsear filtros desde query parameters - puede lanzar ArgumentException
+            var filters = QueryParameterHelper.ParseParametroFilters(query);
             
-            if (!int.TryParse(query["size"], out var size) || size <= 0)
-                size = 10;
+            // Log para debug - ver qué filtros se parsearon
+            _logger.LogInformation("Parsed filters - Codigo: {Codigo}, Estado: {Estado}, FechaDesde: {FechaDesde}, FechaHasta: {FechaHasta}, TipoFecha: {TipoFecha}", 
+                filters.Codigo, filters.Estado, filters.FechaDesde, filters.FechaHasta, filters.TipoFecha);
             
-            var result = await _mediator.Send(new GetAllParametrosQuery(page, size));
+            // Solo enviar filtros si al menos uno está activo
+            var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
+
+            var result = await _mediator.Send(new GetAllParametrosWithPaginationQuery(page, size, filtersToApply));
             
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(result, "Parámetros obtenidos correctamente"));
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<ParametroDTO>>.Success(result, "Parámetros obtenidos correctamente"));
+        }
+        catch (ArgumentException ex)
+        {
+            // Error de validación (parámetros inválidos) - devolver 400
+            _logger.LogWarning("Validation error in GetAllParametros: {Message}", ex.Message);
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                ex.Message,
+                null,
+                400
+            ));
         }
         catch (Exception ex)
         {
+            // Error interno del servidor - devolver 500
+            _logger.LogError(ex, "Unexpected error in GetAllParametros");
             var errorMessage = new
             {
                 Message = "Ocurrió un error inesperado.",
                 Exception = ex.Message,
                 InnerException = ex.InnerException?.Message,
             };
-            
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 errorMessage,
                 null,

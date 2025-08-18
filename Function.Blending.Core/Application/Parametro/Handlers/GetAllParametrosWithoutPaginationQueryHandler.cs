@@ -1,24 +1,24 @@
-using Function.Blending.Core.Application.Interfaces.Repositories;
 using Function.Blending.Core.Application.Parametro.DTOs;
 using Function.Blending.Core.Application.Parametro.Queries;
+using Function.Blending.Core.Application.Interfaces.Repositories;
 using MediatR;
 
 namespace Function.Blending.Core.Application.Parametro.Handlers;
 
-public class GetAllParametrosQueryHandler : IRequestHandler<GetAllParametrosQuery, object>
+public class GetAllParametrosWithoutPaginationQueryHandler : IRequestHandler<GetAllParametrosWithoutPaginationQuery, List<ParametroDTO>>
 {
     private readonly IParametroRepository _parametroRepository;
 
-    public GetAllParametrosQueryHandler(IParametroRepository parametroRepository)
+    public GetAllParametrosWithoutPaginationQueryHandler(IParametroRepository parametroRepository)
     {
         _parametroRepository = parametroRepository;
     }
 
-    public async Task<object> Handle(GetAllParametrosQuery request, CancellationToken cancellationToken)
+    public async Task<List<ParametroDTO>> Handle(GetAllParametrosWithoutPaginationQuery request, CancellationToken cancellationToken)
     {
-        var (entities, total) = await _parametroRepository.GetPagedAsync(request.Page, request.Size);
+        var entities = await _parametroRepository.GetAllAsync();
         
-        var dtos = entities.Select(parametro => new ParametroDTO
+        return entities.Select(parametro => new ParametroDTO
         {
             Id = parametro.Id,
             Codigo = parametro.Codigo,
@@ -30,14 +30,5 @@ public class GetAllParametrosQueryHandler : IRequestHandler<GetAllParametrosQuer
             ModificadoPorId = parametro.ModificadoPorId,
             ModificadoEl = parametro.ModificadoEl
         }).ToList();
-
-        return new
-        {
-            Items = dtos,
-            Total = total,
-            Page = request.Page,
-            Size = request.Size,
-            TotalPages = (int)Math.Ceiling((double)total / request.Size)
-        };
     }
 }
