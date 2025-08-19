@@ -58,16 +58,8 @@ public static class QueryParameterHelper
     public static CalidadFilterDTO ParseCalidadFilters(NameValueCollection query)
     {
         var filter = new CalidadFilterDTO();
-        BaseFilterHelper.PopulateBaseFilters(filter, query);
-        if (!string.IsNullOrWhiteSpace(query["tipoFecha"]))
-        {
-            var tipoFecha = query["tipoFecha"]!.Trim().ToLowerInvariant();
-            if (tipoFecha == "todos" || tipoFecha == "creados" || tipoFecha == "modificados")
-                filter.TipoFecha = tipoFecha;
-        }
-        if (string.IsNullOrWhiteSpace(filter.TipoFecha) && (filter.FechaDesde.HasValue || filter.FechaHasta.HasValue))
-            filter.TipoFecha = "creados";
-        return filter;
+    BaseFilterHelper.PopulateBaseFilters(filter, query);
+    return filter;
     }
 
     public static TipoProduccionFilterDTO ParseTipoProduccionFilters(NameValueCollection query)

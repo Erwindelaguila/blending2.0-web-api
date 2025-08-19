@@ -33,16 +33,25 @@ public class GetAllCalidadesQueryHandler : IRequestHandler<GetAllCalidadesQuery,
                     request.Filters.Estado,
                     x => x.Activo);
 
-                calidadesQuery = calidadesQuery.ApplyFechaRangeFilterConTipo(
-                    request.Filters.FechaDesde,
-                    request.Filters.FechaHasta,
-                    request.Filters.TipoFecha,
-                    x => x.CreadoEl,
-                    x => x.ModificadoEl);
+                // Filtro por día exacto: CreadoEl o ModificadoEl dentro del día [FechaDesde, FechaDesde + 1)
+                if (request.Filters.FechaDesde.HasValue)
+                {
+                    var start = request.Filters.FechaDesde.Value.Date;
+                    var end = start.AddDays(1);
+                    calidadesQuery = calidadesQuery.Where(x =>
+                        (x.CreadoEl >= start && x.CreadoEl < end) ||
+                        (x.ModificadoEl.HasValue && x.ModificadoEl.Value >= start && x.ModificadoEl.Value < end)
+                    );
+                }
             }
 
-            // Aplicar ordenamiento optimizado
-            calidadesQuery = ApplyOptimizedSorting(calidadesQuery, request.Filters?.Estado);
+            // Orden: por estado si viene, si no por CreadoEl
+            calidadesQuery = request.Filters?.Estado switch
+            {
+                "1" => calidadesQuery.OrderByDescending(x => x.Activo).ThenBy(x => x.CreadoEl),
+                "0" => calidadesQuery.OrderBy(x => x.Activo).ThenBy(x => x.CreadoEl),
+                _ => calidadesQuery.OrderBy(x => x.CreadoEl)
+            };
 
             // Proyectar a DTO (hacer antes de paginación para optimizar)
             var calidadesProjected = calidadesQuery.Select(calidad => new CalidadDTO
@@ -70,13 +79,5 @@ public class GetAllCalidadesQueryHandler : IRequestHandler<GetAllCalidadesQuery,
         }
     }
 
-    private static IQueryable<CalidadEntity> ApplyOptimizedSorting(IQueryable<CalidadEntity> query, string? estado)
-    {
-        return estado switch
-        {
-            "1" => query.OrderByDescending(x => x.Activo).ThenBy(x => x.CreadoEl), // Activos primero
-            "0" => query.OrderBy(x => x.Activo).ThenBy(x => x.CreadoEl),           // Inactivos primero
-            _ => query.OrderBy(x => x.CreadoEl)                                    // Por defecto: por fecha
-        };
-    }
+    // Orden helper eliminado; la lógica se inlinea arriba para simplicidad
 }
