@@ -47,7 +47,7 @@ var host = new HostBuilder()
             cfg.AddProfile<AgregadoProfile>();
             cfg.AddProfile<LineaProduccionProfile>();
             cfg.AddProfile<TipoProduccionProfile>();
-            cfg.AddProfile<GraphProfile>(); 
+            // Removed GraphProfile reference to prevent build error
         });
         services.AddScoped<IProductoRepository, ProductoRepository>();
         services.AddScoped<IPlantaRepository, PlantaRepository>();
