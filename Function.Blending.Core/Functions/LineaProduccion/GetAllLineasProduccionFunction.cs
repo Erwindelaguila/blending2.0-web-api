@@ -43,9 +43,9 @@ public class GetAllLineasProduccionFunction
             // Parsear filtros desde query parameters - puede lanzar ArgumentException
             var filters = QueryParameterHelper.ParseLineaProduccionFilters(query);
             
-            // Log para debug - ver qué filtros se parsearon
-            _logger.LogInformation("Parsed filters - Codigo: {Codigo}, Estado: {Estado}, FechaDesde: {FechaDesde}, FechaHasta: {FechaHasta}, TipoFecha: {TipoFecha}", 
-                filters.Codigo, filters.Estado, filters.FechaDesde, filters.FechaHasta, filters.TipoFecha);
+            // Log para debug - filtros activos
+            _logger.LogInformation("Parsed filters - Codigo: {Codigo}, Estado: {Estado}, FechaDesde: {FechaDesde}", 
+                filters.Codigo, filters.Estado, filters.FechaDesde);
             
             // Solo enviar filtros si al menos uno está activo
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;

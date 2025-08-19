@@ -33,16 +33,23 @@ public class GetAllLineasProduccionQueryHandler : IRequestHandler<GetAllLineasPr
                     request.Filters.Estado,
                     x => x.Activo);
 
-                lineasProduccionQuery = lineasProduccionQuery.ApplyFechaRangeFilterConTipo(
-                    request.Filters.FechaDesde,
-                    request.Filters.FechaHasta,
-                    request.Filters.TipoFecha,
-                    x => x.CreadoEl,
-                    x => x.ModificadoEl);
+                if (request.Filters.FechaDesde.HasValue)
+                {
+                    var fecha = request.Filters.FechaDesde.Value.Date;
+                    var siguiente = fecha.AddDays(1);
+                    lineasProduccionQuery = lineasProduccionQuery.Where(x =>
+                        (x.CreadoEl >= fecha && x.CreadoEl < siguiente) ||
+                        (x.ModificadoEl != null && x.ModificadoEl.Value >= fecha && x.ModificadoEl.Value < siguiente)
+                    );
+                }
             }
 
-            // Aplicar ordenamiento optimizado
-            lineasProduccionQuery = ApplyOptimizedSorting(lineasProduccionQuery, request.Filters?.Estado);
+            lineasProduccionQuery = (request.Filters?.Estado) switch
+            {
+                "1" => lineasProduccionQuery.OrderByDescending(x => x.Activo).ThenBy(x => x.CreadoEl),
+                "0" => lineasProduccionQuery.OrderBy(x => x.Activo).ThenBy(x => x.CreadoEl),
+                _ => lineasProduccionQuery.OrderBy(x => x.CreadoEl)
+            };
 
             // Proyectar a DTO (hacer antes de paginación para optimizar)
             var lineasProduccionProjected = lineasProduccionQuery.Select(lineaProduccion => new LineaProduccionDTO
@@ -68,13 +75,5 @@ public class GetAllLineasProduccionQueryHandler : IRequestHandler<GetAllLineasPr
         }
     }
 
-    private static IQueryable<LineaProduccionEntity> ApplyOptimizedSorting(IQueryable<LineaProduccionEntity> query, string? estado)
-    {
-        return estado switch
-        {
-            "1" => query.OrderByDescending(x => x.Activo).ThenBy(x => x.CreadoEl), // Activos primero
-            "0" => query.OrderBy(x => x.Activo).ThenBy(x => x.CreadoEl),           // Inactivos primero
-            _ => query.OrderBy(x => x.CreadoEl)                                    // Por defecto: por fecha
-        };
-    }
+    // Ordenamiento inline sobre la query según estado
 }

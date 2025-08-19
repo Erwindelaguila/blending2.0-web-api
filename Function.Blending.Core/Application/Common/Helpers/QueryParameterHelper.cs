@@ -22,14 +22,6 @@ public static class QueryParameterHelper
     {
         var filter = new LineaProduccionFilterDTO();
         BaseFilterHelper.PopulateBaseFilters(filter, query);
-        if (!string.IsNullOrWhiteSpace(query["tipoFecha"]))
-        {
-            var tipoFecha = query["tipoFecha"]!.Trim().ToLowerInvariant();
-            if (tipoFecha == "todos" || tipoFecha == "creados" || tipoFecha == "modificados")
-                filter.TipoFecha = tipoFecha;
-        }
-        if (string.IsNullOrWhiteSpace(filter.TipoFecha) && (filter.FechaDesde.HasValue || filter.FechaHasta.HasValue))
-            filter.TipoFecha = "creados";
         return filter;
     }
 
