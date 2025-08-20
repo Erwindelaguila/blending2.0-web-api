@@ -54,11 +54,20 @@ public class UpdateTipoProduccionFunction
         }
         catch (ValidationException ex)
         {
-            var errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }).ToList();
+            var validationErrors = ex.Errors.Select(e => new { Field = e.PropertyName, Error = e.ErrorMessage });
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                errors,
+                validationErrors,
                 "Errores de validación",
                 400
+            ));
+        }
+        catch (ArgumentException ex) when (ex.ParamName == "codigo")
+        {
+            var error = new { Field = "codigo", Error = "Ya existe un tipo de producción activo con este código" };
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                error,
+                "Código duplicado",
+                409
             ));
         }
         catch (Exception ex)

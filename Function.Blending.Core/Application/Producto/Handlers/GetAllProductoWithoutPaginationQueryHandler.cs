@@ -31,12 +31,15 @@ public class GetAllProductoWithoutPaginationQueryHandler : IRequestHandler<GetAl
                 request.Filters.Estado,
                 x => x.Activo);
 
-            productoQuery = productoQuery.ApplyFechaRangeFilterConTipo(
-                request.Filters.FechaDesde,
-                request.Filters.FechaHasta,
-                request.Filters.TipoFecha,
-                x => x.CreadoEl,
-                x => x.ModificadoEl);
+            if (request.Filters.FechaDesde.HasValue)
+            {
+                var start = request.Filters.FechaDesde.Value.Date;
+                var end = start.AddDays(1);
+                productoQuery = productoQuery.Where(x =>
+                    (x.CreadoEl >= start && x.CreadoEl < end) ||
+                    (x.ModificadoEl.HasValue && x.ModificadoEl.Value >= start && x.ModificadoEl.Value < end)
+                );
+            }
         }
 
         // Ordenar por fecha de creación

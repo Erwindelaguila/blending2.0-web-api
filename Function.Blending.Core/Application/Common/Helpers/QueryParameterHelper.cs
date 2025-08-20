@@ -28,31 +28,15 @@ public static class QueryParameterHelper
     public static PlantaFilterDTO ParsePlantaFilters(NameValueCollection query)
     {
         var filter = new PlantaFilterDTO();
-        BaseFilterHelper.PopulateBaseFilters(filter, query);
-        if (!string.IsNullOrWhiteSpace(query["tipoFecha"]))
-        {
-            var tipoFecha = query["tipoFecha"]!.Trim().ToLowerInvariant();
-            if (tipoFecha == "todos" || tipoFecha == "creados" || tipoFecha == "modificados")
-                filter.TipoFecha = tipoFecha;
-        }
-        if (string.IsNullOrWhiteSpace(filter.TipoFecha) && (filter.FechaDesde.HasValue || filter.FechaHasta.HasValue))
-            filter.TipoFecha = "creados";
-        return filter;
+    BaseFilterHelper.PopulateBaseFilters(filter, query);
+    return filter;
     }
 
     public static ParametroFilterDTO ParseParametroFilters(NameValueCollection query)
     {
         var filter = new ParametroFilterDTO();
-        BaseFilterHelper.PopulateBaseFilters(filter, query);
-        if (!string.IsNullOrWhiteSpace(query["tipoFecha"]))
-        {
-            var tipoFecha = query["tipoFecha"]!.Trim().ToLowerInvariant();
-            if (tipoFecha == "todos" || tipoFecha == "creados" || tipoFecha == "modificados")
-                filter.TipoFecha = tipoFecha;
-        }
-        if (string.IsNullOrWhiteSpace(filter.TipoFecha) && (filter.FechaDesde.HasValue || filter.FechaHasta.HasValue))
-            filter.TipoFecha = "creados";
-        return filter;
+    BaseFilterHelper.PopulateBaseFilters(filter, query);
+    return filter;
     }
 
     public static CalidadFilterDTO ParseCalidadFilters(NameValueCollection query)
@@ -65,31 +49,15 @@ public static class QueryParameterHelper
     public static TipoProduccionFilterDTO ParseTipoProduccionFilters(NameValueCollection query)
     {
         var filter = new TipoProduccionFilterDTO();
-        BaseFilterHelper.PopulateBaseFilters(filter, query);
-        if (!string.IsNullOrWhiteSpace(query["tipoFecha"]))
-        {
-            var tipoFecha = query["tipoFecha"]!.Trim().ToLowerInvariant();
-            if (tipoFecha == "todos" || tipoFecha == "creados" || tipoFecha == "modificados")
-                filter.TipoFecha = tipoFecha;
-        }
-        if (string.IsNullOrWhiteSpace(filter.TipoFecha) && (filter.FechaDesde.HasValue || filter.FechaHasta.HasValue))
-            filter.TipoFecha = "creados";
-        return filter;
+    BaseFilterHelper.PopulateBaseFilters(filter, query);
+    return filter;
     }
 
     public static ProductoFilterDTO ParseProductoFilters(NameValueCollection query)
     {
         var filter = new ProductoFilterDTO();
-        BaseFilterHelper.PopulateBaseFilters(filter, query);
-        if (!string.IsNullOrWhiteSpace(query["tipoFecha"]))
-        {
-            var tipoFecha = query["tipoFecha"]!.Trim().ToLowerInvariant();
-            if (tipoFecha == "todos" || tipoFecha == "creados" || tipoFecha == "modificados")
-                filter.TipoFecha = tipoFecha;
-        }
-        if (string.IsNullOrWhiteSpace(filter.TipoFecha) && (filter.FechaDesde.HasValue || filter.FechaHasta.HasValue))
-            filter.TipoFecha = "creados";
-        return filter;
+    BaseFilterHelper.PopulateBaseFilters(filter, query);
+    return filter;
     }
 
     public static bool HasActiveFilters(AgregadoFilterDTO filter) => 

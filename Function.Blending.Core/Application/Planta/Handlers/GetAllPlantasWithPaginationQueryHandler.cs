@@ -33,16 +33,25 @@ public class GetAllPlantasWithPaginationQueryHandler : IRequestHandler<GetAllPla
                     request.Filters.Estado,
                     x => x.Activo);
 
-                plantasQuery = plantasQuery.ApplyFechaRangeFilterConTipo(
-                    request.Filters.FechaDesde,
-                    request.Filters.FechaHasta,
-                    request.Filters.TipoFecha,
-                    x => x.CreadoEl,
-                    x => x.ModificadoEl);
+                // Filtro por día exacto: CreadoEl o ModificadoEl dentro del día [FechaDesde, FechaDesde + 1)
+                if (request.Filters.FechaDesde.HasValue)
+                {
+                    var start = request.Filters.FechaDesde.Value.Date;
+                    var end = start.AddDays(1);
+                    plantasQuery = plantasQuery.Where(x =>
+                        (x.CreadoEl >= start && x.CreadoEl < end) ||
+                        (x.ModificadoEl.HasValue && x.ModificadoEl.Value >= start && x.ModificadoEl.Value < end)
+                    );
+                }
             }
 
-            // Aplicar ordenamiento optimizado
-            plantasQuery = ApplyOptimizedSorting(plantasQuery, request.Filters?.Estado);
+            // Orden: por estado si viene, si no por CreadoEl
+            plantasQuery = request.Filters?.Estado switch
+            {
+                "1" => plantasQuery.OrderByDescending(x => x.Activo).ThenBy(x => x.CreadoEl),
+                "0" => plantasQuery.OrderBy(x => x.Activo).ThenBy(x => x.CreadoEl),
+                _ => plantasQuery.OrderBy(x => x.CreadoEl)
+            };
 
             // Proyectar a DTO (hacer antes de paginación para optimizar)
             var plantasProjected = plantasQuery.Select(planta => new PlantaDTO
@@ -51,6 +60,7 @@ public class GetAllPlantasWithPaginationQueryHandler : IRequestHandler<GetAllPla
                 Codigo = planta.Codigo,
                 Nombre = planta.Nombre,
                 Descripcion = planta.Descripcion,
+                NumeroRuma = planta.NumeroRuma,
                 Activo = planta.Activo,
                 CreadoPorId = planta.CreadoPorId,
                 CreadoEl = planta.CreadoEl,
@@ -68,13 +78,5 @@ public class GetAllPlantasWithPaginationQueryHandler : IRequestHandler<GetAllPla
         }
     }
 
-    private static IQueryable<PlantaEntity> ApplyOptimizedSorting(IQueryable<PlantaEntity> query, string? estado)
-    {
-        return estado switch
-        {
-            "1" => query.OrderByDescending(x => x.Activo).ThenBy(x => x.CreadoEl), // Activos primero
-            "0" => query.OrderBy(x => x.Activo).ThenBy(x => x.CreadoEl),           // Inactivos primero
-            _ => query.OrderBy(x => x.CreadoEl)                                    // Por defecto: por fecha
-        };
-    }
+    // Orden helper eliminado; lógica inline arriba para simplicidad
 }

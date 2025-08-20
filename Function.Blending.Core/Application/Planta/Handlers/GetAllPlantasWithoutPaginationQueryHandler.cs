@@ -24,6 +24,7 @@ public class GetAllPlantasWithoutPaginationQueryHandler : IRequestHandler<GetAll
             Codigo = planta.Codigo,
             Nombre = planta.Nombre,
             Descripcion = planta.Descripcion,
+            NumeroRuma = planta.NumeroRuma,
             Activo = planta.Activo,
             CreadoPorId = planta.CreadoPorId,
             CreadoEl = planta.CreadoEl,

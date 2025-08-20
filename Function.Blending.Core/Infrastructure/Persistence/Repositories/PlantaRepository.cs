@@ -59,6 +59,7 @@ public class PlantaRepository : IPlantaRepository
                 Codigo = p.Codigo,
                 Nombre = p.Nombre,
                 Descripcion = p.Descripcion,
+                NumeroRuma = p.NumeroRuma,
                 Activo = p.Activo,
                 CreadoPorId = p.CreadoPorId,
                 CreadoEl = p.CreadoEl,
