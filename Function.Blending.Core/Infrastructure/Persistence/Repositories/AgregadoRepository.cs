@@ -67,8 +67,8 @@ public class AgregadoRepository : IAgregadoRepository
                 Eliminado = a.Eliminado,
                 EliminadoPorId = a.EliminadoPorId,
                 EliminadoEl = a.EliminadoEl
-            })
-            .OrderBy(x => x.CreadoEl);
+            });
+            // Quito el OrderBy para manejarlo en el handler según los filtros aplicados
     }
 
     public async Task CreateAsync(AgregadoEntity agregadoEntity)

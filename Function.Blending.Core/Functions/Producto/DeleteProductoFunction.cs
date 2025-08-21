@@ -36,28 +36,19 @@ public class DeleteProductoFunction
                 ));
             }
 
-            var modificadoPorIdString = query["modificadoPorId"];
-            if (string.IsNullOrEmpty(modificadoPorIdString) || !Guid.TryParse(modificadoPorIdString, out var modificadoPorId))
+            var eliminadoPorIdString = query["eliminadoPorId"];
+            if (string.IsNullOrEmpty(eliminadoPorIdString) || !Guid.TryParse(eliminadoPorIdString, out var eliminadoPorId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "ID de usuario modificador inválido o no proporcionado",
+                    "ID de usuario eliminador inválido o no proporcionado",
                     null,
                     400
                 ));
             }
 
-            var result = await _mediator.Send(new DeleteProductoCommand(productoId, modificadoPorId));
-
-            if (!result)
-            {
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "Producto no encontrado",
-                    null,
-                    404
-                ));
-            }
-
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<bool>.Success(result, "Producto eliminado correctamente"));
+            var result = await _mediator.Send(new DeleteProductoCommand(productoId, eliminadoPorId));
+            
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, result);
         }
         catch (Exception ex)
         {

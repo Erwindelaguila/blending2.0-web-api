@@ -49,6 +49,28 @@ public class ParametroRepository : IParametroRepository
         return await query.AnyAsync();
     }
 
+    public IQueryable<ParametroEntity> GetQueryable()
+    {
+        return _context.Parametro
+            .Where(x => !x.Eliminado)
+            .Select(p => new ParametroEntity
+            {
+                Id = p.Id,
+                Codigo = p.Codigo,
+                Nombre = p.Nombre,
+                Descripcion = p.Descripcion,
+                Activo = p.Activo,
+                CreadoPorId = p.CreadoPorId,
+                CreadoEl = p.CreadoEl,
+                ModificadoPorId = p.ModificadoPorId,
+                ModificadoEl = p.ModificadoEl,
+                Eliminado = p.Eliminado,
+                EliminadoPorId = p.EliminadoPorId,
+                EliminadoEl = p.EliminadoEl
+            });
+            // Quito el OrderBy para manejarlo en el handler según los filtros aplicados
+    }
+
     public async Task<(IReadOnlyList<ParametroEntity> Items, int Total)> GetPagedAsync(int page, int size)
     {
         var baseQuery = _context.Parametro.AsNoTracking()

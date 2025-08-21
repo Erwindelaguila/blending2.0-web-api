@@ -49,6 +49,29 @@ public class PlantaRepository : IPlantaRepository
         return await query.AnyAsync();
     }
 
+    public IQueryable<PlantaEntity> GetQueryable()
+    {
+        return _context.Planta
+            .Where(x => !x.Eliminado)
+            .Select(p => new PlantaEntity
+            {
+                Id = p.Id,
+                Codigo = p.Codigo,
+                Nombre = p.Nombre,
+                Descripcion = p.Descripcion,
+                NumeroRuma = p.NumeroRuma,
+                Activo = p.Activo,
+                CreadoPorId = p.CreadoPorId,
+                CreadoEl = p.CreadoEl,
+                ModificadoPorId = p.ModificadoPorId,
+                ModificadoEl = p.ModificadoEl,
+                Eliminado = p.Eliminado,
+                EliminadoPorId = p.EliminadoPorId,
+                EliminadoEl = p.EliminadoEl
+            });
+            // Quito el OrderBy para manejarlo en el handler según los filtros aplicados
+    }
+
     public async Task<(IReadOnlyList<PlantaEntity> Items, int Total)> GetPagedAsync(int page, int size)
     {
         var baseQuery = _context.Planta.AsNoTracking()

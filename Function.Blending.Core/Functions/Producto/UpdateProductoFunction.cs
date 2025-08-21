@@ -22,8 +22,7 @@ public class UpdateProductoFunction
 
     [Function(FunctionNames.Producto.Update)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.Production.ProductoBase+"/{id}")] HttpRequestData req,
-        string id)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.Production.ProductoBase)] HttpRequestData req)
     {
         try
         {
@@ -55,11 +54,20 @@ public class UpdateProductoFunction
         }
         catch (ValidationException ex)
         {
-            var errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }).ToList();
+            var validationErrors = ex.Errors.Select(e => new { Field = e.PropertyName, Error = e.ErrorMessage });
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                errors,
-                "Validación fallida. Por favor, revise los campos.",
+                validationErrors,
+                "Errores de validación",
                 400
+            ));
+        }
+        catch (ArgumentException ex) when (ex.ParamName == "codigo")
+        {
+            var error = new { Field = "codigo", Error = "Ya existe un producto activo con este código" };
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                error,
+                "Código duplicado",
+                409
             ));
         }
         catch (Exception ex)

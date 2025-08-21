@@ -16,8 +16,10 @@ public class GetAllAgregadosWithoutPaginationQueryHandler : IRequestHandler<GetA
 
     public async Task<List<AgregadoDTO>> Handle(GetAllAgregadosWithoutPaginationQuery request, CancellationToken cancellationToken)
     {
-        var entities = await _agregadoRepository.GetAllAsync();
-        
+        var query = _agregadoRepository.GetQueryable();
+        query = query.OrderBy(x => x.CreadoEl);
+        var entities = await Task.FromResult(query.ToList());
+
         return entities.Select(agregado => new AgregadoDTO
         {
             Id = agregado.Id,

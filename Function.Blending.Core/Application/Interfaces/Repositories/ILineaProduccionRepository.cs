@@ -7,6 +7,7 @@ public interface ILineaProduccionRepository
     Task<List<LineaProduccionEntity>> GetAllAsync();
     Task<LineaProduccionEntity?> GetByIdAsync(Guid id);
     Task<bool> ExistsActiveCodigoAsync(string codigo, Guid? excludeId = null);
+    IQueryable<LineaProduccionEntity> GetQueryable();
     Task<(IReadOnlyList<LineaProduccionEntity> Items, int Total)> GetPagedAsync(int page, int size);
     Task CreateAsync(LineaProduccionEntity linea);
     Task UpdateAsync(LineaProduccionEntity linea);

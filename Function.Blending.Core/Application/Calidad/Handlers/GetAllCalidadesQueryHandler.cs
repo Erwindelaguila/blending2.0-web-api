@@ -1,45 +1,83 @@
 ﻿using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Application.Calidad.Queries;
+using Function.Blending.Core.Application.Common.Helpers;
+using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Domain.Entities;
 using MediatR;
 
 namespace Function.Blending.Core.Application.Calidad.Handlers;
 
-public class GetAllCalidadesQueryHandler : IRequestHandler<GetAllCalidadesQuery, object>
+public class GetAllCalidadesQueryHandler : IRequestHandler<GetAllCalidadesQuery, PagedResponse<CalidadDTO>>
 {
-    private readonly ICalidadRepository _repository;
+    private readonly ICalidadRepository _calidadRepository;
 
-    public GetAllCalidadesQueryHandler(ICalidadRepository repository)
+    public GetAllCalidadesQueryHandler(ICalidadRepository calidadRepository)
     {
-        _repository = repository;
+        _calidadRepository = calidadRepository;
     }
 
-    public async Task<object> Handle(GetAllCalidadesQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResponse<CalidadDTO>> Handle(GetAllCalidadesQuery request, CancellationToken cancellationToken)
     {
-        var (entities, total) = await _repository.GetPagedAsync(request.Page, request.Size);
-
-        var dtos = entities.Select(calidad => new CalidadDTO
+        try
         {
-            Id = calidad.Id,
-            Codigo = calidad.Codigo,
-            Nombre = calidad.Nombre,
-            Descripcion = calidad.Descripcion,
-            Activo = calidad.Activo,
-            CodigoMaterial = calidad.CodigoMaterial,
-            NoConforme = calidad.NoConforme,
-            CreadoPorId = calidad.CreadoPorId,
-            CreadoEl = calidad.CreadoEl,
-            ModificadoPorId = calidad.ModificadoPorId,
-            ModificadoEl = calidad.ModificadoEl
-        }).ToList();
+            var calidadesQuery = _calidadRepository.GetQueryable();
 
-        return new
+            if (request.Filters != null)
+            {
+                calidadesQuery = calidadesQuery.ApplyCodigoFilter(
+                    request.Filters.Codigo,
+                    x => x.Codigo);
+
+                calidadesQuery = calidadesQuery.ApplyEstadoFilter(
+                    request.Filters.Estado,
+                    x => x.Activo);
+
+                // Filtro por día exacto: CreadoEl o ModificadoEl dentro del día [FechaDesde, FechaDesde + 1)
+                if (request.Filters.FechaDesde.HasValue)
+                {
+                    var start = request.Filters.FechaDesde.Value.Date;
+                    var end = start.AddDays(1);
+                    calidadesQuery = calidadesQuery.Where(x =>
+                        (x.CreadoEl >= start && x.CreadoEl < end) ||
+                        (x.ModificadoEl.HasValue && x.ModificadoEl.Value >= start && x.ModificadoEl.Value < end)
+                    );
+                }
+            }
+
+            // Orden: por estado si viene, si no por CreadoEl
+            calidadesQuery = request.Filters?.Estado switch
+            {
+                "1" => calidadesQuery.OrderByDescending(x => x.Activo).ThenBy(x => x.CreadoEl),
+                "0" => calidadesQuery.OrderBy(x => x.Activo).ThenBy(x => x.CreadoEl),
+                _ => calidadesQuery.OrderBy(x => x.CreadoEl)
+            };
+
+            // Proyectar a DTO (hacer antes de paginación para optimizar)
+            var calidadesProjected = calidadesQuery.Select(calidad => new CalidadDTO
+            {
+                Id = calidad.Id,
+                Codigo = calidad.Codigo,
+                Nombre = calidad.Nombre,
+                CodigoMaterial = calidad.CodigoMaterial,
+                Descripcion = calidad.Descripcion,
+                NoConforme = calidad.NoConforme,
+                Activo = calidad.Activo,
+                CreadoPorId = calidad.CreadoPorId,
+                CreadoEl = calidad.CreadoEl,
+                ModificadoPorId = calidad.ModificadoPorId,
+                ModificadoEl = calidad.ModificadoEl
+            });
+
+            var pagedResult = await calidadesProjected.ToPagedResultAsync(request.Page, request.Size, cancellationToken);
+            return pagedResult.ToPagedResponse();
+        }
+        catch (ArgumentException)
         {
-            Items = dtos,
-            Total = total,
-            Page = request.Page,
-            Size = request.Size,
-            TotalPages = (int)Math.Ceiling((double)total / request.Size)
-        };
+            // Re-lanzar ArgumentException para que sea manejada por la función HTTP como 400
+            throw;
+        }
     }
+
+    // Orden helper eliminado; la lógica se inlinea arriba para simplicidad
 }
