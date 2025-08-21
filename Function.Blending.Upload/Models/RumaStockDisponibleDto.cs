@@ -10,7 +10,11 @@ public class RumaStockDisponibleDto
 public class RumaValoresFijosDto
 {
     public string RumaNro { get; set; }
-    public int Cantidad { get; set; }
+    public string Planta { get; set; }
+    public string Anio { get; set; }
+    public string Serie { get; set; }
+    public string FechaCorte { get; set; }
+    public double Cantidad { get; set; }
     public string Um { get; set; }
     public string Codigo { get; set; }
     public string DescripcionMaterial { get; set; }

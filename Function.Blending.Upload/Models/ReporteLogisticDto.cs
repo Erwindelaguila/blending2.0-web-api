@@ -27,9 +27,9 @@ public class DemandaFijas
     public int Pos { get; set; }
     public string Material { get; set; }
     public string Descripcion { get; set; }
-    public double CantidadAsignada { get; set; }
+    public double CantidadAsignadaToneladas { get; set; }
     public string UMVta { get; set; }
-    public double CantidadAsignadaTemp { get; set; }
+    public double CantidadAsignadaSacos { get; set; }
     public string UMAlmac { get; set; }
     public double Tolerancia { get; set; }
 }
@@ -40,11 +40,11 @@ public class OfertaFijas
     public string DescripcionMaterial { get; set; }
     public string DescripcionCentro { get; set; }
     public string Lote { get; set; }
-    public double CantidadAsignada { get; set; }
+    public double CantidadAsignadaSacos { get; set; }
     public string UMAlmac { get; set; }
     public string FechaCotizacion { get; set; }
     public string FechaFabricacion { get; set; }
-    public double CantidadAsignadaTemp { get; set; }
+    public double CantidadAsignadaToneladas { get; set; }
     public string UMVta { get; set; }
     public string FechaAnalisisQuimico { get; set; }
     public string FechaVencimientoQuimico { get; set; }

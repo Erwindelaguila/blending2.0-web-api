@@ -19,6 +19,7 @@ public class SapStockService
         _httpClient.DefaultRequestHeaders.Add("x-api-key", Environment.GetEnvironmentVariable("SAP_API_KEY"));
 
         var response = await _httpClient.GetAsync(sapUrl);
+        
 
         if (!response.IsSuccessStatusCode)
         {
