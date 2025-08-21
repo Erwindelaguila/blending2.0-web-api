@@ -47,6 +47,7 @@ var host = new HostBuilder()
             cfg.AddProfile<AgregadoProfile>();
             cfg.AddProfile<LineaProduccionProfile>();
             cfg.AddProfile<TipoProduccionProfile>();
+            cfg.AddProfile<CalidadParametroProfile>();
             // Removed GraphProfile reference to prevent build error
         });
         services.AddScoped<IProductoRepository, ProductoRepository>();
@@ -56,6 +57,7 @@ var host = new HostBuilder()
         services.AddScoped<IAgregadoRepository, AgregadoRepository>();
         services.AddScoped<ILineaProduccionRepository, LineaProduccionRepository>();
         services.AddScoped<ITipoProduccionRepository, TipoProduccionRepository>();
+        services.AddScoped<ICalidadParametroRepository, CalidadParametroRepository>();
         
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();

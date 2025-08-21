@@ -71,6 +71,12 @@ public static class FunctionNames
         public const string GetAllWithoutPagination = "GetAllLineasProduccionWithoutPagination";
     }
 
+    public static class CalidadParametro
+    {
+        public const string GetMatriz = "GetCalidadParametroMatriz";
+        public const string Upsert = "UpsertCalidadParametro";
+    }
+
     public static class User
     {
         public const string GetMenu = "GetUserMenu";

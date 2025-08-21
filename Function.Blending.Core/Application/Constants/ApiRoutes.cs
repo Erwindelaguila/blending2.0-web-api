@@ -26,6 +26,10 @@ public class ApiRoutes
             // Tipo de Producción
             public const string TipoProduccionBase = "core/produccion/tipoproduccion";
             public const string TipoProduccionGetById = "core/produccion/tipoproduccion/detail";
+
+            // Calidad-Parametro
+            public const string CalidadParametroMatriz = "core/produccion/calidad-parametros/matriz";
+            public const string CalidadParametroUpsert = "core/produccion/calidad-parametros/upsert";
         }
 
         // Rutas de planta
@@ -40,6 +44,13 @@ public class ApiRoutes
         {
             public const string Base = "core/parametro";
             public const string GetById = "core/parametro/detail";
+        }
+
+        // Rutas de configuraciones
+        public static class Configuraciones
+        {
+            public const string CalidadParametroMatriz = "core/configuraciones/calidadparametro/matriz";
+            public const string CalidadParametroUpsert = "core/configuraciones/calidadparametro/upsert";
         }
 
         // Rutas de usuario y autenticación
