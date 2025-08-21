@@ -1,0 +1,79 @@
+using Function.Blending.Core.Application.LineaProduccion.DTOs;
+using Function.Blending.Core.Application.LineaProduccion.Queries;
+using Function.Blending.Core.Application.Common.Helpers;
+using Function.Blending.Core.Application.Common.Wrappers;
+using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Domain.Entities;
+using MediatR;
+
+namespace Function.Blending.Core.Application.LineaProduccion.Handlers;
+
+public class GetAllLineasProduccionQueryHandler : IRequestHandler<GetAllLineasProduccionQuery, PagedResponse<LineaProduccionDTO>>
+{
+    private readonly ILineaProduccionRepository _lineaProduccionRepository;
+
+    public GetAllLineasProduccionQueryHandler(ILineaProduccionRepository lineaProduccionRepository)
+    {
+        _lineaProduccionRepository = lineaProduccionRepository;
+    }
+
+    public async Task<PagedResponse<LineaProduccionDTO>> Handle(GetAllLineasProduccionQuery request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var lineasProduccionQuery = _lineaProduccionRepository.GetQueryable();
+
+            if (request.Filters != null)
+            {
+                lineasProduccionQuery = lineasProduccionQuery.ApplyCodigoFilter(
+                    request.Filters.Codigo,
+                    x => x.Codigo);
+
+                lineasProduccionQuery = lineasProduccionQuery.ApplyEstadoFilter(
+                    request.Filters.Estado,
+                    x => x.Activo);
+
+                if (request.Filters.FechaDesde.HasValue)
+                {
+                    var fecha = request.Filters.FechaDesde.Value.Date;
+                    var siguiente = fecha.AddDays(1);
+                    lineasProduccionQuery = lineasProduccionQuery.Where(x =>
+                        (x.CreadoEl >= fecha && x.CreadoEl < siguiente) ||
+                        (x.ModificadoEl != null && x.ModificadoEl.Value >= fecha && x.ModificadoEl.Value < siguiente)
+                    );
+                }
+            }
+
+            lineasProduccionQuery = (request.Filters?.Estado) switch
+            {
+                "1" => lineasProduccionQuery.OrderByDescending(x => x.Activo).ThenBy(x => x.CreadoEl),
+                "0" => lineasProduccionQuery.OrderBy(x => x.Activo).ThenBy(x => x.CreadoEl),
+                _ => lineasProduccionQuery.OrderBy(x => x.CreadoEl)
+            };
+
+            // Proyectar a DTO (hacer antes de paginación para optimizar)
+            var lineasProduccionProjected = lineasProduccionQuery.Select(lineaProduccion => new LineaProduccionDTO
+            {
+                Id = lineaProduccion.Id,
+                Codigo = lineaProduccion.Codigo,
+                Nombre = lineaProduccion.Nombre,
+                Descripcion = lineaProduccion.Descripcion,
+                Activo = lineaProduccion.Activo,
+                CreadoPorId = lineaProduccion.CreadoPorId,
+                CreadoEl = lineaProduccion.CreadoEl,
+                ModificadoPorId = lineaProduccion.ModificadoPorId,
+                ModificadoEl = lineaProduccion.ModificadoEl
+            });
+
+            var pagedResult = await lineasProduccionProjected.ToPagedResultAsync(request.Page, request.Size, cancellationToken);
+            return pagedResult.ToPagedResponse();
+        }
+        catch (ArgumentException)
+        {
+            // Re-lanzar ArgumentException para que sea manejada por la función HTTP como 400
+            throw;
+        }
+    }
+
+    // Ordenamiento inline sobre la query según estado
+}

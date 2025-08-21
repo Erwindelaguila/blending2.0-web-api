@@ -1,0 +1,82 @@
+using Function.Blending.Core.Application.Planta.DTOs;
+using Function.Blending.Core.Application.Planta.Queries;
+using Function.Blending.Core.Application.Common.Helpers;
+using Function.Blending.Core.Application.Common.Wrappers;
+using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Domain.Entities;
+using MediatR;
+
+namespace Function.Blending.Core.Application.Planta.Handlers;
+
+public class GetAllPlantasWithPaginationQueryHandler : IRequestHandler<GetAllPlantasWithPaginationQuery, PagedResponse<PlantaDTO>>
+{
+    private readonly IPlantaRepository _plantaRepository;
+
+    public GetAllPlantasWithPaginationQueryHandler(IPlantaRepository plantaRepository)
+    {
+        _plantaRepository = plantaRepository;
+    }
+
+    public async Task<PagedResponse<PlantaDTO>> Handle(GetAllPlantasWithPaginationQuery request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var plantasQuery = _plantaRepository.GetQueryable();
+
+            if (request.Filters != null)
+            {
+                plantasQuery = plantasQuery.ApplyCodigoFilter(
+                    request.Filters.Codigo,
+                    x => x.Codigo);
+
+                plantasQuery = plantasQuery.ApplyEstadoFilter(
+                    request.Filters.Estado,
+                    x => x.Activo);
+
+                // Filtro por día exacto: CreadoEl o ModificadoEl dentro del día [FechaDesde, FechaDesde + 1)
+                if (request.Filters.FechaDesde.HasValue)
+                {
+                    var start = request.Filters.FechaDesde.Value.Date;
+                    var end = start.AddDays(1);
+                    plantasQuery = plantasQuery.Where(x =>
+                        (x.CreadoEl >= start && x.CreadoEl < end) ||
+                        (x.ModificadoEl.HasValue && x.ModificadoEl.Value >= start && x.ModificadoEl.Value < end)
+                    );
+                }
+            }
+
+            // Orden: por estado si viene, si no por CreadoEl
+            plantasQuery = request.Filters?.Estado switch
+            {
+                "1" => plantasQuery.OrderByDescending(x => x.Activo).ThenBy(x => x.CreadoEl),
+                "0" => plantasQuery.OrderBy(x => x.Activo).ThenBy(x => x.CreadoEl),
+                _ => plantasQuery.OrderBy(x => x.CreadoEl)
+            };
+
+            // Proyectar a DTO (hacer antes de paginación para optimizar)
+            var plantasProjected = plantasQuery.Select(planta => new PlantaDTO
+            {
+                Id = planta.Id,
+                Codigo = planta.Codigo,
+                Nombre = planta.Nombre,
+                Descripcion = planta.Descripcion,
+                NumeroRuma = planta.NumeroRuma,
+                Activo = planta.Activo,
+                CreadoPorId = planta.CreadoPorId,
+                CreadoEl = planta.CreadoEl,
+                ModificadoPorId = planta.ModificadoPorId,
+                ModificadoEl = planta.ModificadoEl
+            });
+
+            var pagedResult = await plantasProjected.ToPagedResultAsync(request.Page, request.Size, cancellationToken);
+            return pagedResult.ToPagedResponse();
+        }
+        catch (ArgumentException)
+        {
+            // Re-lanzar ArgumentException para que sea manejada por la función HTTP como 400
+            throw;
+        }
+    }
+
+    // Orden helper eliminado; lógica inline arriba para simplicidad
+}
