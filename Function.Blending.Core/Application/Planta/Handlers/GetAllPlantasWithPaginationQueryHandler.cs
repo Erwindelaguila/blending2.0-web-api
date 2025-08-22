@@ -8,7 +8,7 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Planta.Handlers;
 
-public class GetAllPlantasWithPaginationQueryHandler : IRequestHandler<GetAllPlantasWithPaginationQuery, PagedResponse<PlantaDTO>>
+public class GetAllPlantasWithPaginationQueryHandler : IRequestHandler<GetAllPlantasWithPaginationQuery, PlantaResponseDTO>
 {
     private readonly IPlantaRepository _plantaRepository;
 
@@ -17,7 +17,7 @@ public class GetAllPlantasWithPaginationQueryHandler : IRequestHandler<GetAllPla
         _plantaRepository = plantaRepository;
     }
 
-    public async Task<PagedResponse<PlantaDTO>> Handle(GetAllPlantasWithPaginationQuery request, CancellationToken cancellationToken)
+    public async Task<PlantaResponseDTO> Handle(GetAllPlantasWithPaginationQuery request, CancellationToken cancellationToken)
     {
         try
         {
@@ -53,6 +53,24 @@ public class GetAllPlantasWithPaginationQueryHandler : IRequestHandler<GetAllPla
                 _ => plantasQuery.OrderBy(x => x.CreadoEl)
             };
 
+            if (request.IsHarina)
+            {
+                var plantasShort = plantasQuery.Select(planta => new PlantaShortDTO()
+                {
+                    Id = planta.Id,
+                    Codigo = planta.Codigo,
+                    Nombre = planta.Nombre,
+                });
+                
+                var listPlantaShort = plantasShort.ToList();
+
+                return new PlantaResponseDTO
+                {
+                    PlantaShortList = listPlantaShort
+                };
+
+            }
+
             // Proyectar a DTO (hacer antes de paginación para optimizar)
             var plantasProjected = plantasQuery.Select(planta => new PlantaDTO
             {
@@ -68,8 +86,15 @@ public class GetAllPlantasWithPaginationQueryHandler : IRequestHandler<GetAllPla
                 ModificadoEl = planta.ModificadoEl
             });
 
+            
+            
             var pagedResult = await plantasProjected.ToPagedResultAsync(request.Page, request.Size, cancellationToken);
-            return pagedResult.ToPagedResponse();
+            
+            return new PlantaResponseDTO
+            {
+                PlantaPaginate = pagedResult.ToPagedResponse()
+            };
+            
         }
         catch (ArgumentException)
         {

@@ -25,6 +25,8 @@ public static class BaseFilterHelper
                 throw new ArgumentException($"Parámetro 'estado' inválido: '{estado}'. Use '1' para activos o '0' para inactivos.");
             }
         }
+        
+        
 
         var fechaDesdeParam = query["fechaDesde"];
         if (!string.IsNullOrWhiteSpace(fechaDesdeParam))

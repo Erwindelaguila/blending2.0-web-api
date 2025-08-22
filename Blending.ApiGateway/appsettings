@@ -1,0 +1,56 @@
+{
+  "ReverseProxy": {
+    "Routes": {
+      "upload-route": {
+        "ClusterId": "uploadCluster",
+        "Match": {
+          "Path": "/api/upload/{**catch-all}"
+        }
+      },
+      "core-route": {
+        "ClusterId": "coreCluster",
+        "Match": {
+          "Path": "/api/core/{**catch-all}"
+        }
+      },
+      "auth-route": {
+        "ClusterId": "authCluster",
+        "Match": {
+          "Path": "/api/auth/{**catch-all}"
+        }
+      }
+    },
+    "Clusters": {
+      "uploadCluster": {
+        "Destinations": {
+          "dest1": {
+            "Address": "http://localhost:7049/"
+          }
+        },
+        "HttpClient": {
+          "DangerousAcceptAnyServerCertificate": true
+        }
+      },
+      "coreCluster": {
+        "Destinations": {
+          "dest1": {
+            "Address": "http://localhost:7006/"
+          }
+        },
+        "HttpClient": {
+          "DangerousAcceptAnyServerCertificate": true
+        }
+      },
+      "authCluster": {
+        "Destinations": {
+          "dest1": {
+            "Address": "http://localhost:7056/"
+          }
+        },
+        "HttpClient": {
+          "DangerousAcceptAnyServerCertificate": true
+        }
+      }
+    }
+  }
+}

@@ -30,8 +30,15 @@ public class GetAllPlantasFunction
         {
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             
-            // Log para debug - ver qué parámetros llegan
-            _logger.LogInformation("GetAllPlantas called with query: {QueryString}", req.Url.Query);
+            var isHarina = query.Get("isHarina") ?? "0";
+
+            if (isHarina != "0" && isHarina != "1")
+            {
+                throw new ArgumentException("El parámetro 'isHarina' debe ser '0' o '1'.");
+            }
+
+            // Aquí puedes convertirlo a bool si quieres
+            bool esHarina = isHarina == "1";
             
             // Obtener parámetros de paginación con valores por defecto
             if (!int.TryParse(query["page"], out var page) || page < 1)
@@ -50,9 +57,13 @@ public class GetAllPlantasFunction
             // Solo enviar filtros si al menos uno está activo
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var result = await _mediator.Send(new GetAllPlantasWithPaginationQuery(page, size, filtersToApply));
-            
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<PlantaDTO>>.Success(result, "Plantas obtenidas correctamente"));
+            var result = await _mediator.Send(new GetAllPlantasWithPaginationQuery(page, size, filtersToApply, esHarina));
+
+            if (esHarina)
+            {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<List<PlantaShortDTO>>.Success(result.PlantaShortList, "Plantas obtenidas correctamente"));
+            }
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<PlantaDTO>>.Success(result.PlantaPaginate, "Plantas obtenidas correctamente"));
         }
         catch (ArgumentException ex)
         {

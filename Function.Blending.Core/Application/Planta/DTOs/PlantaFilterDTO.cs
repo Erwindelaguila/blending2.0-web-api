@@ -7,4 +7,5 @@ public class PlantaFilterDTO : IBaseEntityFilter
     public string? Codigo { get; set; }
     public string? Estado { get; set; }
     public DateTime? FechaDesde { get; set; }
+    public string? IsHarina { get; set; }
 }

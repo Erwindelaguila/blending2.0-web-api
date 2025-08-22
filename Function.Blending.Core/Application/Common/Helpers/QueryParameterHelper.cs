@@ -28,8 +28,8 @@ public static class QueryParameterHelper
     public static PlantaFilterDTO ParsePlantaFilters(NameValueCollection query)
     {
         var filter = new PlantaFilterDTO();
-    BaseFilterHelper.PopulateBaseFilters(filter, query);
-    return filter;
+        BaseFilterHelper.PopulateBaseFilters(filter, query);
+        return filter;
     }
 
     public static ParametroFilterDTO ParseParametroFilters(NameValueCollection query)
