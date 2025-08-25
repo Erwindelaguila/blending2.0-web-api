@@ -50,7 +50,7 @@ public class PagedResult<T>
     {
         return new PagedResponse<T>
         {
-            Data = Items,
+            Items = Items,
             Pagination = new PaginationInfo
             {
                 CurrentPage = CurrentPage,

@@ -1,5 +1,6 @@
 using Function.Blending.Core.Application.Interfaces.Repositories;
 using Function.Blending.Core.Application.Agregado.Commands;
+using Function.Blending.Core.Application.Common.Exceptions;
 using MediatR;
 
 namespace Function.Blending.Core.Application.Agregado.Handlers;
@@ -17,21 +18,22 @@ public class DeleteAgregadoCommandHandler : IRequestHandler<DeleteAgregadoComman
         if (agregado == null)
             return false;
 
+        // Validación de regla de negocio: no se puede eliminar si está siendo usado por TipoProducción activo
+        var isUsedByActiveTipoProduccion = await _agregadoRepository.IsUsedByActiveTipoProduccionAsync(request.Id);
+        if (isUsedByActiveTipoProduccion)
+        {
+            throw new EntityInUseException("el Agregado", "está siendo usado por al menos un Tipo de Producción activo");
+        }
+
         try
         {
-            // Validación de negocio: verificar si tiene dependencias activas
-            // TODO: Implementar validación de dependencias según reglas de negocio
-            // Ejemplo: if (await HasActiveDependencies(request.Id))
-            //     throw new InvalidOperationException("No se puede eliminar porque tiene dependencias activas.");
-
             await _agregadoRepository.DeleteAsync(request.Id, request.EliminadoPorId);
             return true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            // TODO: Log la excepción aquí
-            // _logger.LogError(ex, "Error al eliminar agregado con ID {Id}", request.Id);
-            return false;
+            // Si falla por constraint de BD, lanzar excepción más específica
+            throw new EntityInUseException("el Agregado", "tiene dependencias en la base de datos");
         }
     }
 }

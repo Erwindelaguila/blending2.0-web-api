@@ -40,10 +40,7 @@ public class UpdateProductoFunction
                     BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false o null).", "Error de validación", 400));
             }
 
-            var command = JsonSerializer.Deserialize<UpdateProductoCommand>(body, new JsonSerializerOptions()
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var command = JsonSerializer.Deserialize<UpdateProductoCommand>(body, HttpResponseHelper.GetJsonDeserializerOptions());
             if (command == null)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,

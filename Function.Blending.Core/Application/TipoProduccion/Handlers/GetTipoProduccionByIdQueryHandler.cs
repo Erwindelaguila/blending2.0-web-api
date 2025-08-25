@@ -15,22 +15,7 @@ public class GetTipoProduccionByIdQueryHandler : IRequestHandler<GetTipoProducci
 
     public async Task<TipoProduccionDTO?> Handle(GetTipoProduccionByIdQuery request, CancellationToken cancellationToken)
     {
-        var tipo = await _tipoProduccionRepository.GetByIdAsync(request.Id);
-        if (tipo == null)
-            return null;
-        return new TipoProduccionDTO
-        {
-            Id = tipo.Id,
-            Codigo = tipo.Codigo,
-            Nombre = tipo.Nombre,
-            Descripcion = tipo.Descripcion,
-            LineaProduccionId = tipo.LineaProduccionId,
-            AgregadoId = tipo.AgregadoId,
-            Activo = tipo.Activo,
-            CreadoPorId = tipo.CreadoPorId,
-            CreadoEl = tipo.CreadoEl,
-            ModificadoPorId = tipo.ModificadoPorId,
-            ModificadoEl = tipo.ModificadoEl
-        };
+        // Usar el método que devuelve estructura anidada
+        return await _tipoProduccionRepository.GetByIdWithRelationsAsync(request.Id);
     }
 }

@@ -1,5 +1,6 @@
 using AutoMapper;
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.LineaProduccion.DTOs;
 using Function.Blending.Core.Domain.Entities;
 using Function.Blending.Core.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;
@@ -163,5 +164,30 @@ public class LineaProduccionRepository : ILineaProduccionRepository
 
         _context.LineaProduccion.Update(entity);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<LineaProduccionActivaDTO>> GetActivasAsync()
+    {
+        return await _context.LineaProduccion
+            .Where(l => !l.Eliminado && l.Activo) // Solo registros activos (no eliminados Y activo = true)
+            .Select(l => new LineaProduccionActivaDTO 
+            { 
+                Id = l.Id, 
+                Codigo = l.Codigo 
+            })
+            .ToListAsync();
+    }
+
+    public async Task<int> GetActiveTipoProduccionCountAsync(Guid lineaProduccionId)
+    {
+        return await _context.TipoProduccion
+            .Where(tp => tp.LineaProduccionId == lineaProduccionId && !tp.Eliminado && tp.Activo)
+            .CountAsync();
+    }
+
+    public async Task<bool> IsUsedByActiveTipoProduccionAsync(Guid lineaProduccionId)
+    {
+        return await _context.TipoProduccion
+            .AnyAsync(tp => tp.LineaProduccionId == lineaProduccionId && !tp.Eliminado && tp.Activo);
     }
 }

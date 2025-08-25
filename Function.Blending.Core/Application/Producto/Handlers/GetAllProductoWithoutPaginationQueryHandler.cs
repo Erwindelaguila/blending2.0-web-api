@@ -40,6 +40,18 @@ public class GetAllProductoWithoutPaginationQueryHandler : IRequestHandler<GetAl
                     (x.ModificadoEl.HasValue && x.ModificadoEl.Value >= start && x.ModificadoEl.Value < end)
                 );
             }
+
+            // Filtro por CalidadId
+            if (request.Filters.CalidadId.HasValue)
+            {
+                productoQuery = productoQuery.Where(x => x.CalidadId == request.Filters.CalidadId.Value);
+            }
+
+            // Filtro por TipoProduccionId  
+            if (request.Filters.TipoProduccionId.HasValue)
+            {
+                productoQuery = productoQuery.Where(x => x.TipoProduccionId == request.Filters.TipoProduccionId.Value);
+            }
         }
 
         // Ordenar por fecha de creación

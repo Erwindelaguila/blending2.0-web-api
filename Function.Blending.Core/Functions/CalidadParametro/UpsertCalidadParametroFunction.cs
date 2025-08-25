@@ -41,10 +41,7 @@ public class UpsertCalidadParametroFunction
                     BaseResponse<object>.Fail("El cuerpo de la solicitud está vacío.", "Error de validación", 400));
             }
 
-            var batchDto = JsonSerializer.Deserialize<UpsertCalidadParametroBatchDTO>(body, new JsonSerializerOptions()
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var batchDto = JsonSerializer.Deserialize<UpsertCalidadParametroBatchDTO>(body, HttpResponseHelper.GetJsonDeserializerOptions());
 
             if (batchDto == null)
             {

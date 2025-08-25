@@ -8,5 +8,13 @@
             },
             "enableLiveMetricsFilters": true
         }
+    },
+    "functionTimeout": "00:02:00",
+    "extensions": {
+        "http": {
+            "maxOutstandingRequests": 200,
+            "maxConcurrentRequests": 100,
+            "dynamicThrottlesEnabled": true
+        }
     }
 }

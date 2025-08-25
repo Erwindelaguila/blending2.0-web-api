@@ -23,7 +23,7 @@ public partial class CalEjecucion
 
     public DateTime? ModificadoEl { get; set; }
 
-    public virtual ICollection<CalInpFiltro> CalInpFiltro { get; set; } = new List<CalInpFiltro>();
+    public virtual CalInpFiltro? CalInpFiltro { get; set; }
 
     public virtual ICollection<CalInpParametro> CalInpParametro { get; set; } = new List<CalInpParametro>();
 

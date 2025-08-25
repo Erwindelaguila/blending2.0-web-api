@@ -1,3 +1,4 @@
+using Function.Blending.Core.Application.LineaProduccion.DTOs;
 using Function.Blending.Core.Domain.Entities;
 
 namespace Function.Blending.Core.Application.Interfaces.Repositories;
@@ -13,4 +14,7 @@ public interface ILineaProduccionRepository
     Task UpdateAsync(LineaProduccionEntity linea);
     Task<LineaProduccionEntity> UpdateAndReturnAsync(LineaProduccionEntity linea);
     Task DeleteAsync(Guid id, Guid eliminadoPorId);
+    Task<List<LineaProduccionActivaDTO>> GetActivasAsync();
+    Task<int> GetActiveTipoProduccionCountAsync(Guid lineaProduccionId);
+    Task<bool> IsUsedByActiveTipoProduccionAsync(Guid lineaProduccionId);
 }

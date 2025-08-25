@@ -1,4 +1,5 @@
 using AutoMapper;
+using Function.Blending.Core.Application.Agregado.DTOs;
 using Function.Blending.Core.Application.Interfaces.Repositories;
 using Function.Blending.Core.Domain.Entities;
 using Function.Blending.Core.Infrastructure.Persistence.Models;
@@ -119,5 +120,30 @@ public class AgregadoRepository : IAgregadoRepository
 
         _context.Agregado.Update(entity);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<AgregadoActivoDTO>> GetActivosAsync()
+    {
+        return await _context.Agregado
+            .Where(a => !a.Eliminado && a.Activo) // Solo registros activos (no eliminados Y activo = true)
+            .Select(a => new AgregadoActivoDTO 
+            { 
+                Id = a.Id, 
+                Codigo = a.Codigo 
+            })
+            .ToListAsync();
+    }
+
+    public async Task<int> GetActiveTipoProduccionCountAsync(Guid agregadoId)
+    {
+        return await _context.TipoProduccion
+            .Where(tp => tp.AgregadoId == agregadoId && !tp.Eliminado && tp.Activo)
+            .CountAsync();
+    }
+
+    public async Task<bool> IsUsedByActiveTipoProduccionAsync(Guid agregadoId)
+    {
+        return await _context.TipoProduccion
+            .AnyAsync(tp => tp.AgregadoId == agregadoId && !tp.Eliminado && tp.Activo);
     }
 }

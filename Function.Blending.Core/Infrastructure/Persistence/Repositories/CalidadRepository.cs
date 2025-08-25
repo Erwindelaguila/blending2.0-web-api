@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Domain.Entities;
 using Function.Blending.Core.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;
@@ -165,5 +166,25 @@ public class CalidadRepository : ICalidadRepository
 
         _context.Calidad.Update(entity);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<bool> IsUsedByActiveProductoAsync(Guid calidadId)
+    {
+        return await _context.Producto
+            .AnyAsync(p => p.CalidadId == calidadId && 
+                          p.Activo && 
+                          !p.Eliminado);
+    }
+
+    public async Task<List<CalidadActivaDTO>> GetActivasAsync()
+    {
+        return await _context.Calidad
+            .Where(c => c.Activo && !c.Eliminado)
+            .Select(c => new CalidadActivaDTO
+            {
+                Id = c.Id,
+                Codigo = c.Codigo
+            })
+            .ToListAsync();
     }
 }

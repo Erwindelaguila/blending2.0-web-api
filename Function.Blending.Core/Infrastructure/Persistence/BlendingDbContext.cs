@@ -54,11 +54,13 @@ public partial class BlendingDbContext : DbContext
 
     public virtual DbSet<LogInpFilEmparejamiento> LogInpFilEmparejamiento { get; set; }
 
-    public virtual DbSet<LogInpFilOfeParametro> LogInpFilOfeParametro { get; set; }
-
-    public virtual DbSet<LogInpFilOferta> LogInpFilOferta { get; set; }
-
     public virtual DbSet<LogInpFiltro> LogInpFiltro { get; set; }
+
+    public virtual DbSet<LogInpInfo> LogInpInfo { get; set; }
+
+    public virtual DbSet<LogInpOfeParametro> LogInpOfeParametro { get; set; }
+
+    public virtual DbSet<LogInpOferta> LogInpOferta { get; set; }
 
     public virtual DbSet<LogOutConComposicion> LogOutConComposicion { get; set; }
 
@@ -113,6 +115,7 @@ public partial class BlendingDbContext : DbContext
 
             entity.Property(e => e.Key).HasMaxLength(100);
             entity.Property(e => e.Category).HasMaxLength(50);
+            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysdatetime())");
             entity.Property(e => e.Description).HasMaxLength(150);
             entity.Property(e => e.Group).HasMaxLength(50);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
@@ -236,6 +239,8 @@ public partial class BlendingDbContext : DbContext
         {
             entity.HasIndex(e => e.EjecucionId, "IX_CalInpFiltro_EjecucionId");
 
+            entity.HasIndex(e => e.EjecucionId, "UQ_CalInpFiltro_EjecucionId").IsUnique();
+
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.BorrarCalidades).HasMaxLength(200);
             entity.Property(e => e.CentroProduccion).HasMaxLength(200);
@@ -245,8 +250,8 @@ public partial class BlendingDbContext : DbContext
             entity.Property(e => e.UbicacionAlmacen).HasMaxLength(200);
             entity.Property(e => e.ValorCadmioAlto).HasColumnType("decimal(10, 4)");
 
-            entity.HasOne(d => d.Ejecucion).WithMany(p => p.CalInpFiltro)
-                .HasForeignKey(d => d.EjecucionId)
+            entity.HasOne(d => d.Ejecucion).WithOne(p => p.CalInpFiltro)
+                .HasForeignKey<CalInpFiltro>(d => d.EjecucionId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CalInpFiltro_Ejecucion");
         });
@@ -255,7 +260,7 @@ public partial class BlendingDbContext : DbContext
         {
             entity.HasIndex(e => e.ParametroId, "IX_CalInpParametro_ParametroId");
 
-            entity.HasIndex(e => new { e.EjecucionId, e.CalidadId, e.ParametroId }, "UQ_CalInpParametro").IsUnique();
+            entity.HasIndex(e => new { e.EjecucionId, e.CalidadId, e.ParametroId }, "UQ_CalInpParametro_Ejecucion_Calidad_Parametro").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Valor).HasColumnType("decimal(10, 4)");
@@ -280,7 +285,7 @@ public partial class BlendingDbContext : DbContext
         {
             entity.HasIndex(e => e.DetalleId, "IX_CalOutDetOtros_DetalleId");
 
-            entity.HasIndex(e => new { e.DetalleId, e.Codigo }, "UQ_CalOutDetOtros").IsUnique();
+            entity.HasIndex(e => new { e.DetalleId, e.Codigo }, "UQ_CalInpParametro_DetalleId_Codigo").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Codigo).HasMaxLength(20);
@@ -296,7 +301,7 @@ public partial class BlendingDbContext : DbContext
         {
             entity.HasIndex(e => e.DetalleId, "IX_CalOutDetParametro_DetalleId");
 
-            entity.HasIndex(e => new { e.DetalleId, e.CodigoParametro }, "UQ_CalOutDetParametro").IsUnique();
+            entity.HasIndex(e => new { e.DetalleId, e.CodigoParametro }, "UQ_CalInpParametro_DetalleId_CodigoParametro").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CodigoParametro).HasMaxLength(20);
@@ -316,7 +321,7 @@ public partial class BlendingDbContext : DbContext
 
             entity.HasIndex(e => e.Ruma, "IX_CalOutDetalle_Ruma");
 
-            entity.HasIndex(e => new { e.EjecucionId, e.Ruma, e.Grupo }, "UQ_CalOutDetalle").IsUnique();
+            entity.HasIndex(e => new { e.EjecucionId, e.Ruma, e.Grupo }, "UQ_CalInpParametro_EjecucionId_Ruma_Grupo").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.AlmacenUbicacion).HasMaxLength(200);
@@ -338,7 +343,7 @@ public partial class BlendingDbContext : DbContext
         {
             entity.HasIndex(e => e.ResumenId, "IX_CalOutResParametro_ResumenId");
 
-            entity.HasIndex(e => new { e.ResumenId, e.CodigoParametro }, "UQ_CalOutResParametro").IsUnique();
+            entity.HasIndex(e => new { e.ResumenId, e.CodigoParametro }, "UQ_CalInpParametro_ResumenId_CodigoParametro").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CodigoParametro).HasMaxLength(20);
@@ -356,7 +361,7 @@ public partial class BlendingDbContext : DbContext
 
             entity.HasIndex(e => e.Grupo, "IX_CalOutResumen_Grupo");
 
-            entity.HasIndex(e => new { e.EjecucionId, e.Grupo }, "UQ_CalOutResumen").IsUnique();
+            entity.HasIndex(e => new { e.EjecucionId, e.Grupo }, "UQ_CalInpParametro_EjecucionId_Grupo").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CodigoCalidadObjetivo).HasMaxLength(20);
@@ -475,7 +480,7 @@ public partial class BlendingDbContext : DbContext
         {
             entity.HasIndex(e => e.FiltroId, "IX_LogInpFilDivision_FiltroId");
 
-            entity.HasIndex(e => new { e.FiltroId, e.Ruma }, "UQ_LogInpFilDivision").IsUnique();
+            entity.HasIndex(e => new { e.FiltroId, e.Ruma }, "UQ_LogInpFilDivision_FiltroId_Ruma").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Division).HasMaxLength(50);
@@ -491,7 +496,7 @@ public partial class BlendingDbContext : DbContext
         {
             entity.HasIndex(e => e.ParametroId, "IX_LogInpFilEmparejamiento_ParametroId");
 
-            entity.HasIndex(e => new { e.FiltroId, e.Grupo, e.ParametroId }, "UQ_LogInpFilEmparejamiento").IsUnique();
+            entity.HasIndex(e => new { e.FiltroId, e.Grupo, e.ParametroId }, "UQ_LogInpFilEmparejamiento_FiltroId_Grupo_ParametroId").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Grupo).HasMaxLength(20);
@@ -508,56 +513,93 @@ public partial class BlendingDbContext : DbContext
                 .HasConstraintName("FK_LogInpFilEmparejamiento_Parametro");
         });
 
-        modelBuilder.Entity<LogInpFilOfeParametro>(entity =>
+        modelBuilder.Entity<LogInpFiltro>(entity =>
         {
-            entity.HasIndex(e => e.OfertaId, "IX_LogInpFilOfeParametro_OfertaId");
+            entity.HasIndex(e => e.EjecucionId, "IX_LogInpFiltro_EjecucionId");
 
-            entity.HasIndex(e => new { e.OfertaId, e.CodigoParametro }, "UQ_LogInpFilOfeParametro").IsUnique();
+            entity.HasIndex(e => e.EjecucionId, "UQ_LogInpFiltro_EjecucionId").IsUnique();
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Division).HasMaxLength(20);
+            entity.Property(e => e.Parametros).HasMaxLength(200);
+
+            entity.HasOne(d => d.Ejecucion).WithOne(p => p.LogInpFiltro)
+                .HasForeignKey<LogInpFiltro>(d => d.EjecucionId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_LogInpFiltro_Ejecucion");
+        });
+
+        modelBuilder.Entity<LogInpInfo>(entity =>
+        {
+            entity.HasIndex(e => e.AlmacenCodigo, "IX_LogInpInfo_AlmacenCodigo");
+
+            entity.HasIndex(e => e.Clienta, "IX_LogInpInfo_Clienta");
+
+            entity.HasIndex(e => e.Contrato, "IX_LogInpInfo_Contrato");
+
+            entity.HasIndex(e => e.FechaCarguio, "IX_LogInpInfo_FechaCarguio");
+
+            entity.HasIndex(e => e.PaisDestino, "IX_LogInpInfo_PaisDestino");
+
+            entity.HasIndex(e => e.PlantaCodigo, "IX_LogInpInfo_PlantaCodigo");
+
+            entity.HasIndex(e => e.EjecucionId, "UQ_LogInpInfo_EjecucionId").IsUnique();
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.AlmacenCodigo).HasMaxLength(20);
+            entity.Property(e => e.AlmacenDescripcion).HasMaxLength(100);
+            entity.Property(e => e.Asistente).HasMaxLength(100);
+            entity.Property(e => e.Clienta).HasMaxLength(100);
+            entity.Property(e => e.Contrato).HasMaxLength(50);
+            entity.Property(e => e.PaisDestino).HasMaxLength(50);
+            entity.Property(e => e.PedidoVenta).HasMaxLength(20);
+            entity.Property(e => e.PlantaCodigo).HasMaxLength(20);
+            entity.Property(e => e.PlantaDescripcion).HasMaxLength(100);
+            entity.Property(e => e.Supervisora).HasMaxLength(100);
+            entity.Property(e => e.UnidadMedidaRuma).HasMaxLength(10);
+
+            entity.HasOne(d => d.Ejecucion).WithOne(p => p.LogInpInfo)
+                .HasForeignKey<LogInpInfo>(d => d.EjecucionId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_LogInpInfo_EjecucionId");
+        });
+
+        modelBuilder.Entity<LogInpOfeParametro>(entity =>
+        {
+            entity.HasIndex(e => e.OfertaId, "IX_LogInpOfeParametro_OfertaId");
+
+            entity.HasIndex(e => new { e.OfertaId, e.CodigoParametro }, "UQ_LogInpOfeParametro_OfertaId_CodigoParametro").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CodigoParametro).HasMaxLength(20);
             entity.Property(e => e.Valor).HasColumnType("decimal(10, 4)");
 
-            entity.HasOne(d => d.Oferta).WithMany(p => p.LogInpFilOfeParametro)
+            entity.HasOne(d => d.Oferta).WithMany(p => p.LogInpOfeParametro)
                 .HasForeignKey(d => d.OfertaId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_LogInpFilOfeParametro_Oferta");
+                .HasConstraintName("FK_LogInpOfeParametro_Oferta");
         });
 
-        modelBuilder.Entity<LogInpFilOferta>(entity =>
+        modelBuilder.Entity<LogInpOferta>(entity =>
         {
-            entity.HasIndex(e => e.FiltroId, "IX_LogInpFilOferta_FiltroId");
+            entity.HasIndex(e => e.EjecucionId, "UQ_LogInpOferta_EjecucionId").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Descripcion).HasMaxLength(50);
             entity.Property(e => e.Material).HasMaxLength(20);
             entity.Property(e => e.Tolerancia).HasColumnType("decimal(10, 4)");
 
-            entity.HasOne(d => d.Filtro).WithMany(p => p.LogInpFilOferta)
-                .HasForeignKey(d => d.FiltroId)
+            entity.HasOne(d => d.Ejecucion).WithOne(p => p.LogInpOferta)
+                .HasForeignKey<LogInpOferta>(d => d.EjecucionId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_LogInpFilOferta_Filtro");
-        });
-
-        modelBuilder.Entity<LogInpFiltro>(entity =>
-        {
-            entity.HasIndex(e => e.EjecucionId, "IX_LogInpFiltro_EjecucionId");
-
-            entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.Division).HasMaxLength(20);
-            entity.Property(e => e.Parametros).HasMaxLength(200);
-
-            entity.HasOne(d => d.Ejecucion).WithMany(p => p.LogInpFiltro)
-                .HasForeignKey(d => d.EjecucionId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_LogInpFiltro_Ejecucion");
+                .HasConstraintName("FK_LogInpOferta_EjecucionId");
         });
 
         modelBuilder.Entity<LogOutConComposicion>(entity =>
         {
             entity.HasIndex(e => e.ContenedorId, "IX_LogOutConComposicion_ContenedorId");
 
-            entity.HasIndex(e => new { e.ContenedorId, e.CodigoParametro }, "UQ_LogOutConComposicion").IsUnique();
+            entity.HasIndex(e => new { e.ContenedorId, e.CodigoParametro }, "UQ_LogOutConComposicion_ContenedorId_CodigoParametro").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CodigoParametro).HasMaxLength(20);
@@ -573,7 +615,7 @@ public partial class BlendingDbContext : DbContext
         {
             entity.HasIndex(e => e.ContenedorId, "IX_LogOutConDistribucion_ContenedorId");
 
-            entity.HasIndex(e => new { e.ContenedorId, e.Ruma }, "UQ_LogOutConDistribucion").IsUnique();
+            entity.HasIndex(e => new { e.ContenedorId, e.Ruma }, "UQ_LogOutConDistribucion_ContenedorId_Ruma").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Ruma).HasMaxLength(20);
@@ -590,7 +632,7 @@ public partial class BlendingDbContext : DbContext
 
             entity.HasIndex(e => e.EjecucionId, "IX_LogOutContenedor_EjecucionId");
 
-            entity.HasIndex(e => new { e.EjecucionId, e.Contenedor }, "UQ_LogOutContenedor").IsUnique();
+            entity.HasIndex(e => new { e.EjecucionId, e.Contenedor }, "UQ_LogOutContenedor_EjecucionId_Contenedor").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Contenedor).HasMaxLength(20);

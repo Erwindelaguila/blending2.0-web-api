@@ -2,7 +2,9 @@ namespace Function.Blending.Core.Application.Common.Wrappers;
 
 public class PagedResponse<T>
 {
-    public IReadOnlyList<T> Data { get; init; } = Array.Empty<T>();
+    // Renombrado de Data -> Items para evitar doble "data" (BaseResponse.Data.Items)
+    public IReadOnlyList<T> Items { get; init; } = Array.Empty<T>();
+
     public PaginationInfo Pagination { get; init; } = new();
 }
 

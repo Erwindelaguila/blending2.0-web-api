@@ -5,29 +5,11 @@ namespace Function.Blending.Core.Application.TipoProduccion.Commands;
 
 public class CreateTipoProduccionCommand : IRequest<TipoProduccionDTO>
 {
-    public string Codigo { get; }
-    public string Nombre { get; }
-    public string? Descripcion { get; }
-    public Guid LineaProduccionId { get; }
-    public Guid AgregadoId { get; }
-    public bool? Activo { get; }
-    public Guid CreadoPorId { get; }
-
-    public CreateTipoProduccionCommand(
-        string codigo,
-        string nombre,
-        string? descripcion,
-        Guid lineaProduccionId,
-        Guid agregadoId,
-        bool? activo,
-        Guid creadoPorId)
-    {
-        Codigo = codigo;
-        Nombre = nombre;
-        Descripcion = descripcion;
-        LineaProduccionId = lineaProduccionId;
-        AgregadoId = agregadoId;
-        Activo = activo;
-        CreadoPorId = creadoPorId;
-    }
+    public string Codigo { get; set; } = string.Empty;
+    public string Nombre { get; set; } = string.Empty;
+    public string? Descripcion { get; set; }
+    public Guid LineaProduccionId { get; set; }
+    public Guid AgregadoId { get; set; }
+    public bool? Activo { get; set; }
+    public Guid CreadoPorId { get; set; }
 }

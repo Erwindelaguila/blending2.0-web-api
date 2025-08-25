@@ -1,0 +1,84 @@
+using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.AppParam.Queries;
+using Function.Blending.Core.Application.AppParam.DTOs;
+using Function.Blending.Core.Application.Common.Wrappers;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+
+namespace Function.Blending.Core.Application.AppParam.Handlers;
+
+public class GetAllAppParamsQueryHandler : IRequestHandler<GetAllAppParamsQuery, PagedResponse<AppParamDTO>>
+{
+    private readonly IAppParamRepository _appParamRepository;
+
+    public GetAllAppParamsQueryHandler(IAppParamRepository appParamRepository)
+    {
+        _appParamRepository = appParamRepository;
+    }
+
+    public async Task<PagedResponse<AppParamDTO>> Handle(GetAllAppParamsQuery request, CancellationToken cancellationToken)
+    {
+        var queryable = _appParamRepository.GetQueryable();
+
+        // Aplicar filtros
+        if (!string.IsNullOrWhiteSpace(request.Key))
+        {
+            queryable = queryable.Where(ap => ap.Key.Contains(request.Key));
+        }
+
+        if (request.IsActive.HasValue)
+        {
+            queryable = queryable.Where(ap => ap.IsActive == request.IsActive.Value);
+        }
+
+        if (request.Fecha.HasValue)
+        {
+            var fechaInicio = request.Fecha.Value.Date;
+            var fechaFin = fechaInicio.AddDays(1);
+            queryable = queryable.Where(ap => ap.CreadoEl >= fechaInicio && ap.CreadoEl < fechaFin);
+        }
+
+        // Contar total antes del paginado
+        var total = await queryable.CountAsync(cancellationToken);
+
+        // Aplicar paginado y ordenar
+        var items = await queryable
+            .OrderBy(ap => ap.Key)
+            .Skip((request.Page - 1) * request.Size)
+            .Take(request.Size)
+            .Select(ap => new AppParamDTO
+            {
+                Key = ap.Key,
+                Value = ap.Value,
+                Description = ap.Description,
+                Category = ap.Category,
+                Group = ap.Group,
+                IsActive = ap.IsActive,
+                IsInternal = ap.IsInternal,
+                IsVisible = ap.IsVisible,
+                IsDisableable = ap.IsDisableable,
+                IsRemovable = ap.IsRemovable,
+                CreadoPorId = ap.CreadoPorId,
+                CreadoEl = ap.CreadoEl,
+                ModificadoPorId = ap.ModificadoPorId,
+                ModificadoEl = ap.ModificadoEl
+            })
+            .ToListAsync(cancellationToken);
+
+        return new PagedResponse<AppParamDTO>
+        {
+            Items = items,
+            Pagination = new PaginationInfo
+            {
+                CurrentPage = request.Page,
+                PageSize = request.Size,
+                TotalCount = total,
+                TotalPages = (int)Math.Ceiling((double)total / request.Size),
+                HasPrevious = request.Page > 1,
+                HasNext = request.Page < (int)Math.Ceiling((double)total / request.Size),
+                PreviousPage = request.Page > 1 ? request.Page - 1 : null,
+                NextPage = request.Page < (int)Math.Ceiling((double)total / request.Size) ? request.Page + 1 : null
+            }
+        };
+    }
+}

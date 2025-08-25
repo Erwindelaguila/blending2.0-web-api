@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FluentValidation;
+using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
@@ -40,10 +41,7 @@ public class UpdateTipoProduccionFunction
                     BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false o null).", "Error de validación", 400));
             }
 
-            var command = JsonSerializer.Deserialize<UpdateTipoProduccionCommand>(body, new JsonSerializerOptions()
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var command = JsonSerializer.Deserialize<UpdateTipoProduccionCommand>(body, HttpResponseHelper.GetJsonDeserializerOptions());
             if (command == null)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
@@ -68,6 +66,15 @@ public class UpdateTipoProduccionFunction
                 error,
                 "Código duplicado",
                 409
+            ));
+        }
+        catch (BusinessRuleException ex)
+        {
+            var error = new { Message = ex.Message };
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                error,
+                "No se puede activar por elementos inactivos",
+                400
             ));
         }
         catch (Exception ex)

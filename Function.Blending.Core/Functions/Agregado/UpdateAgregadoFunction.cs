@@ -2,6 +2,7 @@ using System.Text.Json;
 using FluentValidation;
 using Function.Blending.Core.Application.Agregado.Commands;
 using Function.Blending.Core.Application.Agregado.DTOs;
+using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
@@ -40,10 +41,7 @@ public class UpdateAgregadoFunction
                     BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false o null).", "Error de validación", 400));
             }
 
-            var command = JsonSerializer.Deserialize<UpdateAgregadoCommand>(body, new JsonSerializerOptions()
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var command = JsonSerializer.Deserialize<UpdateAgregadoCommand>(body, HttpResponseHelper.GetJsonDeserializerOptions());
 
             if (command == null)
             {
@@ -62,6 +60,14 @@ public class UpdateAgregadoFunction
                 validationErrors,
                 "Errores de validación",
                 400
+            ));
+        }
+        catch (EntityInUseException ex)
+        {
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                new { Error = ex.Message, Code = ex.ErrorCode },
+                "Conflicto de regla de negocio",
+                409
             ));
         }
         catch (ArgumentException ex) when (ex.ParamName == "codigo")

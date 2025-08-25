@@ -33,18 +33,25 @@ public class GetAllAgregadosQueryHandler : IRequestHandler<GetAllAgregadosQuery,
                     request.Filters.Estado,
                     x => x.Activo);
 
-                if (request.Filters.FechaDesde.HasValue)
+                // FechaDesde (o Desde legacy) filtra por día exacto en CreadoEl o ModificadoEl
+                var fechaFiltro = request.Filters.FechaDesde ?? request.Filters.Desde;
+                if (fechaFiltro.HasValue)
                 {
-                    var fechaEspecifica = request.Filters.FechaDesde.Value.Date;
-                    var fechaSiguiente = fechaEspecifica.AddDays(1);
-                    agregadosQuery = agregadosQuery.Where(x => 
-                        (x.CreadoEl >= fechaEspecifica && x.CreadoEl < fechaSiguiente) ||
-                        (x.ModificadoEl != null && x.ModificadoEl.Value >= fechaEspecifica && x.ModificadoEl.Value < fechaSiguiente)
+                    var start = fechaFiltro.Value.Date;
+                    var end = start.AddDays(1);
+                    agregadosQuery = agregadosQuery.Where(x =>
+                        (x.CreadoEl >= start && x.CreadoEl < end) ||
+                        (x.ModificadoEl.HasValue && x.ModificadoEl.Value >= start && x.ModificadoEl.Value < end)
                     );
                 }
             }
 
-            agregadosQuery = agregadosQuery.OrderBy(x => x.CreadoEl);
+            agregadosQuery = request.Filters?.Estado switch
+            {
+                "1" => agregadosQuery.OrderByDescending(x => x.Activo).ThenBy(x => x.CreadoEl),
+                "0" => agregadosQuery.OrderBy(x => x.Activo).ThenBy(x => x.CreadoEl),
+                _ => agregadosQuery.OrderBy(x => x.CreadoEl)
+            };
 
             var agregadosProjected = agregadosQuery.Select(agregado => new AgregadoDTO
             {

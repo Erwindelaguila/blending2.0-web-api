@@ -1,6 +1,7 @@
 using MediatR;
 using Function.Blending.Core.Application.TipoProduccion.Commands;
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Common.Exceptions;
 
 namespace Function.Blending.Core.Application.TipoProduccion.Handlers;
 
@@ -20,10 +21,12 @@ public class DeleteTipoProduccionCommandHandler : IRequestHandler<DeleteTipoProd
 
         try
         {
-            // Validación de negocio: verificar si tiene dependencias activas
-            // TODO: Implementar validación de dependencias según reglas de negocio
-            // Ejemplo: if (await HasActiveDependencies(request.Id))
-            //     throw new InvalidOperationException("No se puede eliminar porque tiene dependencias activas.");
+            // Validar que no esté siendo usado por Producto activo
+            var isUsedByActiveProducto = await _tipoProduccionRepository.IsUsedByActiveProductoAsync(request.Id);
+            if (isUsedByActiveProducto)
+            {
+                throw new EntityInUseException("el Tipo de Producción", "está siendo usado por al menos un Producto activo");
+            }
 
             await _tipoProduccionRepository.DeleteAsync(request.Id, request.EliminadoPorId);
             return true;

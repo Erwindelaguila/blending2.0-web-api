@@ -1,5 +1,6 @@
 using AutoMapper;
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.TipoProduccion.DTOs;
 using Function.Blending.Core.Domain.Entities;
 using Function.Blending.Core.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;
@@ -70,6 +71,85 @@ public class TipoProduccionRepository : ITipoProduccionRepository
             // Quito el OrderBy para manejarlo en el handler según los filtros aplicados
     }
 
+    public async Task<List<TipoProduccionDTO>> GetAllWithRelationsAsync()
+    {
+        var result = await _context.TipoProduccion
+            .Where(t => !t.Eliminado)
+            .Join(_context.LineaProduccion, 
+                  tp => tp.LineaProduccionId, 
+                  lp => lp.Id, 
+                  (tp, lp) => new { tp, lp })
+            .Join(_context.Agregado,
+                  x => x.tp.AgregadoId,
+                  ag => ag.Id,
+                  (x, ag) => new TipoProduccionDTO
+                  {
+                      Id = x.tp.Id,
+                      Codigo = x.tp.Codigo,
+                      Nombre = x.tp.Nombre,
+                      Descripcion = x.tp.Descripcion,
+                      Activo = x.tp.Activo,
+                      CreadoPorId = x.tp.CreadoPorId,
+                      CreadoEl = x.tp.CreadoEl,
+                      ModificadoPorId = x.tp.ModificadoPorId,
+                      ModificadoEl = x.tp.ModificadoEl,
+                      LineaProduccion = new LineaProduccionRelacion 
+                      { 
+                          Id = x.lp.Id, 
+                          Codigo = x.lp.Codigo
+                      },
+                      Agregado = new AgregadoRelacion 
+                      { 
+                          Id = ag.Id, 
+                          Codigo = ag.Codigo
+                      }
+                  })
+            .AsNoTracking()
+            .OrderBy(tp => tp.Codigo)
+            .ToListAsync();
+
+        return result;
+    }
+
+    public async Task<TipoProduccionDTO?> GetByIdWithRelationsAsync(Guid id)
+    {
+        var result = await _context.TipoProduccion
+            .Where(t => t.Id == id && !t.Eliminado)
+            .Join(_context.LineaProduccion, 
+                  tp => tp.LineaProduccionId, 
+                  lp => lp.Id, 
+                  (tp, lp) => new { tp, lp })
+            .Join(_context.Agregado,
+                  x => x.tp.AgregadoId,
+                  ag => ag.Id,
+                  (x, ag) => new TipoProduccionDTO
+                  {
+                      Id = x.tp.Id,
+                      Codigo = x.tp.Codigo,
+                      Nombre = x.tp.Nombre,
+                      Descripcion = x.tp.Descripcion,
+                      Activo = x.tp.Activo,
+                      CreadoPorId = x.tp.CreadoPorId,
+                      CreadoEl = x.tp.CreadoEl,
+                      ModificadoPorId = x.tp.ModificadoPorId,
+                      ModificadoEl = x.tp.ModificadoEl,
+                      LineaProduccion = new LineaProduccionRelacion 
+                      { 
+                          Id = x.lp.Id, 
+                          Codigo = x.lp.Codigo
+                      },
+                      Agregado = new AgregadoRelacion 
+                      { 
+                          Id = ag.Id, 
+                          Codigo = ag.Codigo
+                      }
+                  })
+            .AsNoTracking()
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
     public async Task<(IReadOnlyList<TipoProduccionEntity> Items, int Total)> GetPagedAsync(int page, int size)
     {
         var baseQuery = _context.TipoProduccion.AsNoTracking()
@@ -136,5 +216,25 @@ public class TipoProduccionRepository : ITipoProduccionRepository
 
         _context.TipoProduccion.Update(entity);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<bool> IsUsedByActiveProductoAsync(Guid tipoProduccionId)
+    {
+        return await _context.Producto
+            .AnyAsync(p => p.TipoProduccionId == tipoProduccionId && 
+                          p.Activo && 
+                          !p.Eliminado);
+    }
+
+    public async Task<List<TipoProduccionActivaDTO>> GetActivasAsync()
+    {
+        return await _context.TipoProduccion
+            .Where(tp => tp.Activo && !tp.Eliminado)
+            .Select(tp => new TipoProduccionActivaDTO
+            {
+                Id = tp.Id,
+                Codigo = tp.Codigo
+            })
+            .ToListAsync();
     }
 }

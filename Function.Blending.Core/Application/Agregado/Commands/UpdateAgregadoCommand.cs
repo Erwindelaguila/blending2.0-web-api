@@ -10,7 +10,8 @@ namespace Function.Blending.Core.Application.Agregado.Commands
         public string Nombre { get; }
         public string? Descripcion { get; }
         public bool? Activo { get; }
-        public Guid ModificadoPorId { get; }
+        // Hacer nullable para evitar error de deserialización cuando llega null
+        public Guid? ModificadoPorId { get; }
 
         public UpdateAgregadoCommand(
             Guid id,
@@ -18,7 +19,7 @@ namespace Function.Blending.Core.Application.Agregado.Commands
             string nombre,
             string? descripcion,
             bool? activo,
-            Guid modificadoPorId)
+            Guid? modificadoPorId)
         {
             Id = id;
             Codigo = codigo;

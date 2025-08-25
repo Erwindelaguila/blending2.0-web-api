@@ -28,6 +28,4 @@ public partial class LogInpFiltro
     public virtual ICollection<LogInpFilDivision> LogInpFilDivision { get; set; } = new List<LogInpFilDivision>();
 
     public virtual ICollection<LogInpFilEmparejamiento> LogInpFilEmparejamiento { get; set; } = new List<LogInpFilEmparejamiento>();
-
-    public virtual ICollection<LogInpFilOferta> LogInpFilOferta { get; set; } = new List<LogInpFilOferta>();
 }

@@ -2,6 +2,7 @@ using MediatR;
 using Function.Blending.Core.Application.LineaProduccion.Commands;
 using Function.Blending.Core.Application.LineaProduccion.DTOs;
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Domain.Entities;
 
 namespace Function.Blending.Core.Application.LineaProduccion.Handlers;
@@ -17,6 +18,21 @@ public class UpdateLineaProduccionCommandHandler : IRequestHandler<UpdateLineaPr
 
     public async Task<LineaProduccionDTO> Handle(UpdateLineaProduccionCommand request, CancellationToken cancellationToken)
     {
+        // Obtener el registro actual para verificar cambios
+        var currentLineaProduccion = await _lineaProduccionRepository.GetByIdAsync(request.Id);
+        if (currentLineaProduccion == null)
+            throw new InvalidOperationException("Línea de Producción no encontrada");
+
+        // Validar regla de negocio: no se puede inactivar si está siendo usado por TipoProducción activo
+        if (currentLineaProduccion.Activo && request.Activo == false)
+        {
+            var isUsedByActiveTipoProduccion = await _lineaProduccionRepository.IsUsedByActiveTipoProduccionAsync(request.Id);
+            if (isUsedByActiveTipoProduccion)
+            {
+                throw new EntityInUseException("la Línea de Producción", "está siendo usada por al menos un Tipo de Producción activo");
+            }
+        }
+
         // Crear una nueva entidad limpia con los datos del comando
         var lineaProduccionEntity = new LineaProduccionEntity
         {

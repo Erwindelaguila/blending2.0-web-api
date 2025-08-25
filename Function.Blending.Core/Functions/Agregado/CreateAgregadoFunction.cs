@@ -42,10 +42,7 @@ public class CreateAgregadoFunction
                     BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false o null).", "Error de validación", 400));
             }
 
-            var command = JsonSerializer.Deserialize<CreateAgregadoCommand>(body, new JsonSerializerOptions()
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var command = JsonSerializer.Deserialize<CreateAgregadoCommand>(body, HttpResponseHelper.GetJsonDeserializerOptions());
 
             if (command == null)
             {

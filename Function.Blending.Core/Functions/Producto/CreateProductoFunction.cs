@@ -32,10 +32,7 @@ public class CreateProductoFunction
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail("El cuerpo de la solicitud está vacío.", "Error de validación", 400));
             }
-            var command = JsonSerializer.Deserialize<CreateProductoCommand>(body, new JsonSerializerOptions()
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var command = JsonSerializer.Deserialize<CreateProductoCommand>(body, HttpResponseHelper.GetJsonDeserializerOptions());
             if (command == null)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,

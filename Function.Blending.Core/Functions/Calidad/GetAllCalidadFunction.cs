@@ -33,6 +33,14 @@ public class GetAllCalidadFunction
             // Log para debug - ver qué parámetros llegan
             _logger.LogInformation("GetAllCalidades called with query: {QueryString}", req.Url.Query);
             
+            // Verificar si es solicitud de activos (para combos)
+            if (query["activo"] == "true")
+            {
+                _logger.LogInformation("Returning active calidades for combo");
+                var activasResult = await _mediator.Send(new GetAllCalidadesActivasQuery());
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(activasResult, "Calidades activas obtenidas correctamente"));
+            }
+            
             // Obtener parámetros de paginación con valores por defecto
             if (!int.TryParse(query["page"], out var page) || page < 1)
                 page = 1;

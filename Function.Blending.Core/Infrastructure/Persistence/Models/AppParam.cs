@@ -24,4 +24,12 @@ public partial class AppParam
     public bool IsDisableable { get; set; }
 
     public bool IsRemovable { get; set; }
+
+    public Guid CreadoPorId { get; set; }
+
+    public DateTime CreadoEl { get; set; }
+
+    public Guid? ModificadoPorId { get; set; }
+
+    public DateTime? ModificadoEl { get; set; }
 }

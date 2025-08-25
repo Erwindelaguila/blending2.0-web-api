@@ -33,7 +33,11 @@ public partial class LogEjecucion
 
     public virtual ICollection<LogEjecucion> InverseAsociado { get; set; } = new List<LogEjecucion>();
 
-    public virtual ICollection<LogInpFiltro> LogInpFiltro { get; set; } = new List<LogInpFiltro>();
+    public virtual LogInpFiltro? LogInpFiltro { get; set; }
+
+    public virtual LogInpInfo? LogInpInfo { get; set; }
+
+    public virtual LogInpOferta? LogInpOferta { get; set; }
 
     public virtual ICollection<LogOutContenedor> LogOutContenedor { get; set; } = new List<LogOutContenedor>();
 

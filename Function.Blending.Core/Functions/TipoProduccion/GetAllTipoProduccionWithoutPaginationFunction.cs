@@ -1,6 +1,8 @@
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.TipoProduccion.Queries;
+using Function.Blending.Core.Application.TipoProduccion.DTOs;
 using Function.Blending.Core.Application.Common.Helpers;
+using Function.Blending.Core.Application.Common.Wrappers;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -39,9 +41,9 @@ public class GetAllTipoProduccionWithoutPaginationFunction
             var getAllQuery = new GetAllTipoProduccionWithoutPaginationQuery(filtersToApply);
 
             var result = await _mediator.Send(getAllQuery);
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(result);
-            return response;
+            
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, 
+                BaseResponse<List<TipoProduccionDTO>>.Success(result, "Tipos de producción obtenidos correctamente"));
         }
         catch (Exception ex)
         {

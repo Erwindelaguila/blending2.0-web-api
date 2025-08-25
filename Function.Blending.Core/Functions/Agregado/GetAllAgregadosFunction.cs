@@ -26,11 +26,21 @@ public class GetAllAgregadosFunction
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Production.AgregadoBase)] HttpRequestData req)
     {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        
         try
         {
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             
             _logger.LogInformation("GetAllAgregados called with query: {QueryString}", req.Url.Query);
+            
+            // Verificar si es solicitud de activos (para combos)
+            if (query["activo"] == "true")
+            {
+                _logger.LogInformation("Returning active agregados for combo");
+                var activosResult = await _mediator.Send(new GetAllAgregadosActivosQuery(), cts.Token);
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(activosResult, "Agregados activos obtenidos correctamente"));
+            }
             
             if (!int.TryParse(query["page"], out var page) || page < 1)
                 page = 1;
@@ -40,14 +50,22 @@ public class GetAllAgregadosFunction
 
             var filters = QueryParameterHelper.ParseAgregadoFilters(query);
             
-            _logger.LogInformation("Parsed filters - Codigo: {Codigo}, Estado: {Estado}, FechaDesde: {FechaDesde}", 
-                filters.Codigo, filters.Estado, filters.FechaDesde);
+            _logger.LogInformation("Parsed filters - Desde: {Desde}", filters.Desde);
             
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var result = await _mediator.Send(new GetAllAgregadosQuery(page, size, filtersToApply));
+            var result = await _mediator.Send(new GetAllAgregadosQuery(page, size, filtersToApply), cts.Token);
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<AgregadoDTO>>.Success(result, "Agregados obtenidos correctamente"));
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogWarning("GetAllAgregados request timeout after 30 seconds");
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                "La operación tardó demasiado tiempo y fue cancelada",
+                null,
+                408
+            ));
         }
         catch (ArgumentException ex)
         {

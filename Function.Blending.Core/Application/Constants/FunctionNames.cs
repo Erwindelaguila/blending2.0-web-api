@@ -77,6 +77,17 @@ public static class FunctionNames
         public const string Upsert = "UpsertCalidadParametro";
     }
 
+    public static class AppParam
+    {
+        public const string Create = "CreateAppParam";
+        public const string Update = "UpdateAppParam";
+        public const string Delete = "DeleteAppParam";
+        public const string GetAll = "GetAllAppParams";
+        public const string GetByKey = "GetAppParamByKey";
+        public const string GetByCategory = "GetAppParamsByCategory";
+        public const string GetByGroup = "GetAppParamsByGroup";
+    }
+
     public static class User
     {
         public const string GetMenu = "GetUserMenu";

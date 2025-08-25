@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Producto.DTOs;
 using Function.Blending.Core.Domain.Entities;
 using Function.Blending.Core.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;
@@ -73,6 +74,12 @@ public class ProductoRepository : IProductoRepository
             });
     }
 
+    public IQueryable<Producto> GetEntityQueryable()
+    {
+        // Devuelve el IQueryable del modelo EF (sin proyección) para permitir Include antes de Select
+        return _context.Producto.Where(p => !p.Eliminado);
+    }
+
     public async Task CreateAsync(ProductoEntity productoEntity)
     {
         var model = _mapper.Map<Producto>(productoEntity);
@@ -133,5 +140,67 @@ public class ProductoRepository : IProductoRepository
 
         _context.Producto.Update(entity);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<ProductoDTO>> GetAllWithRelationsAsync()
+    {
+        return await _context.Producto
+            .Where(p => !p.Eliminado)
+            .Include(p => p.Calidad)
+            .Include(p => p.TipoProduccion)
+            .Select(p => new ProductoDTO
+            {
+                Id = p.Id,
+                Codigo = p.Codigo,
+                Nombre = p.Nombre,
+                Descripcion = p.Descripcion,
+                Calidad = new CalidadRelacion
+                {
+                    Id = p.Calidad!.Id,
+                    Codigo = p.Calidad.Codigo
+                },
+                TipoProduccion = new TipoProduccionRelacion
+                {
+                    Id = p.TipoProduccion!.Id,
+                    Codigo = p.TipoProduccion.Codigo
+                },
+                Activo = p.Activo,
+                CreadoEl = p.CreadoEl,
+                ModificadoPorId = p.ModificadoPorId,
+                ModificadoEl = p.ModificadoEl
+            })
+            .ToListAsync();
+    }
+
+    public async Task<ProductoDTO?> GetByIdWithRelationsAsync(Guid id)
+    {
+        // Proyección minimalista para reducir payload (solo id y codigo de relaciones)
+        return await _context.Producto
+            .Where(p => p.Id == id && !p.Eliminado)
+            .Include(p => p.Calidad)
+            .Include(p => p.TipoProduccion)
+            .Select(p => new ProductoDTO
+            {
+                Id = p.Id,
+                Codigo = p.Codigo,
+                Nombre = p.Nombre,
+                Descripcion = p.Descripcion,
+                Calidad = new CalidadRelacion
+                {
+                    Id = p.Calidad!.Id,
+                    Codigo = p.Calidad.Codigo
+                },
+                TipoProduccion = new TipoProduccionRelacion
+                {
+                    Id = p.TipoProduccion!.Id,
+                    Codigo = p.TipoProduccion.Codigo
+                },
+                Activo = p.Activo,
+                CreadoPorId = p.CreadoPorId,
+                CreadoEl = p.CreadoEl,
+                ModificadoPorId = p.ModificadoPorId,
+                ModificadoEl = p.ModificadoEl
+            })
+            .FirstOrDefaultAsync();
     }
 }

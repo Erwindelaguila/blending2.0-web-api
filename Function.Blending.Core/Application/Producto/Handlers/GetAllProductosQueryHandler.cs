@@ -15,20 +15,6 @@ public class GetAllProductosQueryHandler : IRequestHandler<GetAllProductosQuery,
 
     public async Task<List<ProductoDTO>> Handle(GetAllProductosQuery request, CancellationToken cancellationToken)
     {
-        var entities = await _productoRepository.GetAllAsync();
-        return entities.Select(entity => new ProductoDTO
-        {
-            Id = entity.Id,
-            Codigo = entity.Codigo,
-            Nombre = entity.Nombre,
-            Descripcion = entity.Descripcion,
-            CalidadId = entity.CalidadId,
-            TipoProduccionId = entity.TipoProduccionId,
-            Activo = entity.Activo,
-            CreadoPorId = entity.CreadoPorId,
-            CreadoEl = entity.CreadoEl,
-            ModificadoPorId = entity.ModificadoPorId,
-            ModificadoEl = entity.ModificadoEl
-        }).ToList();
+        return await _productoRepository.GetAllWithRelationsAsync();
     }
 }

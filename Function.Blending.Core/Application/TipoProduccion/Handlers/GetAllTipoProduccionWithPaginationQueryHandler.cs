@@ -21,60 +21,54 @@ public class GetAllTipoProduccionWithPaginationQueryHandler : IRequestHandler<Ge
     {
         try
         {
-            var tipoProduccionQuery = _tipoProduccionRepository.GetQueryable();
-
+            // Obtener todos los datos con estructura anidada
+            var allTipoProduccion = await _tipoProduccionRepository.GetAllWithRelationsAsync();
+            
+            // Aplicar filtros en memoria usando request.Filters
             if (request.Filters != null)
             {
-                tipoProduccionQuery = tipoProduccionQuery.ApplyCodigoFilter(
-                    request.Filters.Codigo,
-                    x => x.Codigo);
-
-                tipoProduccionQuery = tipoProduccionQuery.ApplyEstadoFilter(
-                    request.Filters.Estado,
-                    x => x.Activo);
-
-                if (request.Filters.FechaDesde.HasValue)
+                if (!string.IsNullOrWhiteSpace(request.Filters.Codigo))
+                    allTipoProduccion = allTipoProduccion.Where(x => x.Codigo.Contains(request.Filters.Codigo, StringComparison.OrdinalIgnoreCase)).ToList();
+                
+                if (!string.IsNullOrWhiteSpace(request.Filters.Estado))
                 {
-                    var start = request.Filters.FechaDesde.Value.Date;
-                    var end = start.AddDays(1);
-                    tipoProduccionQuery = tipoProduccionQuery.Where(x =>
-                        (x.CreadoEl >= start && x.CreadoEl < end) ||
-                        (x.ModificadoEl.HasValue && x.ModificadoEl.Value >= start && x.ModificadoEl.Value < end)
-                    );
+                    var isActivo = request.Filters.Estado == "1" || request.Filters.Estado.ToLower() == "activo";
+                    allTipoProduccion = allTipoProduccion.Where(x => x.Activo == isActivo).ToList();
                 }
+                
+                if (request.Filters.FechaDesde.HasValue)
+                    allTipoProduccion = allTipoProduccion.Where(x => x.CreadoEl >= request.Filters.FechaDesde.Value).ToList();
             }
 
-            // Orden: por estado si viene, si no por CreadoEl
-            tipoProduccionQuery = request.Filters?.Estado switch
+            // Ordenar por fecha de creación (más recientes al final)
+            allTipoProduccion = allTipoProduccion.OrderBy(x => x.CreadoEl).ToList();
+
+            // Aplicar paginación
+            var totalRecords = allTipoProduccion.Count;
+            var tipoProduccionPaginated = allTipoProduccion
+                .Skip((request.Page - 1) * request.Size)
+                .Take(request.Size)
+                .ToList();
+
+            return new PagedResponse<TipoProduccionDTO>
             {
-                "1" => tipoProduccionQuery.OrderByDescending(x => x.Activo).ThenBy(x => x.CreadoEl),
-                "0" => tipoProduccionQuery.OrderBy(x => x.Activo).ThenBy(x => x.CreadoEl),
-                _ => tipoProduccionQuery.OrderBy(x => x.CreadoEl)
+                Items = tipoProduccionPaginated,
+                Pagination = new PaginationInfo
+                {
+                    CurrentPage = request.Page,
+                    PageSize = request.Size,
+                    TotalCount = totalRecords,
+                    TotalPages = (int)Math.Ceiling((double)totalRecords / request.Size),
+                    HasPrevious = request.Page > 1,
+                    HasNext = request.Page < (int)Math.Ceiling((double)totalRecords / request.Size),
+                    PreviousPage = request.Page > 1 ? request.Page - 1 : null,
+                    NextPage = request.Page < (int)Math.Ceiling((double)totalRecords / request.Size) ? request.Page + 1 : null
+                }
             };
-
-            // Proyectar a DTO (hacer antes de paginación para optimizar)
-            var tipoProduccionProjected = tipoProduccionQuery.Select(tipoProduccion => new TipoProduccionDTO
-            {
-                Id = tipoProduccion.Id,
-                Codigo = tipoProduccion.Codigo,
-                Nombre = tipoProduccion.Nombre,
-                Descripcion = tipoProduccion.Descripcion,
-                LineaProduccionId = tipoProduccion.LineaProduccionId,
-                AgregadoId = tipoProduccion.AgregadoId,
-                Activo = tipoProduccion.Activo,
-                CreadoPorId = tipoProduccion.CreadoPorId,
-                CreadoEl = tipoProduccion.CreadoEl,
-                ModificadoPorId = tipoProduccion.ModificadoPorId,
-                ModificadoEl = tipoProduccion.ModificadoEl
-            });
-
-            var pagedResult = await tipoProduccionProjected.ToPagedResultAsync(request.Page, request.Size, cancellationToken);
-            return pagedResult.ToPagedResponse();
         }
-        catch (ArgumentException)
+        catch (Exception ex)
         {
-            // Re-lanzar ArgumentException para que sea manejada por la función HTTP como 400
-            throw;
+            throw new Exception("Error al obtener los tipos de producción paginados", ex);
         }
     }
 

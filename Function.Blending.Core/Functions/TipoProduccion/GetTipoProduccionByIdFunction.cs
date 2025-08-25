@@ -36,7 +36,7 @@ public class GetTipoProduccionByIdFunction
                 ));
             }
 
-            var result = await _mediator.Send(new GetTipoProduccionByIdQuery(tipoProduccionId));
+            var result = await _mediator.Send(new GetTipoProduccionByIdWithRelationsQuery(tipoProduccionId));
 
             if (result == null)
             {

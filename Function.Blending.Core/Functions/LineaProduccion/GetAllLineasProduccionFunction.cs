@@ -26,37 +26,50 @@ public class GetAllLineasProduccionFunction
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Production.LineaProduccionBase)] HttpRequestData req)
     {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)); // Timeout de 30 segundos
+        
         try
         {
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             
-            // Log para debug - ver qué parámetros llegan
             _logger.LogInformation("GetAllLineasProduccion called with query: {QueryString}", req.Url.Query);
             
-            // Obtener parámetros de paginación con valores por defecto
+            // Verificar si es solicitud de activos (para combos)
+            if (query["activo"] == "true")
+            {
+                _logger.LogInformation("Returning active lineas produccion for combo");
+                var activasResult = await _mediator.Send(new GetAllLineasProduccionActivasQuery(), cts.Token);
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(activasResult, "Líneas de producción activas obtenidas correctamente"));
+            }
+            
             if (!int.TryParse(query["page"], out var page) || page < 1)
                 page = 1;
                 
             if (!int.TryParse(query["size"], out var size) || size < 1 || size > 100)
-                size = 10; // Por defecto 10 registros por página
+                size = 10;
 
-            // Parsear filtros desde query parameters - puede lanzar ArgumentException
             var filters = QueryParameterHelper.ParseLineaProduccionFilters(query);
             
-            // Log para debug - filtros activos
             _logger.LogInformation("Parsed filters - Codigo: {Codigo}, Estado: {Estado}, FechaDesde: {FechaDesde}", 
                 filters.Codigo, filters.Estado, filters.FechaDesde);
             
-            // Solo enviar filtros si al menos uno está activo
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var result = await _mediator.Send(new GetAllLineasProduccionQuery(page, size, filtersToApply));
+            var result = await _mediator.Send(new GetAllLineasProduccionQuery(page, size, filtersToApply), cts.Token);
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<LineaProduccionDTO>>.Success(result, "Líneas de producción obtenidas correctamente"));
         }
+        catch (OperationCanceledException)
+        {
+            _logger.LogWarning("GetAllLineasProduccion request timeout after 30 seconds");
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                "La operación tardó demasiado tiempo y fue cancelada",
+                null,
+                408
+            ));
+        }
         catch (ArgumentException ex)
         {
-            // Error de validación (parámetros inválidos) - devolver 400
             _logger.LogWarning("Validation error in GetAllLineasProduccion: {Message}", ex.Message);
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 ex.Message,
@@ -66,7 +79,6 @@ public class GetAllLineasProduccionFunction
         }
         catch (Exception ex)
         {
-            // Error interno del servidor - devolver 500
             _logger.LogError(ex, "Unexpected error in GetAllLineasProduccion");
             var errorMessage = new
             {

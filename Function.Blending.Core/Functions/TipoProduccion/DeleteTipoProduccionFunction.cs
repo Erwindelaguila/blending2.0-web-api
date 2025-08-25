@@ -1,3 +1,4 @@
+using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
@@ -58,6 +59,15 @@ public class DeleteTipoProduccionFunction
             }
 
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<bool>.Success(result, "Tipo de producción eliminado exitosamente"));
+        }
+        catch (EntityInUseException ex)
+        {
+            var error = new { Message = ex.Message };
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                error,
+                "No se puede eliminar",
+                400
+            ));
         }
         catch (Exception ex)
         {

@@ -38,10 +38,7 @@ public class UpdateLineaProduccionFunction
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false o null).", "Error de validación", 400));
             }
-            var command = JsonSerializer.Deserialize<UpdateLineaProduccionCommand>(body, new JsonSerializerOptions()
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var command = JsonSerializer.Deserialize<UpdateLineaProduccionCommand>(body, HttpResponseHelper.GetJsonDeserializerOptions());
             if (command == null)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,

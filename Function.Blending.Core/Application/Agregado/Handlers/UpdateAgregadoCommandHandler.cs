@@ -1,5 +1,6 @@
 using Function.Blending.Core.Application.Agregado.Commands;
 using Function.Blending.Core.Application.Agregado.DTOs;
+using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Interfaces.Repositories;
 using Function.Blending.Core.Domain.Entities;
 using MediatR;
@@ -21,6 +22,16 @@ namespace Function.Blending.Core.Application.Agregado.Handlers
             if (currentAgregado == null)
                 throw new InvalidOperationException("Agregado no encontrado");
 
+            // Validar regla de negocio: no se puede inactivar si está siendo usado por TipoProducción activo
+            if (currentAgregado.Activo && request.Activo == false)
+            {
+                var isUsedByActiveTipoProduccion = await _agregadoRepository.IsUsedByActiveTipoProduccionAsync(request.Id);
+                if (isUsedByActiveTipoProduccion)
+                {
+                    throw new EntityInUseException("el Agregado", "está siendo usado por al menos un Tipo de Producción activo");
+                }
+            }
+
             // Crear entidad con los nuevos datos, conservando valores actuales cuando no se proporcionan
             var agregadoToUpdate = new AgregadoEntity
             {
@@ -29,7 +40,7 @@ namespace Function.Blending.Core.Application.Agregado.Handlers
                 Nombre = request.Nombre,
                 Descripcion = request.Descripcion,
                 Activo = request.Activo ?? currentAgregado.Activo, // Conservar valor actual si no se proporciona
-                ModificadoPorId = request.ModificadoPorId,
+                ModificadoPorId = request.ModificadoPorId ?? currentAgregado.ModificadoPorId,
                 ModificadoEl = DateTime.UtcNow,
                 // Preservar campos que no deben modificarse
                 CreadoPorId = currentAgregado.CreadoPorId,

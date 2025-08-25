@@ -53,6 +53,15 @@ public class ApiRoutes
             public const string CalidadParametroUpsert = "core/configuraciones/calidadparametro/upsert";
         }
 
+        // Rutas de AppParam
+        public static class AppParam
+        {
+            public const string Base = "core/appparam";
+            public const string GetByKey = "core/appparam/detail";
+            public const string GetByCategory = "core/appparam/category";
+            public const string GetByGroup = "core/appparam/group";
+        }
+
         // Rutas de usuario y autenticación
         public static class User
         {

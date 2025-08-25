@@ -1,6 +1,8 @@
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Producto.Queries;
 using Function.Blending.Core.Application.Common.Helpers;
+using Function.Blending.Core.Application.Common.Wrappers;
+using Function.Blending.Core.Application.Producto.DTOs;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -28,28 +30,37 @@ public class GetAllProductoWithoutPaginationFunction
     {
         try
         {
-            _logger.LogInformation("GetAllProductoWithoutPaginationFunction procesando...");
+            _logger.LogInformation("GetAllProductoWithoutPaginationFunction procesando... Query: {Query}", req.Url.Query);
 
             var query = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
             var filters = QueryParameterHelper.ParseProductoFilters(query);
-            
-            // Solo aplicar filtros si hay filtros activos
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var getAllQuery = new GetAllProductoWithoutPaginationQuery(filtersToApply);
+            // Si piden activos (?activo=true) priorizamos ese modo ignorando otros filtros de estado
+            if (query["activo"] == "true")
+            {
+                _logger.LogInformation("Returning active productos (without pagination)");
+                filtersToApply = new ProductoFilterDTO { Estado = "1" };
+            }
 
+            var getAllQuery = new GetAllProductoWithoutPaginationQuery(filtersToApply);
             var result = await _mediator.Send(getAllQuery);
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(result);
-            return response;
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<List<ProductoDTO>>.Success(result, "Productos obtenidos correctamente"));
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error in GetAllProductoWithoutPaginationFunction: {Message}", ex.Message);
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                ex.Message,
+                null,
+                400
+            ));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en GetAllProductoWithoutPaginationFunction: {Message}", ex.Message);
-            
-            var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-            await errorResponse.WriteAsJsonAsync(new { error = "Error interno del servidor" });
-            return errorResponse;
+            var errorMessage = new { Message = "Ocurrió un error inesperado.", Exception = ex.Message, InnerException = ex.InnerException?.Message };
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(errorMessage, null, 500));
         }
     }
 }

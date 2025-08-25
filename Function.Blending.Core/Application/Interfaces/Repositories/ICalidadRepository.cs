@@ -1,4 +1,5 @@
 ﻿using Function.Blending.Core.Domain.Entities;
+using Function.Blending.Core.Application.Calidad.DTOs;
 
 namespace Function.Blending.Core.Application.Interfaces.Repositories;
 
@@ -13,4 +14,6 @@ public interface ICalidadRepository
     Task UpdateAsync(CalidadEntity calidad);
     Task<CalidadEntity> UpdateAndReturnAsync(CalidadEntity calidad);
     Task DeleteAsync(Guid id, Guid eliminadoPorId);
+    Task<bool> IsUsedByActiveProductoAsync(Guid calidadId);
+    Task<List<CalidadActivaDTO>> GetActivasAsync();
 }

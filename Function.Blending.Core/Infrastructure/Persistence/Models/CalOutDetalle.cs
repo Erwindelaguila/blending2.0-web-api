@@ -37,6 +37,8 @@ public partial class CalOutDetalle
 
     public DateTime? ModificadoEl { get; set; }
 
+    public bool Aceptado { get; set; }
+
     public virtual ICollection<CalOutDetOtros> CalOutDetOtros { get; set; } = new List<CalOutDetOtros>();
 
     public virtual ICollection<CalOutDetParametro> CalOutDetParametro { get; set; } = new List<CalOutDetParametro>();

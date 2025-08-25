@@ -1,6 +1,7 @@
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.TipoProduccion.Queries;
 using Function.Blending.Core.Application.Common.Helpers;
+using Function.Blending.Core.Application.Common.Wrappers;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -32,6 +33,14 @@ public class GetAllTipoProduccionFunction
 
             var query = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
 
+            // Verificar si es solicitud de activos (para combos)
+            if (query["activo"] == "true")
+            {
+                _logger.LogInformation("Returning active tipo produccion for combo");
+                var activasResult = await _mediator.Send(new GetAllTipoProduccionActivasQuery());
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(activasResult, "Tipos de producción activos obtenidos correctamente"));
+            }
+
             // Obtener parámetros de paginación con valores por defecto
             if (!int.TryParse(query["page"], out var page) || page < 1)
                 page = 1;
@@ -47,9 +56,9 @@ public class GetAllTipoProduccionFunction
             var getAllQuery = new GetAllTipoProduccionWithPaginationQuery(page, size, filtersToApply);
 
             var result = await _mediator.Send(getAllQuery);
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(result);
-            return response;
+            
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, 
+                BaseResponse<object>.Success(result, "Tipos de producción obtenidos correctamente"));
         }
         catch (Exception ex)
         {

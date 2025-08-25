@@ -39,10 +39,7 @@ public class CreateLineaProduccionFunction
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false o null).", "Error de validación", 400));
             }
-            var command = JsonSerializer.Deserialize<CreateLineaProduccionCommand>(body, new JsonSerializerOptions()
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var command = JsonSerializer.Deserialize<CreateLineaProduccionCommand>(body, HttpResponseHelper.GetJsonDeserializerOptions());
             if (command == null)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
@@ -58,6 +55,15 @@ public class CreateLineaProduccionFunction
                 errors,
                 "Validación fallida. Por favor, revise los campos.",
                 400
+            ));
+        }
+        catch (ArgumentException ex) when (ex.ParamName == "codigo")
+        {
+            var error = new { Field = "codigo", Error = "Ya existe una línea de producción activa con este código" };
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                error,
+                "Código duplicado",
+                409
             ));
         }
         catch (Exception ex)

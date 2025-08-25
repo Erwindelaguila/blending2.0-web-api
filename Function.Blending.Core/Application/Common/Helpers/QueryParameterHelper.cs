@@ -14,7 +14,23 @@ public static class QueryParameterHelper
     public static AgregadoFilterDTO ParseAgregadoFilters(NameValueCollection query)
     {
         var filter = new AgregadoFilterDTO();
+        // Poblar filtros base (codigo, estado, fechaDesde)
         BaseFilterHelper.PopulateBaseFilters(filter, query);
+
+        // Compatibilidad con parámetro legacy 'desde' (equivalente a fechaDesde)
+        if (!string.IsNullOrWhiteSpace(query["desde"]))
+        {
+            if (DateTime.TryParseExact(query["desde"], "yyyy-MM-dd",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None, out var desde))
+            {
+                filter.Desde = desde;
+                // Si fechaDesde no vino, asignarla desde 'desde'
+                if (!filter.FechaDesde.HasValue)
+                    filter.FechaDesde = desde;
+            }
+        }
+
         return filter;
     }
 
@@ -56,16 +72,26 @@ public static class QueryParameterHelper
     public static ProductoFilterDTO ParseProductoFilters(NameValueCollection query)
     {
         var filter = new ProductoFilterDTO();
-    BaseFilterHelper.PopulateBaseFilters(filter, query);
-    return filter;
+        BaseFilterHelper.PopulateBaseFilters(filter, query);
+        
+        // Filtros específicos de Producto
+        if (Guid.TryParse(query["calidadId"], out var calidadId))
+            filter.CalidadId = calidadId;
+            
+        if (Guid.TryParse(query["tipoProduccionId"], out var tipoProduccionId))
+            filter.TipoProduccionId = tipoProduccionId;
+        
+        return filter;
     }
 
-    public static bool HasActiveFilters(AgregadoFilterDTO filter) => 
-        BaseFilterHelper.HasBaseActiveFilters(filter);
+    public static bool HasActiveFilters(AgregadoFilterDTO filter) => filter.Desde.HasValue || BaseFilterHelper.HasBaseActiveFilters(filter);
     public static bool HasActiveFilters(LineaProduccionFilterDTO filter) => BaseFilterHelper.HasBaseActiveFilters(filter);
     public static bool HasActiveFilters(PlantaFilterDTO filter) => BaseFilterHelper.HasBaseActiveFilters(filter);
     public static bool HasActiveFilters(ParametroFilterDTO filter) => BaseFilterHelper.HasBaseActiveFilters(filter);
     public static bool HasActiveFilters(CalidadFilterDTO filter) => BaseFilterHelper.HasBaseActiveFilters(filter);
     public static bool HasActiveFilters(TipoProduccionFilterDTO filter) => BaseFilterHelper.HasBaseActiveFilters(filter);
-    public static bool HasActiveFilters(ProductoFilterDTO filter) => BaseFilterHelper.HasBaseActiveFilters(filter);
+    public static bool HasActiveFilters(ProductoFilterDTO filter) => 
+        filter.CalidadId.HasValue || 
+        filter.TipoProduccionId.HasValue || 
+        BaseFilterHelper.HasBaseActiveFilters(filter);
 }

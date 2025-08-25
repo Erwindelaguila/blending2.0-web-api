@@ -15,30 +15,22 @@ public class GetAllTipoProduccionQueryHandler : IRequestHandler<GetAllTipoProduc
 
     public async Task<object> Handle(GetAllTipoProduccionQuery request, CancellationToken cancellationToken)
     {
-        var (entities, total) = await _tipoProduccionRepository.GetPagedAsync(request.Page, request.Size);
+        // Usar el método con relaciones para estructura consistente
+        var dtos = await _tipoProduccionRepository.GetAllWithRelationsAsync();
         
-        var dtos = entities.Select(tipo => new TipoProduccionDTO
-        {
-            Id = tipo.Id,
-            Codigo = tipo.Codigo,
-            Nombre = tipo.Nombre,
-            Descripcion = tipo.Descripcion,
-            LineaProduccionId = tipo.LineaProduccionId,
-            AgregadoId = tipo.AgregadoId,
-            Activo = tipo.Activo,
-            CreadoPorId = tipo.CreadoPorId,
-            CreadoEl = tipo.CreadoEl,
-            ModificadoPorId = tipo.ModificadoPorId,
-            ModificadoEl = tipo.ModificadoEl
-        }).ToList();
+        // Aplicar paginación en memoria (temporal, se puede optimizar moviendo a repositorio)
+        var pagedDtos = dtos
+            .Skip((request.Page - 1) * request.Size)
+            .Take(request.Size)
+            .ToList();
 
         return new
         {
-            Items = dtos,
-            Total = total,
+            Items = pagedDtos,
+            Total = dtos.Count,
             Page = request.Page,
             Size = request.Size,
-            TotalPages = (int)Math.Ceiling((double)total / request.Size)
+            TotalPages = (int)Math.Ceiling((double)dtos.Count / request.Size)
         };
     }
 }
