@@ -1,3 +1,5 @@
+using Function.Blending.Core.Application.Common.Wrappers;
+
 namespace Function.Blending.Core.Application.AppParam.DTOs;
 
 public class AppParamDTO
@@ -17,3 +19,20 @@ public class AppParamDTO
     public Guid? ModificadoPorId { get; set; }
     public DateTime? ModificadoEl { get; set; }
 }
+
+
+public class AppParamSortDTO
+{
+    public string Key { get; set; }
+    public string Value { get; set; } = null!;
+}
+
+
+
+
+public class AppParamResponseDTO
+{
+    public PagedResponse<AppParamDTO>? AppParamPaginate { get; set; } = null!;
+    public List<AppParamSortDTO>? AppParamShortList { get; set; } = null!;
+}
+

@@ -26,20 +26,40 @@ public class GetAllAppParamsFunction
         try
         {
             var queryParams = HttpUtility.ParseQueryString(req.Url.Query);
-            
+
+            var isGlobalConfig = queryParams.Get("isGlobal") ?? "0";
+
+            if (isGlobalConfig != "0" && isGlobalConfig != "1")
+            {
+                throw new ArgumentException("El parámetro 'isHarina' debe ser '0' o '1'.");
+            }
+
+            // Aquí puedes convertirlo a bool si quieres
+            bool globalConfig = isGlobalConfig == "1";
+
+
             var query = new GetAllAppParamsQuery
             {
                 Page = int.TryParse(queryParams["page"], out var page) ? page : 1,
                 Size = int.TryParse(queryParams["size"], out var size) ? size : 10,
                 Key = queryParams["key"],
                 IsActive = bool.TryParse(queryParams["isActive"], out var isActive) ? isActive : null,
-                Fecha = DateTime.TryParse(queryParams["fecha"], out var fecha) ? fecha : null
+                Fecha = DateTime.TryParse(queryParams["fecha"], out var fecha) ? fecha : null,
+                GlobalConfig = globalConfig
             };
-            
+
             var result = await _mediator.Send(query);
-            
+
+            if (globalConfig)
+            {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<List<AppParamSortDTO>>.Success(
+                    result.AppParamShortList,
+                    "AppParams obtenidos exitosamente"
+                ));
+            }
+
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<AppParamDTO>>.Success(
-                result, 
+                result.AppParamPaginate,
                 "AppParams obtenidos exitosamente"
             ));
         }
@@ -51,7 +71,7 @@ public class GetAllAppParamsFunction
                 Exception = ex.Message,
                 InnerException = ex.InnerException?.Message,
             };
-            
+
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<AppParamDTO>>.Fail(
                 errorMessage,
                 null,

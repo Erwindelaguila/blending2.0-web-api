@@ -24,6 +24,8 @@ public class PlantaShortDTO
 }
 
 
+
+
 public class PlantaResponseDTO
 {
     public PagedResponse<PlantaDTO>? PlantaPaginate { get; set; } = null!;

@@ -1,4 +1,5 @@
 using Function.Blending.Upload.Services;
+using FunctionBlending.Core.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +17,7 @@ builder.Services
 // Registrar HttpClientFactory para inyección de IHttpClientFactory
 builder.Services.AddSingleton<BlobStorageService>();
 builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<CadmioService>();
 
 // Registrar otros servicios si es necesario
 // builder.Services.AddSingleton<XlsmProcessingService>();

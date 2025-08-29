@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Function.Blending.Core.Application.AppParam.Handlers;
 
-public class GetAllAppParamsQueryHandler : IRequestHandler<GetAllAppParamsQuery, PagedResponse<AppParamDTO>>
+public class GetAllAppParamsQueryHandler : IRequestHandler<GetAllAppParamsQuery, AppParamResponseDTO>
 {
     private readonly IAppParamRepository _appParamRepository;
 
@@ -16,7 +16,7 @@ public class GetAllAppParamsQueryHandler : IRequestHandler<GetAllAppParamsQuery,
         _appParamRepository = appParamRepository;
     }
 
-    public async Task<PagedResponse<AppParamDTO>> Handle(GetAllAppParamsQuery request, CancellationToken cancellationToken)
+    public async Task<AppParamResponseDTO> Handle(GetAllAppParamsQuery request, CancellationToken cancellationToken)
     {
         var queryable = _appParamRepository.GetQueryable();
 
@@ -36,6 +36,23 @@ public class GetAllAppParamsQueryHandler : IRequestHandler<GetAllAppParamsQuery,
             var fechaInicio = request.Fecha.Value.Date;
             var fechaFin = fechaInicio.AddDays(1);
             queryable = queryable.Where(ap => ap.CreadoEl >= fechaInicio && ap.CreadoEl < fechaFin);
+        }
+
+        if (request.GlobalConfig)
+        {
+            var appParamsShort = queryable.Select(appParams => new AppParamSortDTO()
+            {
+                Key = appParams.Key,
+                Value = appParams.Value
+
+            });
+
+            var listShortAppParams = appParamsShort.ToList();
+
+            return new AppParamResponseDTO
+            {
+                AppParamShortList= listShortAppParams,
+            };
         }
 
         // Contar total antes del paginado
@@ -65,20 +82,24 @@ public class GetAllAppParamsQueryHandler : IRequestHandler<GetAllAppParamsQuery,
             })
             .ToListAsync(cancellationToken);
 
-        return new PagedResponse<AppParamDTO>
+        return new AppParamResponseDTO
         {
-            Items = items,
-            Pagination = new PaginationInfo
+            AppParamPaginate = new PagedResponse<AppParamDTO>
             {
-                CurrentPage = request.Page,
-                PageSize = request.Size,
-                TotalCount = total,
-                TotalPages = (int)Math.Ceiling((double)total / request.Size),
-                HasPrevious = request.Page > 1,
-                HasNext = request.Page < (int)Math.Ceiling((double)total / request.Size),
-                PreviousPage = request.Page > 1 ? request.Page - 1 : null,
-                NextPage = request.Page < (int)Math.Ceiling((double)total / request.Size) ? request.Page + 1 : null
+                Items = items,
+                Pagination = new PaginationInfo
+                {
+                    CurrentPage = request.Page,
+                    PageSize = request.Size,
+                    TotalCount = total,
+                    TotalPages = (int)Math.Ceiling((double)total / request.Size),
+                    HasPrevious = request.Page > 1,
+                    HasNext = request.Page < (int)Math.Ceiling((double)total / request.Size),
+                    PreviousPage = request.Page > 1 ? request.Page - 1 : null,
+                    NextPage = request.Page < (int)Math.Ceiling((double)total / request.Size) ? request.Page + 1 : null
+                }
             }
         };
+        
     }
 }
