@@ -18,31 +18,34 @@ public class UploadExcelLogisticsFuncion
     public UploadExcelLogisticsFuncion(ILoggerFactory loggerFactory)
     {
         _logger = loggerFactory.CreateLogger<UploadExcelLogisticsFuncion>();
-        _xlsmProcessingService = new XlsmProcessingService<ExcelMappingLogisticsConfig>("Templates" ,"ExcelMappingInputLogistic.yaml" );
+        _xlsmProcessingService =
+            new XlsmProcessingService<ExcelMappingLogisticsConfig>("Templates", "ExcelMappingInputLogistic.yaml");
     }
 
     [Function("UploadExcelLogisticsFuncion")]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "upload/upload-excel-logistics")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "upload/upload-excel-logistics")]
+        HttpRequestData req)
     {
         try
         {
             _logger.LogInformation("Solicitud de carga de archivo recibida.");
-        
+
             if (!MultipartRequestValidator.IsMultipartFormData(req))
             {
                 throw new InvalidOperationException($"El tipo de contenido debe ser multipart/form-data.");
             }
+
             var fileBytes = await MultipartFormDataHelper.ExtractFileAsync(req);
-        
+
             var dataLogistic = await _xlsmProcessingService.ProcesarArchivoLogistcAsync(fileBytes);
 
             var config = _xlsmProcessingService.ConfiguracionActual;
 
             var dataFinalParced = ParsedRowMapperHelper.MapearReporte(dataLogistic, config);
-        
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<ReporteLogisticDto>.Success(dataFinalParced, "Archivo procesado correctamente."));
 
+            return await HttpResponseHelper.WriteBaseResponseAsync(req,
+                BaseResponse<ReporteLogisticDto>.Success(dataFinalParced, "Archivo procesado correctamente."));
         }
         catch (Exception ex)
         {
@@ -52,7 +55,7 @@ public class UploadExcelLogisticsFuncion
                 Message = "Ocurrió un error inesperado.",
                 Exception = ex.Message,
                 InnerException = ex.InnerException?.Message,
-                TraceContext = ex.StackTrace  
+                TraceContext = ex.StackTrace
             };
             //El dev errorMessage muestra todo los errores asociados
             //En produccion errorMessage puede ser null
@@ -62,7 +65,5 @@ public class UploadExcelLogisticsFuncion
                 500
             ));
         }
-
     }
-    
 }

@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using Function.Blending.Upload.Models;
+using System.Net.Http.Json;
 
 namespace FunctionBlending.Core.Services
 {
@@ -14,7 +15,7 @@ namespace FunctionBlending.Core.Services
             _httpClient = httpClient;
         }
 
-        public async Task<ObtenerCadmioResponseDto> ObtenerCadmioAsync(ObtenerCadmioRequestDto request)
+        public async Task<List<CadmioResult>> ObtenerCadmioAsync(ObtenerCadmioRequestDto request)
         {
             // Mapear rumas -> SAP DTO
             var sapRequest = new ObtenerCadmioSapRequestDto
@@ -54,11 +55,14 @@ namespace FunctionBlending.Core.Services
             if (!response.IsSuccessStatusCode)
             {
                 Console.WriteLine($"SAP Error {response.StatusCode}: {rawContent}");
-                return new ObtenerCadmioResponseDto
-                {
-                    Data = new()
-                };
+                return new List<CadmioResult>();
             }
+            
+            if (rawContent.Contains("\"ET_DATA\":\"\""))
+            {
+                rawContent = rawContent.Replace("\"ET_DATA\":\"\"", "\"ET_DATA\":{}");
+            }
+            
 
             // TODO: Ajustar parseo según la respuesta real de SAP
             var sapResponse = JsonSerializer.Deserialize<ObtenerCadmioSapResponseDto>(rawContent, options);
@@ -66,14 +70,11 @@ namespace FunctionBlending.Core.Services
             var results = sapResponse?.ZSDF_BLENDING_GET_CADMIOResponse?.ET_DATA?.item
                 .Select(i => new CadmioResult
                 {
-                    Ruma = i.CHARG,
-                    Cadmio = decimal.TryParse(i.CADMIO, out var val) ? val : 0
+                    RumaNro = i.CHARG,
+                    Valor = i.CADMIO
                 }).ToList() ?? new();
-    
-            return new ObtenerCadmioResponseDto
-            {
-                Data = results
-            };
+
+            return results;
         }
     }
 }

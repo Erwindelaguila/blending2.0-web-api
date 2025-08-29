@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Function.Blending.Upload.Models;
 
 public class ObtenerCadmioRequestDto
@@ -7,6 +9,7 @@ public class ObtenerCadmioRequestDto
 
 public class ObtenerCadmioSapRequestDto
 {
+    
     public ZsdfBlendingGetCadmio ZSDF_BLENDING_GET_CADMIO { get; set; } = new();
 }
 
@@ -27,17 +30,21 @@ public class ItemRuma
 
 public class CadmioResult
 {
-    public string Ruma { get; set; } = string.Empty;
-    public decimal Cadmio { get; set; }
+    [JsonPropertyName("rumaNro")]
+    public string RumaNro { get; set; } = string.Empty;
+    [JsonPropertyName("valor")]
+    public string Valor { get; set; }
 }
 
 public class ObtenerCadmioResponseDto
 {
+    [JsonPropertyName("data")]
     public List<CadmioResult> Data { get; set; } = new();
 }
 
 public class ObtenerCadmioSapResponseDto
 {
+    [JsonPropertyName("n0:ZSDF_BLENDING_GET_CADMIOResponse")]
     public ZsdfBlendingGetCadmioResponse ZSDF_BLENDING_GET_CADMIOResponse { get; set; }
 }
 
