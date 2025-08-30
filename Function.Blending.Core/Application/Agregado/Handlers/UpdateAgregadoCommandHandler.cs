@@ -2,21 +2,34 @@ using Function.Blending.Core.Application.Agregado.Commands;
 using Function.Blending.Core.Application.Agregado.DTOs;
 using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Domain.Entities;
 using MediatR;
 
-
 namespace Function.Blending.Core.Application.Agregado.Handlers
 {
+    /// <summary>
+    /// Handler para actualizar agregados
+    /// Reutiliza servicios de autenticación de Function.Blending.Auth
+    /// </summary>
     public class UpdateAgregadoCommandHandler : IRequestHandler<UpdateAgregadoCommand, AgregadoDTO>
     {
         private readonly IAgregadoRepository _agregadoRepository;
-        public UpdateAgregadoCommandHandler(IAgregadoRepository agregadoRepository)
+        private readonly ICurrentUserService _currentUserService;
+
+        public UpdateAgregadoCommandHandler(
+            IAgregadoRepository agregadoRepository,
+            ICurrentUserService currentUserService)
         {
-            _agregadoRepository = agregadoRepository;
+            _agregadoRepository = agregadoRepository ?? throw new ArgumentNullException(nameof(agregadoRepository));
+            _currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         }
+
         public async Task<AgregadoDTO> Handle(UpdateAgregadoCommand request, CancellationToken cancellationToken)
         {
+            // Obtener usuario actual usando servicios reutilizados de Auth
+            var currentUserId = _currentUserService.GetCurrentUserId(request.RequestContext);
+            
             // Obtener el registro actual para conservar valores
             var currentAgregado = await _agregadoRepository.GetByIdAsync(request.Id);
             if (currentAgregado == null)
@@ -40,7 +53,7 @@ namespace Function.Blending.Core.Application.Agregado.Handlers
                 Nombre = request.Nombre,
                 Descripcion = request.Descripcion,
                 Activo = request.Activo ?? currentAgregado.Activo, // Conservar valor actual si no se proporciona
-                ModificadoPorId = request.ModificadoPorId ?? currentAgregado.ModificadoPorId,
+                ModificadoPorId = currentUserId,
                 ModificadoEl = DateTime.UtcNow,
                 // Preservar campos que no deben modificarse
                 CreadoPorId = currentAgregado.CreadoPorId,

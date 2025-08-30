@@ -6,7 +6,6 @@ using Function.Blending.Core.Application.Agregado.Commands;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using System.Web;
 
 namespace Function.Blending.Core.Functions.Agregado;
 
@@ -21,33 +20,22 @@ public class DeleteAgregadoFunction
 
     [Function(FunctionNames.Agregado.Delete)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Production.AgregadoBase)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Production.AgregadoBase + "/{id}")] HttpRequestData req,
+        string id)
     {
         try
         {
-            var query = HttpUtility.ParseQueryString(req.Url.Query);
-            var idString = query["id"];
-
-            if (string.IsNullOrEmpty(idString) || !Guid.TryParse(idString, out var agregadoId))
+            if (!Guid.TryParse(id, out var agregadoId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "ID de agregado inválido o no proporcionado",
-                    null,
+                    "ID inválido",
+                    "El ID debe ser un GUID válido",
                     400
                 ));
             }
 
-            var eliminadoPorIdString = query["eliminadoPorId"];
-            if (string.IsNullOrEmpty(eliminadoPorIdString) || !Guid.TryParse(eliminadoPorIdString, out var eliminadoPorId))
-            {
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "ID de usuario eliminador inválido o no proporcionado",
-                    null,
-                    400
-                ));
-            }
-
-            var result = await _mediator.Send(new DeleteAgregadoCommand(agregadoId, eliminadoPorId));
+            var command = new DeleteAgregadoCommand(agregadoId, req);
+            var result = await _mediator.Send(command);
 
             if (!result)
             {

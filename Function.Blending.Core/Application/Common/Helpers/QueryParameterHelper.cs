@@ -1,4 +1,5 @@
 using Function.Blending.Core.Application.Agregado.DTOs;
+using Function.Blending.Core.Application.AppParam.DTOs;
 using Function.Blending.Core.Application.LineaProduccion.DTOs;
 using Function.Blending.Core.Application.Planta.DTOs;
 using Function.Blending.Core.Application.Parametro.DTOs;
@@ -14,21 +15,17 @@ public static class QueryParameterHelper
     public static AgregadoFilterDTO ParseAgregadoFilters(NameValueCollection query)
     {
         var filter = new AgregadoFilterDTO();
-        // Poblar filtros base (codigo, estado, fechaDesde)
-        BaseFilterHelper.PopulateBaseFilters(filter, query);
-
-        // Compatibilidad con parámetro legacy 'desde' (equivalente a fechaDesde)
-        if (!string.IsNullOrWhiteSpace(query["desde"]))
+        
+        filter.Codigo = query["codigo"];
+        filter.Estado = query["estado"];
+        
+        // FechaDesde
+        if (!string.IsNullOrWhiteSpace(query["fechaDesde"]) &&
+            DateTime.TryParseExact(query["fechaDesde"], "yyyy-MM-dd",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out var fechaDesde))
         {
-            if (DateTime.TryParseExact(query["desde"], "yyyy-MM-dd",
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    System.Globalization.DateTimeStyles.None, out var desde))
-            {
-                filter.Desde = desde;
-                // Si fechaDesde no vino, asignarla desde 'desde'
-                if (!filter.FechaDesde.HasValue)
-                    filter.FechaDesde = desde;
-            }
+            filter.FechaDesde = fechaDesde;
         }
 
         return filter;
@@ -37,61 +34,185 @@ public static class QueryParameterHelper
     public static LineaProduccionFilterDTO ParseLineaProduccionFilters(NameValueCollection query)
     {
         var filter = new LineaProduccionFilterDTO();
-        BaseFilterHelper.PopulateBaseFilters(filter, query);
+        
+        filter.Codigo = query["codigo"];
+        filter.Estado = query["estado"];
+        
+        // FechaDesde
+        if (!string.IsNullOrWhiteSpace(query["fechaDesde"]) &&
+            DateTime.TryParseExact(query["fechaDesde"], "yyyy-MM-dd",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out var fechaDesde))
+        {
+            filter.FechaDesde = fechaDesde;
+        }
+
         return filter;
     }
 
     public static PlantaFilterDTO ParsePlantaFilters(NameValueCollection query)
     {
         var filter = new PlantaFilterDTO();
-        BaseFilterHelper.PopulateBaseFilters(filter, query);
+        
+        filter.Codigo = query["codigo"];
+        filter.Estado = query["estado"];
+        filter.IsHarina = query["isHarina"];
+        
+        // FechaDesde
+        if (!string.IsNullOrWhiteSpace(query["fechaDesde"]) &&
+            DateTime.TryParseExact(query["fechaDesde"], "yyyy-MM-dd",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out var fechaDesde))
+        {
+            filter.FechaDesde = fechaDesde;
+        }
+
         return filter;
     }
 
     public static ParametroFilterDTO ParseParametroFilters(NameValueCollection query)
     {
         var filter = new ParametroFilterDTO();
-    BaseFilterHelper.PopulateBaseFilters(filter, query);
-    return filter;
+        
+        filter.Codigo = query["codigo"];
+        filter.Estado = query["estado"];
+        
+        // FechaDesde
+        if (!string.IsNullOrWhiteSpace(query["fechaDesde"]) &&
+            DateTime.TryParseExact(query["fechaDesde"], "yyyy-MM-dd",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out var fechaDesde))
+        {
+            filter.FechaDesde = fechaDesde;
+        }
+
+        return filter;
     }
 
     public static CalidadFilterDTO ParseCalidadFilters(NameValueCollection query)
     {
         var filter = new CalidadFilterDTO();
-    BaseFilterHelper.PopulateBaseFilters(filter, query);
-    return filter;
+        
+        filter.Codigo = query["codigo"];
+        filter.Estado = query["estado"];
+        
+        // FechaDesde
+        if (!string.IsNullOrWhiteSpace(query["fechaDesde"]) &&
+            DateTime.TryParseExact(query["fechaDesde"], "yyyy-MM-dd",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out var fechaDesde))
+        {
+            filter.FechaDesde = fechaDesde;
+        }
+
+        return filter;
     }
 
     public static TipoProduccionFilterDTO ParseTipoProduccionFilters(NameValueCollection query)
     {
         var filter = new TipoProduccionFilterDTO();
-    BaseFilterHelper.PopulateBaseFilters(filter, query);
-    return filter;
+        
+        filter.Codigo = query["codigo"];
+        filter.Estado = query["estado"];
+        
+        // FechaDesde
+        if (!string.IsNullOrWhiteSpace(query["fechaDesde"]) &&
+            DateTime.TryParseExact(query["fechaDesde"], "yyyy-MM-dd",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out var fechaDesde))
+        {
+            filter.FechaDesde = fechaDesde;
+        }
+
+        return filter;
     }
 
     public static ProductoFilterDTO ParseProductoFilters(NameValueCollection query)
     {
         var filter = new ProductoFilterDTO();
-        BaseFilterHelper.PopulateBaseFilters(filter, query);
         
-        // Filtros específicos de Producto
+        filter.Codigo = query["codigo"];
+        filter.Estado = query["estado"];
+        
+        // FechaDesde
+        if (!string.IsNullOrWhiteSpace(query["fechaDesde"]) &&
+            DateTime.TryParseExact(query["fechaDesde"], "yyyy-MM-dd",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out var fechaDesde))
+        {
+            filter.FechaDesde = fechaDesde;
+        }
+        
         if (Guid.TryParse(query["calidadId"], out var calidadId))
             filter.CalidadId = calidadId;
             
         if (Guid.TryParse(query["tipoProduccionId"], out var tipoProduccionId))
             filter.TipoProduccionId = tipoProduccionId;
-        
+
         return filter;
     }
 
-    public static bool HasActiveFilters(AgregadoFilterDTO filter) => filter.Desde.HasValue || BaseFilterHelper.HasBaseActiveFilters(filter);
-    public static bool HasActiveFilters(LineaProduccionFilterDTO filter) => BaseFilterHelper.HasBaseActiveFilters(filter);
-    public static bool HasActiveFilters(PlantaFilterDTO filter) => BaseFilterHelper.HasBaseActiveFilters(filter);
-    public static bool HasActiveFilters(ParametroFilterDTO filter) => BaseFilterHelper.HasBaseActiveFilters(filter);
-    public static bool HasActiveFilters(CalidadFilterDTO filter) => BaseFilterHelper.HasBaseActiveFilters(filter);
-    public static bool HasActiveFilters(TipoProduccionFilterDTO filter) => BaseFilterHelper.HasBaseActiveFilters(filter);
+    public static AppParamFilterDTO ParseAppParamFilters(NameValueCollection query)
+    {
+        var filter = new AppParamFilterDTO();
+        
+        filter.Key = query["key"];
+        
+        if (bool.TryParse(query["isActive"], out var isActive))
+            filter.IsActive = isActive;
+        
+        // FechaDesde
+        if (!string.IsNullOrWhiteSpace(query["fechaDesde"]) &&
+            DateTime.TryParseExact(query["fechaDesde"], "yyyy-MM-dd",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out var fechaDesde))
+        {
+            filter.FechaDesde = fechaDesde;
+        }
+
+        return filter;
+    }
+
+    public static bool HasActiveFilters(AgregadoFilterDTO filter) => 
+        !string.IsNullOrWhiteSpace(filter.Codigo) || 
+        !string.IsNullOrWhiteSpace(filter.Estado) || 
+        filter.FechaDesde.HasValue;
+
+    public static bool HasActiveFilters(AppParamFilterDTO filter) => 
+        !string.IsNullOrWhiteSpace(filter.Key) || 
+        filter.IsActive.HasValue || 
+        filter.FechaDesde.HasValue;
+
+    public static bool HasActiveFilters(LineaProduccionFilterDTO filter) => 
+        !string.IsNullOrWhiteSpace(filter.Codigo) || 
+        !string.IsNullOrWhiteSpace(filter.Estado) || 
+        filter.FechaDesde.HasValue;
+
+    public static bool HasActiveFilters(PlantaFilterDTO filter) => 
+        !string.IsNullOrWhiteSpace(filter.Codigo) || 
+        !string.IsNullOrWhiteSpace(filter.Estado) || 
+        !string.IsNullOrWhiteSpace(filter.IsHarina) ||
+        filter.FechaDesde.HasValue;
+
+    public static bool HasActiveFilters(ParametroFilterDTO filter) => 
+        !string.IsNullOrWhiteSpace(filter.Codigo) || 
+        !string.IsNullOrWhiteSpace(filter.Estado) || 
+        filter.FechaDesde.HasValue;
+
+    public static bool HasActiveFilters(CalidadFilterDTO filter) => 
+        !string.IsNullOrWhiteSpace(filter.Codigo) || 
+        !string.IsNullOrWhiteSpace(filter.Estado) || 
+        filter.FechaDesde.HasValue;
+
+    public static bool HasActiveFilters(TipoProduccionFilterDTO filter) => 
+        !string.IsNullOrWhiteSpace(filter.Codigo) || 
+        !string.IsNullOrWhiteSpace(filter.Estado) || 
+        filter.FechaDesde.HasValue;
+
     public static bool HasActiveFilters(ProductoFilterDTO filter) => 
+        !string.IsNullOrWhiteSpace(filter.Codigo) || 
+        !string.IsNullOrWhiteSpace(filter.Estado) || 
         filter.CalidadId.HasValue || 
         filter.TipoProduccionId.HasValue || 
-        BaseFilterHelper.HasBaseActiveFilters(filter);
+        filter.FechaDesde.HasValue;
 }

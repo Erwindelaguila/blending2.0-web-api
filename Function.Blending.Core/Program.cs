@@ -1,10 +1,14 @@
 using FluentValidation;
 using Function.Blending.Core.Application.Common.Behaviors;
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Infrastructure.Services;
 using Function.Blending.Core.Infrastructure.Mappings;
 using Function.Blending.Core.Infrastructure.Persistence;
 using Function.Blending.Core.Infrastructure.Persistence.Mappings;
 using Function.Blending.Core.Infrastructure.Persistence.Repositories;
+using Function.Blending.Auth.Application.Interfaces.Services;
+using Function.Blending.Auth.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +22,6 @@ var host = new HostBuilder()
     {
         logging.ClearProviders();
         logging.AddConsole();
-
 
         logging.AddFilter((category, level) =>
         {
@@ -61,6 +64,17 @@ var host = new HostBuilder()
         services.AddScoped<ICalidadParametroRepository, CalidadParametroRepository>();
         services.AddScoped<IAppParamRepository, AppParamRepository>();
         
+        // === Servicios de Autenticación (Reutilizando de Function.Blending.Auth) ===
+        // Servicios compartidos - siguiendo principio DRY
+        services.AddScoped<IAuthorizationHeaderExtractor, AuthorizationHeaderExtractor>();
+        services.AddScoped<ITokenClaimExtractor, TokenClaimExtractor>();
+        services.AddScoped<ITokenClaimValidator, TokenClaimValidator>();
+        services.AddScoped<ITokenConfigurationService, TokenConfigurationService>();
+        services.AddScoped<ITokenSignatureValidator, TokenSignatureValidator>();
+        
+        // Servicio de usuario actual (Clean Architecture)
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
         services.AddMediatR(cfg=>  cfg.RegisterServicesFromAssemblyContaining<Program>());
@@ -72,7 +86,6 @@ var host = new HostBuilder()
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         
     })
-
     .Build();
 
 host.Run();

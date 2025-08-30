@@ -75,22 +75,17 @@ public static class FunctionNames
     {
         public const string GetMatriz = "GetCalidadParametroMatriz";
         public const string Upsert = "UpsertCalidadParametro";
+        public const string GetByCodigo = "GetCalidadParametrosByCodigo";
     }
 
+    // AppParam - Solo las funciones que realmente existen
     public static class AppParam
     {
         public const string Create = "CreateAppParam";
         public const string Update = "UpdateAppParam";
-        public const string Delete = "DeleteAppParam";
+        public const string Delete = "DeleteAppParam";          
         public const string GetAll = "GetAllAppParams";
-        public const string GetByKey = "GetAppParamByKey";
-        public const string GetByCategory = "GetAppParamsByCategory";
-        public const string GetByGroup = "GetAppParamsByGroup";
-    }
-
-    public static class User
-    {
-        public const string GetMenu = "GetUserMenu";
+        public const string GetById = "GetAppParamById";
     }
     
     // Agrega otras funciones según tu dominio...

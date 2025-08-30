@@ -15,7 +15,6 @@ public class CreateAgregadoValidator : AbstractValidator<CreateAgregadoCommand>
             .MaximumLength(50).WithMessage("El nombre no debe exceder 50 caracteres");
         RuleFor(x => x.Descripcion)
             .MaximumLength(150).WithMessage("La descripción no debe exceder 150 caracteres");
-        RuleFor(x => x.CreadoPorId)
-            .NotEmpty().WithMessage("El Id del creador es requerido");
+        // CreadoPorId ya no se valida aquí porque se extrae del JWT
     }
 }

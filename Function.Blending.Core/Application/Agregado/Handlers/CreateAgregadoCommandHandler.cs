@@ -1,4 +1,5 @@
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Agregado.Commands;
 using Function.Blending.Core.Application.Agregado.DTOs;
 using Function.Blending.Core.Domain.Entities;
@@ -6,16 +7,28 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Agregado.Handlers
 {
+    /// <summary>
+    /// Handler para crear agregados
+    /// Reutiliza servicios de autenticación de Function.Blending.Auth
+    /// </summary>
     public class CreateAgregadoCommandHandler : IRequestHandler<CreateAgregadoCommand, AgregadoDTO>
     {
         private readonly IAgregadoRepository _agregadoRepository;
-        public CreateAgregadoCommandHandler(IAgregadoRepository agregadoRepository)
+        private readonly ICurrentUserService _currentUserService;
+
+        public CreateAgregadoCommandHandler(
+            IAgregadoRepository agregadoRepository,
+            ICurrentUserService currentUserService)
         {
-            _agregadoRepository = agregadoRepository;
+            _agregadoRepository = agregadoRepository ?? throw new ArgumentNullException(nameof(agregadoRepository));
+            _currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         }
 
         public async Task<AgregadoDTO> Handle(CreateAgregadoCommand request, CancellationToken cancellationToken)
         {
+            // Obtener usuario actual usando servicios reutilizados de Auth
+            var currentUserId = _currentUserService.GetCurrentUserId(request.RequestContext);
+
             var agregado = new AgregadoEntity
             {
                 Id = Guid.NewGuid(),
@@ -23,10 +36,12 @@ namespace Function.Blending.Core.Application.Agregado.Handlers
                 Nombre = request.Nombre,
                 Descripcion = request.Descripcion,
                 Activo = request.Activo ?? true,
-                CreadoPorId = request.CreadoPorId,
+                CreadoPorId = currentUserId,
                 CreadoEl = DateTime.UtcNow
             };
+            
             await _agregadoRepository.CreateAsync(agregado);
+            
             return new AgregadoDTO
             {
                 Id = agregado.Id,

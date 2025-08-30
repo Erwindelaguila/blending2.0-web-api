@@ -22,13 +22,14 @@ public class DeleteAppParamCommandHandler : IRequestHandler<DeleteAppParamComman
             throw new KeyNotFoundException($"AppParam with key '{request.Key}' not found");
         }
 
+        // VALIDAR: Solo se puede eliminar si isRemovable = true
         if (!existingAppParam.IsRemovable)
         {
-            throw new InvalidOperationException($"AppParam with key '{request.Key}' is not removable");
+            throw new InvalidOperationException($"Cannot delete parameter '{request.Key}' because isRemovable = false. This parameter cannot be removed from the system.");
         }
 
         await _appParamRepository.DeleteAsync(request.Key);
-        
-        return new { success = true, message = $"AppParam with key '{request.Key}' deleted successfully" };
+
+        return new { message = $"AppParam '{request.Key}' deleted successfully" };
     }
 }

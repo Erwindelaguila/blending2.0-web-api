@@ -1,8 +1,6 @@
-using Function.Blending.Core.Application.Common.Interfaces;
-
 namespace Function.Blending.Core.Application.Parametro.DTOs;
 
-public class ParametroFilterDTO : IBaseEntityFilter
+public class ParametroFilterDTO
 {
     public string? Codigo { get; set; }
     public string? Estado { get; set; }

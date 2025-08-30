@@ -20,22 +20,30 @@ public class GetAllAppParamsQueryHandler : IRequestHandler<GetAllAppParamsQuery,
     {
         var queryable = _appParamRepository.GetQueryable();
 
-        // Aplicar filtros
-        if (!string.IsNullOrWhiteSpace(request.Key))
-        {
-            queryable = queryable.Where(ap => ap.Key.Contains(request.Key));
-        }
+        // FILTRO OBLIGATORIO: Solo mostrar los que tienen isVisible = true
+        queryable = queryable.Where(ap => ap.IsVisible);
 
-        if (request.IsActive.HasValue)
+        // Aplicar filtros adicionales desde FilterDTO
+        if (request.Filters != null)
         {
-            queryable = queryable.Where(ap => ap.IsActive == request.IsActive.Value);
-        }
+            if (!string.IsNullOrWhiteSpace(request.Filters.Key))
+            {
+                queryable = queryable.Where(ap => ap.Key.Contains(request.Filters.Key));
+            }
 
-        if (request.Fecha.HasValue)
-        {
-            var fechaInicio = request.Fecha.Value.Date;
-            var fechaFin = fechaInicio.AddDays(1);
-            queryable = queryable.Where(ap => ap.CreadoEl >= fechaInicio && ap.CreadoEl < fechaFin);
+            if (request.Filters.IsActive.HasValue)
+            {
+                queryable = queryable.Where(ap => ap.IsActive == request.Filters.IsActive.Value);
+            }
+
+            // FechaDesde filtra por día exacto en CreadoEl
+            var fechaFiltro = request.Filters.FechaDesde;
+            if (fechaFiltro.HasValue)
+            {
+                var fechaInicio = fechaFiltro.Value.Date;
+                var fechaFin = fechaInicio.AddDays(1);
+                queryable = queryable.Where(ap => ap.CreadoEl >= fechaInicio && ap.CreadoEl < fechaFin);
+            }
         }
 
         // Contar total antes del paginado

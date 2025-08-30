@@ -1,20 +1,23 @@
-using MediatR;
+using Function.Blending.Core.Application.Common.Commands;
 
 namespace Function.Blending.Core.Application.AppParam.Commands;
 
-public class CreateAppParamCommand : IRequest<object>
+/// <summary>
+/// Command para crear un nuevo parámetro de aplicación
+/// Hereda de BaseCommand para mantener el contexto necesario para autenticación
+/// </summary>
+public class CreateAppParamCommand : BaseCommand<object>
 {
     public string Key { get; }
     public string Value { get; }
     public string? Description { get; }
     public string? Category { get; }
     public string? Group { get; }
-    public bool? IsActive { get; }
-    public bool? IsInternal { get; }
-    public bool? IsVisible { get; }
-    public bool? IsDisableable { get; }
-    public bool? IsRemovable { get; }
-    public Guid CreadoPorId { get; }
+    public bool IsActive { get; }
+    public bool IsInternal { get; }
+    public bool IsVisible { get; }
+    public bool IsDisableable { get; }
+    public bool IsRemovable { get; }
 
     public CreateAppParamCommand(
         string key,
@@ -22,12 +25,12 @@ public class CreateAppParamCommand : IRequest<object>
         string? description,
         string? category,
         string? group,
-        bool? isActive,
-        bool? isInternal,
-        bool? isVisible,
-        bool? isDisableable,
-        bool? isRemovable,
-        Guid creadoPorId)
+        bool isActive,
+        bool isInternal,
+        bool isVisible,
+        bool isDisableable,
+        bool isRemovable,
+        object requestContext) : base(requestContext)
     {
         Key = key;
         Value = value;
@@ -39,6 +42,5 @@ public class CreateAppParamCommand : IRequest<object>
         IsVisible = isVisible;
         IsDisableable = isDisableable;
         IsRemovable = isRemovable;
-        CreadoPorId = creadoPorId;
     }
 }

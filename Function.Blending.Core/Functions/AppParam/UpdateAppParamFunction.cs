@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FluentValidation;
+using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
@@ -22,7 +23,7 @@ public class UpdateAppParamFunction
 
     [Function(FunctionNames.AppParam.Update)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.AppParam.GetByKey + "/{key}")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.AppParam.GetById + "/{key}")] HttpRequestData req,
         string key)
     {
         try
@@ -41,7 +42,16 @@ public class UpdateAppParamFunction
             var jsonDocument = JsonDocument.Parse(body);
             var root = jsonDocument.RootElement;
 
-            // Validar campos requeridos
+            // Validar que el key de la ruta no esté vacío
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                    "Key is required in route",
+                    "El key es requerido en la ruta",
+                    400
+                ));
+            }
+
             if (!root.TryGetProperty("value", out var valueElement) || string.IsNullOrWhiteSpace(valueElement.GetString()))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
@@ -51,18 +61,9 @@ public class UpdateAppParamFunction
                 ));
             }
 
-            if (!root.TryGetProperty("modificadoPorId", out var modificadoPorIdElement) || 
-                !Guid.TryParse(modificadoPorIdElement.GetString(), out var modificadoPorId))
-            {
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "Valid ModificadoPorId is required",
-                    "Se requiere un ModificadoPorId válido",
-                    400
-                ));
-            }
-
             var command = new UpdateAppParamCommand(
-                key: key,
+                key: key, // Key actual de la ruta
+                newKey: root.TryGetProperty("key", out var newKeyElement) ? newKeyElement.GetString() : null, // Nuevo key del body
                 value: valueElement.GetString()!,
                 description: root.TryGetProperty("description", out var descElement) ? descElement.GetString() : null,
                 category: null, // El frontend no envía esto - mantener valor existente
@@ -72,7 +73,7 @@ public class UpdateAppParamFunction
                 isVisible: null, // El frontend no envía esto - mantener valor existente
                 isDisableable: null, // El frontend no envía esto - mantener valor existente
                 isRemovable: null, // El frontend no envía esto - mantener valor existente
-                modificadoPorId: modificadoPorId
+                requestContext: req // Clean Architecture: contexto para autenticación
             );
 
             var result = await _mediator.Send(command);
@@ -80,6 +81,14 @@ public class UpdateAppParamFunction
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(
                 result, 
                 "AppParam actualizado exitosamente"
+            ));
+        }
+        catch (BusinessRuleException ex)
+        {
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                ex.Message,
+                "Error de validación de negocio",
+                400
             ));
         }
         catch (ValidationException ex)

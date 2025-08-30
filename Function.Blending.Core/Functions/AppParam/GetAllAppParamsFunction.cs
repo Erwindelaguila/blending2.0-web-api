@@ -27,21 +27,20 @@ public class GetAllAppParamsFunction
         {
             var queryParams = HttpUtility.ParseQueryString(req.Url.Query);
             
-            var query = new GetAllAppParamsQuery
-            {
-                Page = int.TryParse(queryParams["page"], out var page) ? page : 1,
-                Size = int.TryParse(queryParams["size"], out var size) ? size : 10,
-                Key = queryParams["key"],
-                IsActive = bool.TryParse(queryParams["isActive"], out var isActive) ? isActive : null,
-                Fecha = DateTime.TryParse(queryParams["fecha"], out var fecha) ? fecha : null
-            };
+            var page = int.TryParse(queryParams["page"], out var p) ? p : 1;
+            var size = int.TryParse(queryParams["size"], out var s) ? s : 10;
+            var filters = QueryParameterHelper.ParseAppParamFilters(queryParams);
+            
+            var query = new GetAllAppParamsQuery(page, size, filters);
             
             var result = await _mediator.Send(query);
             
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<AppParamDTO>>.Success(
+            var response = BaseResponse<PagedResponse<AppParamDTO>>.Success(
                 result, 
                 "AppParams obtenidos exitosamente"
-            ));
+            );
+            
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, response);
         }
         catch (Exception ex)
         {
@@ -52,11 +51,13 @@ public class GetAllAppParamsFunction
                 InnerException = ex.InnerException?.Message,
             };
             
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<AppParamDTO>>.Fail(
+            var errorResponse = BaseResponse<PagedResponse<AppParamDTO>>.Fail(
                 errorMessage,
                 null,
                 500
-            ));
+            );
+            
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, errorResponse);
         }
     }
 }

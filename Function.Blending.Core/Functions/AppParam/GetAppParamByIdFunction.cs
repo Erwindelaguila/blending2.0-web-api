@@ -9,38 +9,47 @@ using Microsoft.Azure.Functions.Worker.Http;
 
 namespace Function.Blending.Core.Functions.AppParam;
 
-public class GetAppParamByKeyFunction
+public class GetAppParamByIdFunction
 {
     private readonly IMediator _mediator;
 
-    public GetAppParamByKeyFunction(IMediator mediator)
+    public GetAppParamByIdFunction(IMediator mediator)
     {
         _mediator = mediator;
     }
 
-    [Function(FunctionNames.AppParam.GetByKey)]
+    [Function(FunctionNames.AppParam.GetById)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.AppParam.GetByKey + "/{key}")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.AppParam.GetById + "/{key}")] HttpRequestData req,
         string key)
     {
         try
         {
-            var query = new GetAppParamByKeyQuery(key);
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<AppParamDTO>.Fail(
+                    "Key parameter is required",
+                    "El parámetro 'key' es requerido",
+                    400
+                ));
+            }
+
+            var queryCommand = new GetAppParamByKeyQuery(key);
             
-            var result = await _mediator.Send(query);
+            var result = await _mediator.Send(queryCommand);
             
             if (result == null)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<AppParamDTO>.Fail(
                     $"AppParam with key '{key}' not found",
-                    "AppParam no encontrado",
+                    "Parámetro de aplicación no encontrado",
                     404
                 ));
             }
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<AppParamDTO>.Success(
                 result, 
-                "AppParam obtenido exitosamente"
+                "Parámetro de aplicación obtenido correctamente"
             ));
         }
         catch (Exception ex)
@@ -54,7 +63,7 @@ public class GetAppParamByKeyFunction
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<AppParamDTO>.Fail(
                 errorMessage,
-                null,
+                "Error interno del servidor",
                 500
             ));
         }

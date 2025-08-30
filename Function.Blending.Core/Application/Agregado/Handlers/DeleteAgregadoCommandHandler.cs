@@ -1,4 +1,5 @@
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Agregado.Commands;
 using Function.Blending.Core.Application.Common.Exceptions;
 using MediatR;
@@ -8,10 +9,16 @@ namespace Function.Blending.Core.Application.Agregado.Handlers;
 public class DeleteAgregadoCommandHandler : IRequestHandler<DeleteAgregadoCommand, bool>
 {
     private readonly IAgregadoRepository _agregadoRepository;
-    public DeleteAgregadoCommandHandler(IAgregadoRepository agregadoRepository)
+    private readonly ICurrentUserService _currentUserService;
+    
+    public DeleteAgregadoCommandHandler(
+        IAgregadoRepository agregadoRepository,
+        ICurrentUserService currentUserService)
     {
         _agregadoRepository = agregadoRepository;
+        _currentUserService = currentUserService;
     }
+    
     public async Task<bool> Handle(DeleteAgregadoCommand request, CancellationToken cancellationToken)
     {
         var agregado = await _agregadoRepository.GetByIdAsync(request.Id);
@@ -25,9 +32,12 @@ public class DeleteAgregadoCommandHandler : IRequestHandler<DeleteAgregadoComman
             throw new EntityInUseException("el Agregado", "está siendo usado por al menos un Tipo de Producción activo");
         }
 
+        // Obtener usuario actual usando servicios reutilizados de Auth
+        var currentUserId = _currentUserService.GetCurrentUserId(request.RequestContext);
+
         try
         {
-            await _agregadoRepository.DeleteAsync(request.Id, request.EliminadoPorId);
+            await _agregadoRepository.DeleteAsync(request.Id, currentUserId);
             return true;
         }
         catch (Exception)

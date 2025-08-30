@@ -50,7 +50,7 @@ public class GetAllAgregadosFunction
 
             var filters = QueryParameterHelper.ParseAgregadoFilters(query);
             
-            _logger.LogInformation("Parsed filters - Desde: {Desde}", filters.Desde);
+            _logger.LogInformation("Parsed filters - FechaDesde: {Desde}", filters.FechaDesde);
             
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 

@@ -33,8 +33,8 @@ public class GetAllAgregadosQueryHandler : IRequestHandler<GetAllAgregadosQuery,
                     request.Filters.Estado,
                     x => x.Activo);
 
-                // FechaDesde (o Desde legacy) filtra por día exacto en CreadoEl o ModificadoEl
-                var fechaFiltro = request.Filters.FechaDesde ?? request.Filters.Desde;
+                // FechaDesde filtra por día exacto en CreadoEl o ModificadoEl
+                var fechaFiltro = request.Filters.FechaDesde;
                 if (fechaFiltro.HasValue)
                 {
                     var start = fechaFiltro.Value.Date;

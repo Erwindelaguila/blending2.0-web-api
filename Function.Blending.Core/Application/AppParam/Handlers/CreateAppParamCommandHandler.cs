@@ -1,22 +1,42 @@
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.AppParam.Commands;
 using Function.Blending.Core.Application.AppParam.DTOs;
+using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Domain.Entities;
 using MediatR;
 
 namespace Function.Blending.Core.Application.AppParam.Handlers;
 
+/// <summary>
+/// Handler para crear parámetros de aplicación
+/// Reutiliza servicios de autenticación de Function.Blending.Auth
+/// </summary>
 public class CreateAppParamCommandHandler : IRequestHandler<CreateAppParamCommand, object>
 {
     private readonly IAppParamRepository _appParamRepository;
+    private readonly ICurrentUserService _currentUserService;
 
-    public CreateAppParamCommandHandler(IAppParamRepository appParamRepository)
+    public CreateAppParamCommandHandler(
+        IAppParamRepository appParamRepository,
+        ICurrentUserService currentUserService)
     {
-        _appParamRepository = appParamRepository;
+        _appParamRepository = appParamRepository ?? throw new ArgumentNullException(nameof(appParamRepository));
+        _currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
     }
 
     public async Task<object> Handle(CreateAppParamCommand request, CancellationToken cancellationToken)
     {
+        // Validar que no existe un AppParam con la misma clave
+        var exists = await _appParamRepository.ExistsAsync(request.Key);
+        if (exists)
+        {
+            throw new DuplicateKeyException("parámetro", request.Key);
+        }
+
+        // Obtener usuario actual usando servicios reutilizados de Auth
+        var currentUserId = _currentUserService.GetCurrentUserId(request.RequestContext);
+
         var appParam = new AppParamEntity
         {
             Key = request.Key,
@@ -24,12 +44,14 @@ public class CreateAppParamCommandHandler : IRequestHandler<CreateAppParamComman
             Description = request.Description,
             Category = request.Category,
             Group = request.Group,
-            IsActive = request.IsActive ?? true,
-            IsInternal = request.IsInternal ?? false,
-            IsVisible = request.IsVisible ?? true,
-            IsDisableable = request.IsDisableable ?? true,
-            IsRemovable = request.IsRemovable ?? true,
-            CreadoPorId = request.CreadoPorId,
+            // USUARIO CREA TODO PERMISIVO
+            IsActive = true,                    // Siempre activo
+            IsInternal = false,                 // Siempre false = puede modificar código  
+            IsVisible = true,                   // Siempre visible
+            IsDisableable = false,              // Siempre false = SÍ se puede desactivar (editable)
+            IsRemovable = true,                 // Siempre true = se puede eliminar
+            // CAMPOS DE AUDITORÍA AUTOMÁTICOS
+            CreadoPorId = currentUserId,        // Del token JWT
             CreadoEl = DateTime.UtcNow
         };
 

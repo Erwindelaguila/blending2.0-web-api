@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FluentValidation;
+using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
@@ -59,28 +60,18 @@ public class CreateAppParamFunction
                 ));
             }
 
-            if (!root.TryGetProperty("creadoPorId", out var creadoPorIdElement) || 
-                !Guid.TryParse(creadoPorIdElement.GetString(), out var creadoPorId))
-            {
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "Valid CreadoPorId is required",
-                    "Se requiere un CreadoPorId válido",
-                    400
-                ));
-            }
-
             var command = new CreateAppParamCommand(
                 key: keyElement.GetString()!,
                 value: valueElement.GetString()!,
                 description: root.TryGetProperty("description", out var descElement) ? descElement.GetString() : null,
                 category: null, // El frontend no envía esto - valor por defecto
                 group: null, // El frontend no envía esto - valor por defecto
-                isActive: root.TryGetProperty("isActive", out var activeElement) ? activeElement.GetBoolean() : true,
-                isInternal: false, // Valor por defecto - el frontend no envía esto
-                isVisible: true, // Valor por defecto - el frontend no envía esto
-                isDisableable: true, // Valor por defecto - el frontend no envía esto
-                isRemovable: true, // Valor por defecto - el frontend no envía esto
-                creadoPorId: creadoPorId
+                isActive: true, // USUARIO: Siempre true
+                isInternal: false, // USUARIO: Siempre false = puede modificar código  
+                isVisible: true, // USUARIO: Siempre true
+                isDisableable: false, // USUARIO: Siempre false = se puede inactivar
+                isRemovable: true, // USUARIO: Siempre true = se puede eliminar
+                requestContext: req // Clean Architecture: contexto para autenticación
             );
 
             var result = await _mediator.Send(command);
@@ -88,6 +79,22 @@ public class CreateAppParamFunction
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(
                 result, 
                 "AppParam creado exitosamente"
+            ));
+        }
+        catch (DuplicateKeyException ex)
+        {
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                ex.Message,
+                "Código duplicado",
+                400
+            ));
+        }
+        catch (BusinessRuleException ex)
+        {
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                ex.Message,
+                "Error de validación de negocio",
+                400
             ));
         }
         catch (ValidationException ex)

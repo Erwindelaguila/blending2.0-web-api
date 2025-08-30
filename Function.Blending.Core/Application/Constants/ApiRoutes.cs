@@ -4,7 +4,7 @@ public class ApiRoutes
 {
     public static class Core
     {
-        // Rutas de producción (todas las entidades principales agrupadas)
+        // Rutas de producción 
         public static class Production
         {
             // Producto
@@ -26,10 +26,6 @@ public class ApiRoutes
             // Tipo de Producción
             public const string TipoProduccionBase = "core/produccion/tipoproduccion";
             public const string TipoProduccionGetById = "core/produccion/tipoproduccion/detail";
-
-            // Calidad-Parametro
-            public const string CalidadParametroMatriz = "core/produccion/calidad-parametros/matriz";
-            public const string CalidadParametroUpsert = "core/produccion/calidad-parametros/upsert";
         }
 
         // Rutas de planta
@@ -51,21 +47,14 @@ public class ApiRoutes
         {
             public const string CalidadParametroMatriz = "core/configuraciones/calidadparametro/matriz";
             public const string CalidadParametroUpsert = "core/configuraciones/calidadparametro/upsert";
+            public const string CalidadParametro = "core/configuraciones/calidadparametro";
         }
 
         // Rutas de AppParam
         public static class AppParam
         {
-            public const string Base = "core/appparam";
-            public const string GetByKey = "core/appparam/detail";
-            public const string GetByCategory = "core/appparam/category";
-            public const string GetByGroup = "core/appparam/group";
-        }
-
-        // Rutas de usuario y autenticación
-        public static class User
-        {
-            public const string Menu = "core/user/menu";
+            public const string Base = "core/appparam";                 
+            public const string GetById = "core/appparam/detail";         
         }
     }
 }
