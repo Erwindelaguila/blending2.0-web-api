@@ -12,64 +12,49 @@ using Microsoft.Extensions.Logging;
 
 namespace Function.Blending.Auth.Application.Menu.Handlers
 {
+    /// <summary>
+    /// Handler simplificado - ya no valida JWT porque APIM lo hizo
+    /// Solo procesa lógica de negocio para generar menú
+    /// </summary>
     public class GetUserMenuHandler : IRequestHandler<GetUserMenuQuery, MenuResponse>
     {
-        private readonly ITokenService _tokenService;
         private readonly IRoleService _roleService;
         private readonly IMenuService _menuService;
         private readonly ILogger<GetUserMenuHandler> _logger;
 
         public GetUserMenuHandler(
-            ITokenService tokenService,
             IRoleService roleService,
             IMenuService menuService,
             ILogger<GetUserMenuHandler> logger)
         {
-            _tokenService = tokenService;
-            _roleService = roleService;
-            _menuService = menuService;
-            _logger = logger;
+            _roleService = roleService ?? throw new ArgumentNullException(nameof(roleService));
+            _menuService = menuService ?? throw new ArgumentNullException(nameof(menuService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<MenuResponse> Handle(GetUserMenuQuery request, CancellationToken cancellationToken)
         {
-            if (!await _tokenService.ValidateTokenAsync(request.JwtToken))
-            {
-                return MenuResponse.CreateFailure("Token JWT inválido", HttpStatusCode.Unauthorized);
-            }
-
             try
             {
-                var userInfo = ExtractUserInfoFromToken(request.JwtToken);
-                if (!IsValidUserInfo(userInfo))
-                {
-                    return MenuResponse.CreateFailure("Token no contiene información suficiente del usuario", HttpStatusCode.Forbidden);
-                }
+                _logger.LogInformation("Procesando menú para usuario: {UserId} ({UserName}) con grupos: {Groups}", 
+                    request.UserId, request.UserName, string.Join(",", request.UserGroups));
 
-                var userRoles = await _roleService.GetUserRolesAsync(userInfo.Groups);
-                var menuData = await _menuService.BuildUserMenuAsync(userInfo.Id, userInfo.Name, userRoles);
+                // ✅ Ya no validamos JWT - APIM lo hizo
+                // ✅ Información viene directamente de headers
+
+                // Obtener roles del usuario basado en sus grupos
+                var userRoles = await _roleService.GetUserRolesAsync(request.UserGroups);
+                
+                // Generar menú basado en roles
+                var menuData = await _menuService.BuildUserMenuAsync(request.UserId, request.UserName, userRoles);
 
                 return MenuResponse.CreateSuccess(menuData, "Menú obtenido exitosamente");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error inesperado al procesar menú de usuario");
+                _logger.LogError(ex, "Error inesperado al procesar menú de usuario: {UserId}", request.UserId);
                 return MenuResponse.CreateFailure("Error interno del servidor", HttpStatusCode.InternalServerError);
             }
-        }
-
-        private (string Id, string Name, List<string> Groups) ExtractUserInfoFromToken(string jwtToken)
-        {
-            return (
-                Id: _tokenService.GetUserObjectId(jwtToken) ?? string.Empty,
-                Name: _tokenService.GetUserName(jwtToken) ?? "Usuario",
-                Groups: _tokenService.GetUserGroups(jwtToken) ?? new List<string>()
-            );
-        }
-
-        private static bool IsValidUserInfo((string Id, string Name, List<string> Groups) userInfo)
-        {
-            return !string.IsNullOrEmpty(userInfo.Id) && userInfo.Groups.Any();
         }
     }
 }

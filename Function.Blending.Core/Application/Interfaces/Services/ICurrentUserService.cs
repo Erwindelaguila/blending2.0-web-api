@@ -1,30 +1,33 @@
 namespace Function.Blending.Core.Application.Interfaces.Services;
 
 /// <summary>
-/// Servicio para obtener información del usuario autenticado
-/// Abstrae la lógica de extracción de tokens para mantener el dominio limpio
+/// Interface para el servicio de usuario actual
+/// Simplificada para trabajar con headers de APIM/Gateway
 /// </summary>
 public interface ICurrentUserService
 {
     /// <summary>
-    /// Obtiene el ID del usuario autenticado desde el request
+    /// Obtiene el ID del usuario actual desde headers
     /// </summary>
-    /// <param name="request">Request que contiene el token de autorización</param>
-    /// <returns>GUID del usuario autenticado</returns>
-    /// <exception cref="UnauthorizedAccessException">Si el usuario no está autenticado o el token es inválido</exception>
     Guid GetCurrentUserId(object request);
     
     /// <summary>
-    /// Obtiene el nombre del usuario autenticado desde el request
+    /// Obtiene el nombre del usuario actual desde headers
     /// </summary>
-    /// <param name="request">Request que contiene el token de autorización</param>
-    /// <returns>Nombre del usuario o null si no está disponible</returns>
-    string? GetCurrentUserName(object request);
+    string GetCurrentUserName(object request);
     
     /// <summary>
-    /// Verifica si el request contiene un usuario autenticado válido
+    /// Obtiene el email del usuario actual desde headers
     /// </summary>
-    /// <param name="request">Request que contiene el token de autorización</param>
-    /// <returns>True si está autenticado y el token es válido</returns>
+    string GetCurrentUserEmail(object request);
+    
+    /// <summary>
+    /// Obtiene los grupos del usuario actual desde headers
+    /// </summary>
+    List<string> GetUserGroups(object request);
+    
+    /// <summary>
+    /// Verifica si el usuario está autenticado
+    /// </summary>
     bool IsAuthenticated(object request);
 }

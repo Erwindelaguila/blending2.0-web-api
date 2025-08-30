@@ -1,145 +1,139 @@
 using Function.Blending.Core.Application.Interfaces.Services;
-using Function.Blending.Auth.Application.Interfaces.Services;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Logging;
 
 namespace Function.Blending.Core.Infrastructure.Services;
 
 /// <summary>
-/// Servicio de usuario actual que reutiliza servicios de autenticación de Function.Blending.Auth
-/// Siguiendo principios DRY y mejores prácticas
+/// 🆔 CURRENT USER SERVICE - CÓDIGO IDÉNTICO EN DESARROLLO Y PRODUCCIÓN
+/// Lee headers agregados por APIM (real) o ApimSimulatorMiddleware (desarrollo)
+/// ✅ MISMO CÓDIGO, MISMOS HEADERS, CERO CAMBIOS AL PASAR A PRODUCCIÓN
 /// </summary>
 public class CurrentUserService : ICurrentUserService
 {
-    private readonly IAuthorizationHeaderExtractor _authHeaderExtractor;
-    private readonly ITokenClaimExtractor _tokenClaimExtractor;
-    private readonly ITokenClaimValidator _tokenValidator;
-    private readonly ILogger<CurrentUserService> _logger;
-
-    public CurrentUserService(
-        IAuthorizationHeaderExtractor authHeaderExtractor,
-        ITokenClaimExtractor tokenClaimExtractor,
-        ITokenClaimValidator tokenValidator,
-        ILogger<CurrentUserService> logger)
-    {
-        _authHeaderExtractor = authHeaderExtractor ?? throw new ArgumentNullException(nameof(authHeaderExtractor));
-        _tokenClaimExtractor = tokenClaimExtractor ?? throw new ArgumentNullException(nameof(tokenClaimExtractor));
-        _tokenValidator = tokenValidator ?? throw new ArgumentNullException(nameof(tokenValidator));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
-
+    /// <summary>
+    /// Obtiene el ID del usuario actual desde headers APIM
+    /// Header: X-User-Id (agregado por APIM o ApimSimulator)
+    /// </summary>
     public Guid GetCurrentUserId(object request)
     {
-        try
-        {
-            if (request is not HttpRequestData httpRequest)
-            {
-                _logger.LogError("Request no es del tipo HttpRequestData");
-                throw new UnauthorizedAccessException("Request type not supported");
-            }
-
-            var token = _authHeaderExtractor.ExtractJwtToken(httpRequest);
-            
-            if (string.IsNullOrEmpty(token))
-            {
-                _logger.LogWarning("Authorization token not found in request");
-                throw new UnauthorizedAccessException("Authorization token not found in request");
-            }
-
-            // Validar token usando servicios de Auth
-            var jwtToken = _tokenClaimExtractor.ReadJwt(token);
-            if (jwtToken == null || !_tokenValidator.IsNotExpired(jwtToken))
-            {
-                _logger.LogWarning("JWT token is expired or invalid");
-                throw new UnauthorizedAccessException("JWT token is expired or invalid");
-            }
-
-            // Extraer ObjectId usando servicios de Auth
-            var userObjectId = _tokenClaimExtractor.GetUserObjectId(token);
-            
-            if (string.IsNullOrEmpty(userObjectId) || !Guid.TryParse(userObjectId, out var userId))
-            {
-                var allClaims = jwtToken?.Claims?.Select(c => $"{c.Type}: {c.Value}").ToList() ?? new List<string>();
-                var claimsDebug = string.Join(", ", allClaims);
-                
-                _logger.LogWarning("User ID not found in JWT token. Available claims: {Claims}", claimsDebug);
-                throw new UnauthorizedAccessException($"User ID not found in JWT token. Available claims: [{claimsDebug}]");
-            }
-
-            _logger.LogDebug("Successfully extracted user ID: {UserId}", userId);
+        var httpRequest = request as HttpRequestData;
+        var userIdStr = GetHeaderValue(httpRequest, "X-User-Id");
+        
+        if (Guid.TryParse(userIdStr, out var userId))
             return userId;
-        }
-        catch (UnauthorizedAccessException)
-        {
-            throw; // Re-throw authorization exceptions
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error while extracting user ID from request");
-            throw new UnauthorizedAccessException("Error processing authentication token", ex);
-        }
+            
+        return Guid.Empty; // Usuario anónimo
     }
 
-    public string? GetCurrentUserName(object request)
+    /// <summary>
+    /// Obtiene el nombre del usuario actual desde headers APIM  
+    /// Header: X-User-Name (agregado por APIM o ApimSimulator)
+    /// </summary>
+    public string GetCurrentUserName(object request)
     {
-        try
-        {
-            if (request is not HttpRequestData httpRequest)
-            {
-                return null;
-            }
-
-            var token = _authHeaderExtractor.ExtractJwtToken(httpRequest);
-            
-            if (string.IsNullOrEmpty(token))
-            {
-                return null;
-            }
-
-            var jwtToken = _tokenClaimExtractor.ReadJwt(token);
-            if (jwtToken == null || !_tokenValidator.IsNotExpired(jwtToken))
-            {
-                return null;
-            }
-
-            var userName = _tokenClaimExtractor.GetUserName(token);
-            
-            _logger.LogDebug("Extracted user name: {UserName}", userName ?? "null");
-            return userName;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Error extracting user name from token");
-            return null;
-        }
+        var httpRequest = request as HttpRequestData;
+        return GetHeaderValue(httpRequest, "X-User-Name") ?? "Unknown User";
     }
 
+    /// <summary>
+    /// Obtiene el email del usuario actual desde headers APIM
+    /// Header: X-User-Email (agregado por APIM o ApimSimulator)
+    /// </summary>
+    public string GetCurrentUserEmail(object request)
+    {
+        var httpRequest = request as HttpRequestData;
+        return GetHeaderValue(httpRequest, "X-User-Email") ?? "unknown@email.com";
+    }
+
+    /// <summary>
+    /// Obtiene los grupos del usuario actual desde headers APIM
+    /// Header: X-User-Groups (separados por coma)
+    /// </summary>
+    public List<string> GetUserGroups(object request)
+    {
+        var httpRequest = request as HttpRequestData;
+        var groupsHeader = GetHeaderValue(httpRequest, "X-User-Groups");
+        
+        if (string.IsNullOrEmpty(groupsHeader))
+            return new List<string>();
+            
+        return groupsHeader.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                          .Select(g => g.Trim())
+                          .ToList();
+    }
+
+    /// <summary>
+    /// Verifica si el usuario está autenticado
+    /// Un usuario está autenticado si tiene un X-User-Id válido
+    /// </summary>
     public bool IsAuthenticated(object request)
     {
+        var userId = GetCurrentUserId(request);
+        return userId != Guid.Empty;
+    }
+
+    // ✅ MÉTODOS ADICIONALES PARA FUNCIONALIDAD COMPLETA
+
+    /// <summary>
+    /// Obtiene los scopes del usuario actual desde headers APIM
+    /// Header: X-User-Scopes (separados por espacio)
+    /// </summary>
+    public string[] GetUserScopes(HttpRequestData request)
+    {
+        var scopesHeader = GetHeaderValue(request, "X-User-Scopes");
+        
+        if (string.IsNullOrEmpty(scopesHeader))
+            return Array.Empty<string>();
+            
+        return scopesHeader.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                          .Select(s => s.Trim())
+                          .ToArray();
+    }
+
+    /// <summary>
+    /// Obtiene el tenant ID del usuario actual desde headers APIM
+    /// Header: X-User-Tenant (agregado por APIM o ApimSimulator)
+    /// </summary>
+    public string GetUserTenant(HttpRequestData request)
+    {
+        return GetHeaderValue(request, "X-User-Tenant") ?? "";
+    }
+
+    /// <summary>
+    /// Verifica si el usuario tiene un scope específico
+    /// </summary>
+    public bool HasScope(HttpRequestData request, string scope)
+    {
+        var userScopes = GetUserScopes(request);
+        return userScopes.Contains(scope, StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Verifica si el usuario pertenece a un grupo específico
+    /// </summary>
+    public bool IsInGroup(HttpRequestData request, string group)
+    {
+        var userGroups = GetUserGroups(request);
+        return userGroups.Contains(group, StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Helper para extraer header values de forma segura
+    /// </summary>
+    private string? GetHeaderValue(HttpRequestData? request, string headerName)
+    {
         try
         {
-            if (request is not HttpRequestData httpRequest)
+            if (request?.Headers?.TryGetValues(headerName, out var headerValues) == true)
             {
-                return false;
+                return headerValues.FirstOrDefault();
             }
-
-            var token = _authHeaderExtractor.ExtractJwtToken(httpRequest);
             
-            if (string.IsNullOrEmpty(token))
-            {
-                return false;
-            }
-
-            var jwtToken = _tokenClaimExtractor.ReadJwt(token);
-            var isValid = jwtToken != null && _tokenValidator.IsNotExpired(jwtToken);
-            
-            _logger.LogDebug("Token authentication check result: {IsAuthenticated}", isValid);
-            return isValid;
+            return null;
         }
-        catch (Exception ex)
+        catch
         {
-            _logger.LogDebug(ex, "Token authentication failed");
-            return false;
+            return null;
         }
     }
 }
