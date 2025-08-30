@@ -104,24 +104,46 @@ public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
     {
         if (isQuery)
         {
-            // GetAllAgregadosQuery -> agregados (pluralizado para queries)
+            // GetAllAgregadosQuery -> Agregados -> agregados
             if (requestTypeName.StartsWith("GetAll"))
-                return requestTypeName.Replace("GetAll", "").Replace("Query", "");
+            {
+                var entityName = requestTypeName.Replace("GetAll", "").Replace("Query", "");
+                // GetAllLineasProduccionQuery -> LineasProduccion -> lineaproduccion
+                if (entityName == "LineasProduccion") return "lineaproduccion";
+                return entityName.ToLowerInvariant();
+            }
+            // GetAgregadoByIdQuery -> Agregado -> agregados
             if (requestTypeName.StartsWith("Get"))
-                return requestTypeName.Replace("Get", "").Replace("ByIdQuery", "").Replace("Query", "") + "s";
+            {
+                var entityName = requestTypeName.Replace("Get", "").Replace("ByIdQuery", "").Replace("Query", "");
+                if (entityName == "LineaProduccion") return "lineaproduccion";
+                return entityName.ToLowerInvariant() + "s";
+            }
         }
         else
         {
-            // CreateAppParamCommand -> appparams
+            // CreateAppParamCommand -> AppParam -> appparams
             if (requestTypeName.StartsWith("Create"))
-                return requestTypeName.Replace("Create", "").Replace("Command", "") + "s";
+            {
+                var entityName = requestTypeName.Replace("Create", "").Replace("Command", "");
+                if (entityName == "LineaProduccion") return "lineaproduccion";
+                return entityName.ToLowerInvariant() + "s";
+            }
             if (requestTypeName.StartsWith("Update"))
-                return requestTypeName.Replace("Update", "").Replace("Command", "") + "s";
+            {
+                var entityName = requestTypeName.Replace("Update", "").Replace("Command", "");
+                if (entityName == "LineaProduccion") return "lineaproduccion";
+                return entityName.ToLowerInvariant() + "s";
+            }
             if (requestTypeName.StartsWith("Delete"))
-                return requestTypeName.Replace("Delete", "").Replace("Command", "") + "s";
+            {
+                var entityName = requestTypeName.Replace("Delete", "").Replace("Command", "");
+                if (entityName == "LineaProduccion") return "lineaproduccion";
+                return entityName.ToLowerInvariant() + "s";
+            }
         }
         
-        return requestTypeName.Replace("Command", "").Replace("Query", "");
+        return requestTypeName.Replace("Command", "").Replace("Query", "").ToLowerInvariant();
     }
 
     private static string ExtractAction(string commandType)

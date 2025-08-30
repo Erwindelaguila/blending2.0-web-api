@@ -1,11 +1,12 @@
+using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.LineaProduccion.Commands;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using System.Web;
 
 namespace Function.Blending.Core.Functions.LineaProduccion;
 
@@ -20,44 +21,41 @@ public class DeleteLineaProduccionFunction
 
     [Function(FunctionNames.LineaProduccion.Delete)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Production.LineaProduccionBase)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Production.LineaProduccionBase + "/{id}")] HttpRequestData req,
+        string id)
     {
         try
         {
-            var query = HttpUtility.ParseQueryString(req.Url.Query);
-            var idString = query["id"];
-
-            if (string.IsNullOrEmpty(idString) || !Guid.TryParse(idString, out var lineaProduccionId))
+            if (!Guid.TryParse(id, out var lineaProduccionId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "ID de línea de producción inválido o no proporcionado",
-                    null,
+                    "ID inválido",
+                    "El ID debe ser un GUID válido",
                     400
                 ));
             }
 
-            var eliminadoPorIdString = query["eliminadoPorId"];
-            if (string.IsNullOrEmpty(eliminadoPorIdString) || !Guid.TryParse(eliminadoPorIdString, out var eliminadoPorId))
-            {
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "ID de usuario eliminador inválido o no proporcionado",
-                    null,
-                    400
-                ));
-            }
-
-            var result = await _mediator.Send(new DeleteLineaProduccionCommand(lineaProduccionId, eliminadoPorId));
+            var command = new DeleteLineaProduccionCommand(lineaProduccionId, req);
+            var result = await _mediator.Send(command);
 
             if (!result)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "Línea de producción no encontrada",
+                    "Línea de Producción no encontrada",
                     null,
                     404
                 ));
             }
 
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<bool>.Success(result, "Línea de producción eliminada exitosamente"));
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<bool>.Success(result, "Línea de Producción eliminada exitosamente"));
+        }
+        catch (EntityInUseException ex)
+        {
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                new { Error = ex.Message, Code = ex.ErrorCode },
+                "Conflicto de regla de negocio",
+                409
+            ));
         }
         catch (Exception ex)
         {
@@ -67,11 +65,16 @@ public class DeleteLineaProduccionFunction
                 Exception = ex.Message,
                 InnerException = ex.InnerException?.Message,
             };
+
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 errorMessage,
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

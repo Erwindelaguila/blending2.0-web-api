@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.LineaProduccion.DTOs;
 using Function.Blending.Core.Application.LineaProduccion.Queries;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -55,7 +56,7 @@ public class GetAllLineasProduccionFunction
             
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var result = await _mediator.Send(new GetAllLineasProduccionQuery(page, size, filtersToApply), cts.Token);
+            var result = await _mediator.Send(new GetAllLineasProduccionQuery(page, size, filtersToApply, req), cts.Token);
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<LineaProduccionDTO>>.Success(result, "Líneas de producción obtenidas correctamente"));
         }
@@ -91,6 +92,10 @@ public class GetAllLineasProduccionFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }
