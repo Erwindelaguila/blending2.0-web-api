@@ -15,20 +15,25 @@ namespace Function.Blending.Core.Application.Agregado.Handlers
     public class UpdateAgregadoCommandHandler : IRequestHandler<UpdateAgregadoCommand, AgregadoDTO>
     {
         private readonly IAgregadoRepository _agregadoRepository;
-        private readonly ICurrentUserService _currentUserService;
+        private readonly IAuthorizationService _authorizationService;
 
         public UpdateAgregadoCommandHandler(
             IAgregadoRepository agregadoRepository,
-            ICurrentUserService currentUserService)
+            IAuthorizationService authorizationService)
         {
             _agregadoRepository = agregadoRepository ?? throw new ArgumentNullException(nameof(agregadoRepository));
-            _currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
+            _authorizationService = authorizationService ?? throw new ArgumentNullException(nameof(authorizationService));
         }
 
         public async Task<AgregadoDTO> Handle(UpdateAgregadoCommand request, CancellationToken cancellationToken)
         {
             // Obtener usuario actual usando servicios reutilizados de Auth
-            var currentUserId = _currentUserService.GetCurrentUserId(request.RequestContext);
+            // Obtener user ID desde headers (via AuthorizationService)
+            var currentUserIdString = _authorizationService.GetCurrentUserId();
+            if (!Guid.TryParse(currentUserIdString, out var currentUserId))
+            {
+                throw new UnauthorizedAccessException("User ID inválido en headers");
+            }
             
             // Obtener el registro actual para conservar valores
             var currentAgregado = await _agregadoRepository.GetByIdAsync(request.Id);

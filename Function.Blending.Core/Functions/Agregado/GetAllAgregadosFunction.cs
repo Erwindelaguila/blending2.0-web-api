@@ -3,11 +3,14 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Agregado.DTOs;
 using Function.Blending.Core.Application.Agregado.Queries;
+using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using System.Web;
+using System.Net;
 
 namespace Function.Blending.Core.Functions.Agregado;
 
@@ -16,7 +19,9 @@ public class GetAllAgregadosFunction
     private readonly IMediator _mediator;
     private readonly ILogger<GetAllAgregadosFunction> _logger;
 
-    public GetAllAgregadosFunction(IMediator mediator, ILogger<GetAllAgregadosFunction> logger)
+    public GetAllAgregadosFunction(
+        IMediator mediator, 
+        ILogger<GetAllAgregadosFunction> logger)
     {
         _mediator = mediator;
         _logger = logger;
@@ -30,11 +35,11 @@ public class GetAllAgregadosFunction
         
         try
         {
+            
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             
             _logger.LogInformation("GetAllAgregados called with query: {QueryString}", req.Url.Query);
             
-            // Verificar si es solicitud de activos (para combos)
             if (query["activo"] == "true")
             {
                 _logger.LogInformation("Returning active agregados for combo");
@@ -54,7 +59,8 @@ public class GetAllAgregadosFunction
             
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var result = await _mediator.Send(new GetAllAgregadosQuery(page, size, filtersToApply), cts.Token);
+            var result = await _mediator.Send(new GetAllAgregadosQuery(page, size, filtersToApply, req), cts.Token);
+            
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<AgregadoDTO>>.Success(result, "Agregados obtenidos correctamente"));
         }
@@ -90,6 +96,10 @@ public class GetAllAgregadosFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

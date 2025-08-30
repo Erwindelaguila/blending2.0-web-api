@@ -3,6 +3,8 @@ using Function.Blending.Core.Application.AppParam.Commands;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -14,11 +16,31 @@ public class DeleteAppParamFunction
 {
     private readonly ILogger<DeleteAppParamFunction> _logger;
     private readonly IMediator _mediator;
+    private readonly IAuthorizationService _authorizationService;
+    private readonly IAuditService _auditService;
 
-    public DeleteAppParamFunction(ILogger<DeleteAppParamFunction> logger, IMediator mediator)
+    public DeleteAppParamFunction(ILogger<DeleteAppParamFunction> logger, IMediator mediator, IAuthorizationService authorizationService, IAuditService auditService)
     {
         _logger = logger;
         _mediator = mediator;
+        _authorizationService = authorizationService;
+        _auditService = auditService;
+    }
+
+    /// <summary>
+    /// Configura los headers de autorización desde HttpRequestData para Azure Functions.
+    /// </summary>
+    private void SetupAuthorizationHeaders(HttpRequestData req)
+    {
+        var headers = new Dictionary<string, string>();
+        
+        foreach (var header in req.Headers)
+        {
+            headers[header.Key] = header.Value.FirstOrDefault() ?? "";
+        }
+        
+        // Configurar headers en el AuthorizationService estático para Azure Functions
+        AuthorizationService.SetCurrentRequestHeaders(headers);
     }
 
     [Function(FunctionNames.AppParam.Delete)]
@@ -30,6 +52,21 @@ public class DeleteAppParamFunction
 
         try
         {
+            // ===== AUTORIZACIÓN =====
+            // Configurar headers desde HttpRequestData para Azure Functions
+            SetupAuthorizationHeaders(req);
+            
+            // Validar autorización - scope requerido para eliminar app params
+            if (!_authorizationService.HasRequiredScope("appparams.write"))
+            {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                    "Access denied: insufficient permissions",
+                    "Acceso denegado: permisos insuficientes",
+                    403
+                ));
+            }
+            // ===== FIN AUTORIZACIÓN =====
+
             if (string.IsNullOrWhiteSpace(key))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
@@ -74,6 +111,11 @@ public class DeleteAppParamFunction
                 "Error interno del servidor",
                 500
             ));
+        }
+        finally
+        {
+            // Limpiar headers del contexto de Azure Functions
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

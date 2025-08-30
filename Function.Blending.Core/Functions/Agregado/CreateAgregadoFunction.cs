@@ -5,9 +5,12 @@ using Function.Blending.Core.Application.Agregado.DTOs;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using System.Net;
+using Function.Blending.Core.Infrastructure.Services;
 
 namespace Function.Blending.Core.Functions.Agregado;
 
@@ -26,6 +29,7 @@ public class CreateAgregadoFunction
     {
         try
         {
+
             var body = await req.ReadAsStringAsync();
 
             if (string.IsNullOrEmpty(body))
@@ -61,7 +65,7 @@ public class CreateAgregadoFunction
                 nombre: nombreElement.GetString()!,
                 descripcion: root.TryGetProperty("descripcion", out var descElement) ? descElement.GetString() : null,
                 activo: root.TryGetProperty("activo", out var activoElement) ? activoElement.GetBoolean() : null,
-                requestContext: req // Clean Architecture: contexto para autenticación
+                requestContext: req 
             );
 
             var result = await _mediator.Send(command);
@@ -100,6 +104,10 @@ public class CreateAgregadoFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

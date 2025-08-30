@@ -1,5 +1,7 @@
 using Yarp.ReverseProxy;
 using Blending.ApiGateway.Middleware;
+using Blending.ApiGateway.Services;
+using Azure.Data.AppConfiguration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,27 @@ var builder = WebApplication.CreateBuilder(args);
 // En producción, Azure APIM reemplaza completamente a YARP
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+
+// Configurar mapeo de grupos → scopes
+// 🛠️ MODO DESARROLLO: Usar MOCK para seguir desarrollando sin Azure App Config
+builder.Services.AddSingleton<IGroupToScopeMapper, MockGroupToScopeMapper>();
+
+// OPCIÓN 1: Azure App Configuration (producción) - TEMPORALMENTE DESHABILITADO
+/*
+var appConfigConnectionString = builder.Configuration.GetConnectionString("AppConfig");
+if (!string.IsNullOrEmpty(appConfigConnectionString))
+{
+    builder.Services.AddSingleton<ConfigurationClient>(sp => 
+        new ConfigurationClient(appConfigConnectionString));
+    builder.Services.AddSingleton<IGroupToScopeMapper, GroupToScopeMapper>();
+}
+else
+{
+    // OPCIÓN 2: Usar configuración local como si fuera App Configuration
+    // Esto simula exactamente el comportamiento real
+    builder.Services.AddSingleton<IGroupToScopeMapper, LocalConfigGroupToScopeMapper>();
+}
+*/
 
 // Configurar CORS para permitir requests del frontend React
 // APIM en producción maneja CORS automáticamente

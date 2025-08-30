@@ -6,9 +6,12 @@ using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using System.Net;
 
 namespace Function.Blending.Core.Functions.Agregado;
 
@@ -27,6 +30,7 @@ public class UpdateAgregadoFunction
     {
         try
         {
+
             var body = await req.ReadAsStringAsync();
             if (string.IsNullOrEmpty(body))
             {
@@ -73,10 +77,11 @@ public class UpdateAgregadoFunction
                 nombre: nombreElement.GetString()!,
                 descripcion: root.TryGetProperty("descripcion", out var descElement) ? descElement.GetString() : null,
                 activo: root.TryGetProperty("activo", out var activoElement) ? activoElement.GetBoolean() : null,
-                requestContext: req // Clean Architecture: contexto para autenticación
+                requestContext: req
             );
 
             var result = await _mediator.Send(command);
+
 
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<AgregadoDTO>.Success(result, "Agregado actualizado exitosamente"));
         }
@@ -119,6 +124,11 @@ public class UpdateAgregadoFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            // ✅ LIMPIAR contexto de autorización
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using Blending.ApiGateway.Services;
 using System.Security.Claims;
 using System.Text;
 
@@ -23,16 +24,18 @@ public class ApimSimulatorMiddleware
     private readonly RequestDelegate _next;
     private readonly ILogger<ApimSimulatorMiddleware> _logger;
     private readonly IConfiguration _configuration;
+    private readonly IGroupToScopeMapper _groupToScopeMapper;
     
     /// <summary>
     /// Constructor del middleware APIM Simulator.
     /// Inicializa los componentes necesarios para replicar el comportamiento de APIM.
     /// </summary>
-    public ApimSimulatorMiddleware(RequestDelegate next, ILogger<ApimSimulatorMiddleware> logger, IConfiguration configuration)
+    public ApimSimulatorMiddleware(RequestDelegate next, ILogger<ApimSimulatorMiddleware> logger, IConfiguration configuration, IGroupToScopeMapper groupToScopeMapper)
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _groupToScopeMapper = groupToScopeMapper ?? throw new ArgumentNullException(nameof(groupToScopeMapper));
     }
 
     /// <summary>
@@ -96,7 +99,7 @@ public class ApimSimulatorMiddleware
             }
 
             // Agregar headers exactamente como APIM
-            AddApimHeaders(context, jwtClaims);
+            await AddApimHeadersAsync(context, jwtClaims);
 
             _logger.LogInformation("Usuario autenticado: {UserId} - {UserName}", 
                 GetClaimValue(jwtClaims, "oid"), 
@@ -213,18 +216,9 @@ public class ApimSimulatorMiddleware
 
     /// <summary>
     /// Agrega headers X-User-* EXACTAMENTE como lo hace APIM.
-    /// 
-    /// Headers estándar de APIM:
-    /// - X-User-Id: Object ID del usuario para auditoría
-    /// - X-User-Name: Nombre completo del usuario
-    /// - X-User-Email: Email del usuario
-    /// - X-User-Groups: Grupos separados por coma
-    /// - X-User-Scopes: Scopes de autorización
-    /// - X-User-Tenant: Tenant ID de Azure AD
-    /// 
-    /// Estos headers son los que esperan recibir las Azure Functions.
+    /// Ahora incluye mapeo dinámico de grupos → scopes usando App Configuration.
     /// </summary>
-    private void AddApimHeaders(HttpContext context, Dictionary<string, string> claims)
+    private async Task AddApimHeadersAsync(HttpContext context, Dictionary<string, string> claims)
     {
         _logger.LogInformation("=== GENERANDO HEADERS APIM ===");
         
@@ -270,10 +264,16 @@ public class ApimSimulatorMiddleware
             _logger.LogInformation("GRUPOS: Usuario sin grupos asignados");
         }
 
-        // X-User-Scopes: Scopes del usuario para autorización
-        var userScopes = GetClaimValue(claims, "scp") ?? 
-                        GetClaimValue(claims, "scope") ?? 
-                        "";
+        // X-User-Scopes: Mapear grupos a scopes específicos usando App Configuration
+        var userGroupsArray = string.IsNullOrEmpty(userGroups) 
+            ? Array.Empty<string>()
+            : userGroups.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                       .Select(g => g.Trim())
+                       .ToArray();
+        
+        // Mapear grupos a scopes usando el servicio (App Config o Mock)
+        var userScopes = await _groupToScopeMapper.MapGroupsToScopesAsync(userGroupsArray);
+        
         context.Request.Headers["X-User-Scopes"] = userScopes;
         _logger.LogInformation("HEADER: X-User-Scopes = '{UserScopes}'", userScopes);
 

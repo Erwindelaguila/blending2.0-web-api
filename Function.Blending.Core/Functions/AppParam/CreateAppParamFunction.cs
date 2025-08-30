@@ -6,6 +6,8 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.AppParam.Commands;
 using Function.Blending.Core.Application.AppParam.DTOs;
+using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -15,10 +17,17 @@ namespace Function.Blending.Core.Functions.AppParam;
 public class CreateAppParamFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationService _authorizationService;
+    private readonly IAuditService _auditService;
 
-    public CreateAppParamFunction(IMediator mediator)
+    public CreateAppParamFunction(
+        IMediator mediator, 
+        IAuthorizationService authorizationService,
+        IAuditService auditService)
     {
-        _mediator = mediator;
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _authorizationService = authorizationService ?? throw new ArgumentNullException(nameof(authorizationService));
+        _auditService = auditService ?? throw new ArgumentNullException(nameof(auditService));
     }
 
     [Function(FunctionNames.AppParam.Create)]
@@ -27,6 +36,17 @@ public class CreateAppParamFunction
     {
         try
         {
+            // PASO 0: CONFIGURAR HEADERS PARA AUTHORIZATION SERVICE
+            SetupAuthorizationHeaders(req);
+
+            // PASO 1: VALIDAR AUTORIZACIÓN
+            if (!_authorizationService.HasRequiredScope("appparams.write"))
+            {
+                var unauthorizedResponse = req.CreateResponse(System.Net.HttpStatusCode.Forbidden);
+                await unauthorizedResponse.WriteAsJsonAsync(BaseResponse<string>.Fail("Acceso denegado: Se requiere permiso 'appparams.write'"));
+                return unauthorizedResponse;
+            }
+
             var body = await req.ReadAsStringAsync();
             
             if (string.IsNullOrEmpty(body))
@@ -121,5 +141,30 @@ public class CreateAppParamFunction
                 500
             ));
         }
+        finally
+        {
+            // Limpiar headers al final del request
+            AuthorizationService.ClearCurrentRequestHeaders();
+        }
+    }
+
+    /// <summary>
+    /// Configura los headers de autorización para Azure Functions.
+    /// Extrae los headers del HttpRequestData y los configura en el AuthorizationService.
+    /// </summary>
+    private static void SetupAuthorizationHeaders(HttpRequestData req)
+    {
+        var headers = new Dictionary<string, string>();
+        
+        foreach (var header in req.Headers)
+        {
+            var values = header.Value?.ToArray();
+            if (values != null && values.Length > 0)
+            {
+                headers[header.Key] = values[0];
+            }
+        }
+
+        AuthorizationService.SetCurrentRequestHeaders(headers);
     }
 }

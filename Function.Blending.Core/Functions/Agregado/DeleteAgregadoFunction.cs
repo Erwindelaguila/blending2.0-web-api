@@ -3,9 +3,12 @@ using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Agregado.Commands;
+using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using System.Net;
 
 namespace Function.Blending.Core.Functions.Agregado;
 
@@ -25,6 +28,7 @@ public class DeleteAgregadoFunction
     {
         try
         {
+
             if (!Guid.TryParse(id, out var agregadoId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
@@ -45,6 +49,7 @@ public class DeleteAgregadoFunction
                     404
                 ));
             }
+
 
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<bool>.Success(result, "Agregado eliminado exitosamente"));
         }
@@ -70,6 +75,10 @@ public class DeleteAgregadoFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

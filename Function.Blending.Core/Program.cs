@@ -76,7 +76,10 @@ var host = new HostBuilder()
         // services.AddScoped<ITokenSignatureValidator, TokenSignatureValidator>(); // ❌ ELIMINADO
         
         // ✅ SERVICIO DE USUARIO ACTUAL SIMPLIFICADO
-        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        // Servicios de autorización y auditoría
+        services.AddHttpContextAccessor(); // ← AGREGAMOS ESTO
+        services.AddScoped<IAuthorizationService, AuthorizationService>();
+        services.AddScoped<IAuditService, AuditService>();
         
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
@@ -85,8 +88,11 @@ var host = new HostBuilder()
         // Registrar validadores
         services.AddValidatorsFromAssemblyContaining<Program>();
         
-        // Registrar pipeline de validación
+        // Registrar pipeline behaviors - Clean Architecture
+        // Orden importante: Validación → Autorización → Auditoría
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuditBehavior<,>));
         
     })
     .Build();

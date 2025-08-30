@@ -9,17 +9,15 @@ namespace Function.Blending.Core.Application.Agregado.Handlers;
 public class DeleteAgregadoCommandHandler : IRequestHandler<DeleteAgregadoCommand, bool>
 {
     private readonly IAgregadoRepository _agregadoRepository;
-    private readonly ICurrentUserService _currentUserService;
-    
+    private readonly IAuthorizationService _authorizationService;
+
     public DeleteAgregadoCommandHandler(
         IAgregadoRepository agregadoRepository,
-        ICurrentUserService currentUserService)
+        IAuthorizationService authorizationService)
     {
         _agregadoRepository = agregadoRepository;
-        _currentUserService = currentUserService;
-    }
-    
-    public async Task<bool> Handle(DeleteAgregadoCommand request, CancellationToken cancellationToken)
+        _authorizationService = authorizationService;
+    }    public async Task<bool> Handle(DeleteAgregadoCommand request, CancellationToken cancellationToken)
     {
         var agregado = await _agregadoRepository.GetByIdAsync(request.Id);
         if (agregado == null)
@@ -33,7 +31,12 @@ public class DeleteAgregadoCommandHandler : IRequestHandler<DeleteAgregadoComman
         }
 
         // Obtener usuario actual usando servicios reutilizados de Auth
-        var currentUserId = _currentUserService.GetCurrentUserId(request.RequestContext);
+        // Obtener user ID desde headers (via AuthorizationService)
+        var currentUserIdString = _authorizationService.GetCurrentUserId();
+        if (!Guid.TryParse(currentUserIdString, out var currentUserId))
+        {
+            throw new UnauthorizedAccessException("User ID inválido en headers");
+        }
 
         try
         {
