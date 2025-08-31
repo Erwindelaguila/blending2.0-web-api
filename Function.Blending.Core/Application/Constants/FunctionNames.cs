@@ -59,7 +59,6 @@ public static class FunctionNames
         public const string Delete = "DeleteAgregado";
         public const string GetAll = "GetAllAgregados";
         public const string GetById = "GetAgregadoById";
-        public const string GetAllWithoutPagination = "GetAllAgregadosWithoutPagination";
     }
     public static class LineaProduccion
     {

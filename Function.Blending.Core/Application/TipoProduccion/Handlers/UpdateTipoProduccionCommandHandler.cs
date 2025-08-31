@@ -2,29 +2,44 @@ using MediatR;
 using Function.Blending.Core.Application.TipoProduccion.Commands;
 using Function.Blending.Core.Application.TipoProduccion.DTOs;
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Domain.Entities;
 
 namespace Function.Blending.Core.Application.TipoProduccion.Handlers;
 
+/// <summary>
+/// Handler para actualizar tipos de producción
+/// Incluye auditoría automática y validaciones de negocio
+/// </summary>
 public class UpdateTipoProduccionCommandHandler : IRequestHandler<UpdateTipoProduccionCommand, TipoProduccionDTO>
 {
     private readonly ITipoProduccionRepository _tipoProduccionRepository;
     private readonly ILineaProduccionRepository _lineaProduccionRepository;
     private readonly IAgregadoRepository _agregadoRepository;
+    private readonly IAuthorizationService _authorizationService;
     
     public UpdateTipoProduccionCommandHandler(
         ITipoProduccionRepository tipoProduccionRepository,
         ILineaProduccionRepository lineaProduccionRepository,
-        IAgregadoRepository agregadoRepository)
+        IAgregadoRepository agregadoRepository,
+        IAuthorizationService authorizationService)
     {
-        _tipoProduccionRepository = tipoProduccionRepository;
-        _lineaProduccionRepository = lineaProduccionRepository;
-        _agregadoRepository = agregadoRepository;
+        _tipoProduccionRepository = tipoProduccionRepository ?? throw new ArgumentNullException(nameof(tipoProduccionRepository));
+        _lineaProduccionRepository = lineaProduccionRepository ?? throw new ArgumentNullException(nameof(lineaProduccionRepository));
+        _agregadoRepository = agregadoRepository ?? throw new ArgumentNullException(nameof(agregadoRepository));
+        _authorizationService = authorizationService ?? throw new ArgumentNullException(nameof(authorizationService));
     }
 
     public async Task<TipoProduccionDTO> Handle(UpdateTipoProduccionCommand request, CancellationToken cancellationToken)
     {
+        // Obtener usuario actual para auditoría
+        var currentUserIdString = _authorizationService.GetCurrentUserId();
+        if (!Guid.TryParse(currentUserIdString, out var currentUserId))
+        {
+            throw new UnauthorizedAccessException("User ID inválido en headers");
+        }
+
         // Obtener el TipoProduccion actual para comparar cambios
         var currentTipo = await _tipoProduccionRepository.GetByIdAsync(request.Id);
         if (currentTipo == null)
@@ -65,14 +80,21 @@ public class UpdateTipoProduccionCommandHandler : IRequestHandler<UpdateTipoProd
             LineaProduccionId = request.LineaProduccionId,
             AgregadoId = request.AgregadoId,
             Activo = request.Activo ?? true,
-            ModificadoPorId = request.ModificadoPorId,
+            ModificadoPorId = currentUserId, // Auditoría automática
             ModificadoEl = DateTime.UtcNow
         };
 
         var updatedTipo = await _tipoProduccionRepository.UpdateAndReturnAsync(tipoToUpdate);
 
-        // Devolver la estructura anidada
-        return await _tipoProduccionRepository.GetByIdWithRelationsAsync(updatedTipo.Id);
+        // Devolver la estructura anidada con validación null
+        var result = await _tipoProduccionRepository.GetByIdWithRelationsAsync(updatedTipo.Id);
+        if (result == null)
+        {
+            throw new BusinessRuleException($"Error al recuperar el TipoProduccion actualizado con ID {updatedTipo.Id}", 
+                "TIPO_PRODUCCION_RETRIEVAL_ERROR");
+        }
+        
+        return result;
     }
 
     private async Task ValidateDependenciesForActivation(Guid lineaProduccionId, Guid agregadoId)

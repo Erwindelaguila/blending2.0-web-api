@@ -108,15 +108,25 @@ public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
             if (requestTypeName.StartsWith("GetAll"))
             {
                 var entityName = requestTypeName.Replace("GetAll", "").Replace("Query", "");
+                
+                // Normalizar nombres de entidades - remover sufijos como "Activas"
+                entityName = NormalizeEntityName(entityName);
+                
                 // GetAllLineasProduccionQuery -> LineasProduccion -> lineaproduccion
                 if (entityName == "LineasProduccion") return "lineaproduccion";
+                if (entityName == "TiposProduccion") return "tipoproduccion";
                 return entityName.ToLowerInvariant();
             }
             // GetAgregadoByIdQuery -> Agregado -> agregados
             if (requestTypeName.StartsWith("Get"))
             {
                 var entityName = requestTypeName.Replace("Get", "").Replace("ByIdQuery", "").Replace("Query", "");
+                
+                // Normalizar nombres de entidades - remover sufijos como "Activas"
+                entityName = NormalizeEntityName(entityName);
+                
                 if (entityName == "LineaProduccion") return "lineaproduccion";
+                if (entityName == "TipoProduccion") return "tipoproduccion";
                 // Casos especiales para mantener consistencia con el plural
                 if (entityName == "Calidad") return "calidades";
                 if (entityName == "Planta") return "plantas";
@@ -132,7 +142,12 @@ public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
             if (requestTypeName.StartsWith("Create"))
             {
                 var entityName = requestTypeName.Replace("Create", "").Replace("Command", "");
+                
+                // Normalizar nombres de entidades - remover sufijos como "Activas"
+                entityName = NormalizeEntityName(entityName);
+                
                 if (entityName == "LineaProduccion") return "lineaproduccion";
+                if (entityName == "TipoProduccion") return "tipoproduccion";
                 // Casos especiales para mantener consistencia con el plural
                 if (entityName == "Calidad") return "calidades";
                 if (entityName == "Planta") return "plantas";
@@ -144,7 +159,12 @@ public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
             if (requestTypeName.StartsWith("Update"))
             {
                 var entityName = requestTypeName.Replace("Update", "").Replace("Command", "");
+                
+                // Normalizar nombres de entidades - remover sufijos como "Activas"
+                entityName = NormalizeEntityName(entityName);
+                
                 if (entityName == "LineaProduccion") return "lineaproduccion";
+                if (entityName == "TipoProduccion") return "tipoproduccion";
                 // Casos especiales para mantener consistencia con el plural
                 if (entityName == "Calidad") return "calidades";
                 if (entityName == "Planta") return "plantas";
@@ -156,7 +176,12 @@ public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
             if (requestTypeName.StartsWith("Delete"))
             {
                 var entityName = requestTypeName.Replace("Delete", "").Replace("Command", "");
+                
+                // Normalizar nombres de entidades - remover sufijos como "Activas"
+                entityName = NormalizeEntityName(entityName);
+                
                 if (entityName == "LineaProduccion") return "lineaproduccion";
+                if (entityName == "TipoProduccion") return "tipoproduccion";
                 // Casos especiales para mantener consistencia con el plural
                 if (entityName == "Calidad") return "calidades";
                 if (entityName == "Planta") return "plantas";
@@ -168,6 +193,30 @@ public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
         }
         
         return requestTypeName.Replace("Command", "").Replace("Query", "").ToLowerInvariant();
+    }
+
+    /// <summary>
+    /// Normaliza nombres de entidades removiendo sufijos como "Activas", "Disponibles", etc.
+    /// para que usen el mismo scope base de la entidad principal.
+    /// </summary>
+    private static string NormalizeEntityName(string entityName)
+    {
+        // Remover sufijos comunes que no cambian la entidad base
+        var suffixesToRemove = new[] { 
+            "WithoutPagination", "Activas", "Activos", "Disponibles", 
+            "Habilitadas", "Habilitados", "Combo", "Simple", "List"
+        };
+        
+        foreach (var suffix in suffixesToRemove)
+        {
+            if (entityName.EndsWith(suffix))
+            {
+                entityName = entityName.Substring(0, entityName.Length - suffix.Length);
+                break;
+            }
+        }
+        
+        return entityName;
     }
 
     private static string ExtractAction(string commandType)

@@ -1,9 +1,13 @@
-using MediatR;
+using Function.Blending.Core.Application.Common.Commands;
 using Function.Blending.Core.Application.TipoProduccion.DTOs;
 
 namespace Function.Blending.Core.Application.TipoProduccion.Commands;
 
-public class UpdateTipoProduccionCommand : IRequest<TipoProduccionDTO>
+/// <summary>
+/// Command para actualizar un tipo de producción
+/// Hereda de BaseCommand para mantener el contexto necesario para autenticación
+/// </summary>
+public class UpdateTipoProduccionCommand : BaseCommand<TipoProduccionDTO>
 {
     public Guid Id { get; }
     public string Codigo { get; }
@@ -12,7 +16,6 @@ public class UpdateTipoProduccionCommand : IRequest<TipoProduccionDTO>
     public Guid LineaProduccionId { get; }
     public Guid AgregadoId { get; }
     public bool? Activo { get; }
-    public Guid ModificadoPorId { get; }
 
     public UpdateTipoProduccionCommand(
         Guid id,
@@ -22,7 +25,7 @@ public class UpdateTipoProduccionCommand : IRequest<TipoProduccionDTO>
         Guid lineaProduccionId,
         Guid agregadoId,
         bool? activo,
-        Guid modificadoPorId)
+        object requestContext) : base(requestContext)
     {
         Id = id;
         Codigo = codigo;
@@ -31,6 +34,5 @@ public class UpdateTipoProduccionCommand : IRequest<TipoProduccionDTO>
         LineaProduccionId = lineaProduccionId;
         AgregadoId = agregadoId;
         Activo = activo;
-        ModificadoPorId = modificadoPorId;
     }
 }

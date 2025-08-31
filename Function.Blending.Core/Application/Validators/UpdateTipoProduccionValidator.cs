@@ -21,7 +21,6 @@ public class UpdateTipoProduccionValidator : AbstractValidator<UpdateTipoProducc
             .NotEmpty().WithMessage("El Id de la línea de producción es requerido");
         RuleFor(x => x.AgregadoId)
             .NotEmpty().WithMessage("El Id del agregado es requerido");
-        RuleFor(x => x.ModificadoPorId)
-            .NotEmpty().WithMessage("El Id del usuario modificador es requerido");
+        // ModificadoPorId se maneja automáticamente por el AuthorizationBehavior
     }
 }

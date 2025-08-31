@@ -19,7 +19,6 @@ public class CreateTipoProduccionValidator : AbstractValidator<CreateTipoProducc
             .NotEmpty().WithMessage("El Id de la línea de producción es requerido");
         RuleFor(x => x.AgregadoId)
             .NotEmpty().WithMessage("El Id del agregado es requerido");
-        RuleFor(x => x.CreadoPorId)
-            .NotEmpty().WithMessage("El Id del usuario creador es requerido");
+        // CreadoPorId se maneja automáticamente por el AuthorizationBehavior
     }
 }

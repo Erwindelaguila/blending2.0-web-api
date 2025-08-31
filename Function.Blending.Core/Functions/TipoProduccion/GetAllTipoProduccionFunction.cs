@@ -2,6 +2,7 @@ using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.TipoProduccion.Queries;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
+using Function.Blending.Core.Infrastructure.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,10 @@ using System.Net;
 
 namespace Function.Blending.Core.Functions.TipoProduccion;
 
+/// <summary>
+/// Función para obtener todos los tipos de producción con paginación
+/// Implementa patrón clean code con manejo de errores estandarizado
+/// </summary>
 public class GetAllTipoProduccionFunction
 {
     private readonly ILogger<GetAllTipoProduccionFunction> _logger;
@@ -19,8 +24,8 @@ public class GetAllTipoProduccionFunction
         ILogger<GetAllTipoProduccionFunction> logger,
         IMediator mediator)
     {
-        _logger = logger;
-        _mediator = mediator;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     }
 
     [Function(FunctionNames.TipoProduccion.GetAll)]
@@ -38,7 +43,8 @@ public class GetAllTipoProduccionFunction
             {
                 _logger.LogInformation("Returning active tipo produccion for combo");
                 var activasResult = await _mediator.Send(new GetAllTipoProduccionActivasQuery());
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(activasResult, "Tipos de producción activos obtenidos correctamente"));
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, 
+                    BaseResponse<object>.Success(activasResult, "Tipos de producción activos obtenidos correctamente"));
             }
 
             // Obtener parámetros de paginación con valores por defecto
@@ -64,9 +70,21 @@ public class GetAllTipoProduccionFunction
         {
             _logger.LogError(ex, "Error en GetAllTipoProduccionFunction: {Message}", ex.Message);
             
-            var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-            await errorResponse.WriteAsJsonAsync(new { error = "Error interno del servidor" });
-            return errorResponse;
+            var errorMessage = new
+            {
+                Message = "Ocurrió un error inesperado.",
+                Exception = ex.Message,
+                InnerException = ex.InnerException?.Message,
+            };
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                errorMessage,
+                null,
+                500
+            ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

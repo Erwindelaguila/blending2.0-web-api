@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.TipoProduccion.Queries;
 using Function.Blending.Core.Application.TipoProduccion.DTOs;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
+using Function.Blending.Core.Infrastructure.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -11,6 +12,10 @@ using System.Net;
 
 namespace Function.Blending.Core.Functions.TipoProduccion;
 
+/// <summary>
+/// Función para obtener todos los tipos de producción sin paginación
+/// Implementa patrón clean code con manejo de errores estandarizado
+/// </summary>
 public class GetAllTipoProduccionWithoutPaginationFunction
 {
     private readonly ILogger<GetAllTipoProduccionWithoutPaginationFunction> _logger;
@@ -20,8 +25,8 @@ public class GetAllTipoProduccionWithoutPaginationFunction
         ILogger<GetAllTipoProduccionWithoutPaginationFunction> logger,
         IMediator mediator)
     {
-        _logger = logger;
-        _mediator = mediator;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     }
 
     [Function(FunctionNames.TipoProduccion.GetAllWithoutPagination)]
@@ -38,7 +43,7 @@ public class GetAllTipoProduccionWithoutPaginationFunction
             // Solo aplicar filtros si hay filtros activos
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var getAllQuery = new GetAllTipoProduccionWithoutPaginationQuery(filtersToApply);
+            var getAllQuery = new GetAllTipoProduccionWithoutPaginationQuery(filtersToApply, new { Filters = filtersToApply });
 
             var result = await _mediator.Send(getAllQuery);
             
@@ -49,9 +54,21 @@ public class GetAllTipoProduccionWithoutPaginationFunction
         {
             _logger.LogError(ex, "Error en GetAllTipoProduccionWithoutPaginationFunction: {Message}", ex.Message);
             
-            var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
-            await errorResponse.WriteAsJsonAsync(new { error = "Error interno del servidor" });
-            return errorResponse;
+            var errorMessage = new
+            {
+                Message = "Ocurrió un error inesperado.",
+                Exception = ex.Message,
+                InnerException = ex.InnerException?.Message,
+            };
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                errorMessage,
+                null,
+                500
+            ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }
