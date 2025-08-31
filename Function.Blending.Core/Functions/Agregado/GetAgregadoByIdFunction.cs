@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Agregado.DTOs;
 using Function.Blending.Core.Application.Agregado.Queries;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -36,7 +37,8 @@ public class GetAgregadoByIdFunction
                 ));
             }
 
-            var result = await _mediator.Send(new GetAgregadoByIdQuery(agregadoId));
+            var command = new GetAgregadoByIdQuery(agregadoId, req);
+            var result = await _mediator.Send(command);
 
             if (result == null)
             {
@@ -63,6 +65,10 @@ public class GetAgregadoByIdFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

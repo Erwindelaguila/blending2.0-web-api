@@ -30,54 +30,37 @@ public class UpdateAgregadoFunction
     {
         try
         {
-
             var body = await req.ReadAsStringAsync();
+            
             if (string.IsNullOrEmpty(body))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail("El cuerpo de la solicitud está vacío.", "Error de validación", 400));
             }
+            
+            var (isValid, errorField) = JsonValidationHelper.ValidateBooleanProperties(body, "activo");
 
-            var jsonDocument = JsonDocument.Parse(body);
-            var root = jsonDocument.RootElement;
-
-            // Obtener ID del query parameter
-            var query = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
-            if (!Guid.TryParse(query["id"], out var agregadoId))
+            if (!isValid)
             {
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "ID inválido",
-                    "El ID debe ser un GUID válido",
-                    400
-                ));
+                return await HttpResponseHelper.WriteBaseResponseAsync(req,
+                    BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false o null).", "Error de validación", 400));
             }
+            
+            var dto = JsonSerializer.Deserialize<UpdateAgregadoRequestDTO>(body, HttpResponseHelper.GetJsonDeserializerOptions());
 
-            // Validar campos requeridos
-            if (!root.TryGetProperty("codigo", out var codigoElement) || string.IsNullOrWhiteSpace(codigoElement.GetString()))
+            if (dto == null)
             {
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "Código es requerido",
-                    "El código es requerido",
-                    400
-                ));
-            }
-
-            if (!root.TryGetProperty("nombre", out var nombreElement) || string.IsNullOrWhiteSpace(nombreElement.GetString()))
-            {
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "Nombre es requerido", 
-                    "El nombre es requerido",
-                    400
-                ));
+                return await HttpResponseHelper.WriteBaseResponseAsync(req,
+                    BaseResponse<object>.Fail("Error al deserializar el comando.", "Error de validación", 400));
             }
 
             var command = new UpdateAgregadoCommand(
-                id: agregadoId,
-                codigo: codigoElement.GetString()!,
-                nombre: nombreElement.GetString()!,
-                descripcion: root.TryGetProperty("descripcion", out var descElement) ? descElement.GetString() : null,
-                activo: root.TryGetProperty("activo", out var activoElement) ? activoElement.GetBoolean() : null,
-                requestContext: req
+                dto.Id,
+                dto.Codigo,
+                dto.Nombre,
+                dto.Descripcion,
+                dto.Activo,
+                req
             );
 
             var result = await _mediator.Send(command);

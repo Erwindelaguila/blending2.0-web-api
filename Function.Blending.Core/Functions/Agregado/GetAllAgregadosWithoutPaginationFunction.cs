@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Agregado.DTOs;
 using Function.Blending.Core.Application.Agregado.Queries;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -24,7 +25,8 @@ public class GetAllAgregadosWithoutPaginationFunction
     {
         try
         {
-            var result = await _mediator.Send(new GetAllAgregadosWithoutPaginationQuery());
+            var command = new GetAllAgregadosWithoutPaginationQuery(req);
+            var result = await _mediator.Send(command);
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<List<AgregadoDTO>>.Success(result, "Todos los agregados obtenidos correctamente"));
         }
@@ -41,6 +43,10 @@ public class GetAllAgregadosWithoutPaginationFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

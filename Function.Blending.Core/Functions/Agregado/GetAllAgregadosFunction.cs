@@ -43,7 +43,7 @@ public class GetAllAgregadosFunction
             if (query["activo"] == "true")
             {
                 _logger.LogInformation("Returning active agregados for combo");
-                var activosResult = await _mediator.Send(new GetAllAgregadosActivosQuery(), cts.Token);
+                var activosResult = await _mediator.Send(new GetAllAgregadosWithoutPaginationQuery(req), cts.Token);
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(activosResult, "Agregados activos obtenidos correctamente"));
             }
             
