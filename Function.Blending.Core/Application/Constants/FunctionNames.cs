@@ -9,7 +9,6 @@ public static class FunctionNames
         public const string Delete = "DeleteCalidad";
         public const string GetAll = "GetAllCalidades";
         public const string GetById = "GetCalidadById";
-        public const string GetAllWithoutPagination = "GetAllCalidadesWithoutPagination";
     }
 
     public static class Producto
@@ -19,7 +18,6 @@ public static class FunctionNames
         public const string Delete = "DeleteProducto";
         public const string GetAll = "GetAllProductos";
         public const string GetById = "GetProductoById";
-        public const string GetAllWithoutPagination = "GetAllProductosWithoutPagination";
     }
 
     public static class Planta
@@ -29,7 +27,6 @@ public static class FunctionNames
         public const string Delete = "DeletePlanta";
         public const string GetAll = "GetAllPlantas";
         public const string GetById = "GetPlantaById";
-        public const string GetAllWithoutPagination = "GetAllPlantasWithoutPagination";
     }
 
     public static class Parametro
@@ -39,7 +36,6 @@ public static class FunctionNames
         public const string Delete = "DeleteParametro";
         public const string GetAll = "GetAllParametros";
         public const string GetById = "GetParametroById";
-        public const string GetAllWithoutPagination = "GetAllParametrosWithoutPagination";
     }
 
     public static class TipoProduccion
@@ -49,7 +45,6 @@ public static class FunctionNames
         public const string Delete = "DeleteTipoProduccion";
         public const string GetAll = "GetAllTipoProduccion";
         public const string GetById = "GetTipoProduccionById";
-        public const string GetAllWithoutPagination = "GetAllTipoProduccionWithoutPagination";
     }
 
     public static class Agregado
@@ -67,7 +62,6 @@ public static class FunctionNames
         public const string Delete = "DeleteLineaProduccion";
         public const string GetAll = "GetAllLineasProduccion";
         public const string GetById = "GetLineaProduccionById";
-        public const string GetAllWithoutPagination = "GetAllLineasProduccionWithoutPagination";
     }
 
     public static class CalidadParametro
