@@ -1,13 +1,16 @@
 using System.Text.Json;
 using FluentValidation;
+using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Planta.Commands;
 using Function.Blending.Core.Application.Planta.DTOs;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using System.Web;
 
 namespace Function.Blending.Core.Functions.Planta;
 
@@ -22,18 +25,17 @@ public class UpdatePlantaFunction
 
     [Function(FunctionNames.Planta.Update)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.Planta.Base)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.Planta.GetById)] HttpRequestData req)
     {
         try
         {
             var body = await req.ReadAsStringAsync();
-            
             if (string.IsNullOrEmpty(body))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail("El cuerpo de la solicitud está vacío.", "Error de validación", 400));
             }
-            
+
             var (isValid, errorField) = JsonValidationHelper.ValidateBooleanProperties(body, "activo");
 
             if (!isValid)
@@ -41,42 +43,63 @@ public class UpdatePlantaFunction
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false o null).", "Error de validación", 400));
             }
-            
-            var command = JsonSerializer.Deserialize<UpdatePlantaCommand>(body, HttpResponseHelper.GetJsonDeserializerOptions());
 
-            if (command == null)
+            var query = HttpUtility.ParseQueryString(req.Url.Query);
+            if (!Guid.TryParse(query["id"], out var plantaId))
+            {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                    "ID inválido",
+                    "El ID debe ser un GUID válido",
+                    400
+                ));
+            }
+
+            var dto = JsonSerializer.Deserialize<UpdatePlantaRequestDTO>(body, HttpResponseHelper.GetJsonDeserializerOptions());
+
+            if (dto == null)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail("Error al deserializar el comando.", "Error de validación", 400));
             }
-        
+
+            var command = new UpdatePlantaCommand(
+                plantaId,
+                dto.Codigo,
+                dto.Nombre,
+                dto.Descripcion,
+                dto.NumeroRuma,
+                dto.Activo,
+                req
+            );
+
             var result = await _mediator.Send(command);
-            
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(result,"Planta actualizada exitosamente"));
-        }
-        catch (ArgumentException ex) when (ex.ParamName == "codigo")
-        {
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                "El código de la planta ya existe. Por favor, use un código diferente.",
-                "Código duplicado",
-                409
-            ));
-        }
-        catch (InvalidOperationException ex)
-        {
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                ex.Message,
-                "Operación inválida",
-                400
-            ));
+
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PlantaDTO>.Success(result, "Planta actualizada exitosamente"));
         }
         catch (ValidationException ex)
         {
-            var errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }).ToList();
+            var validationErrors = ex.Errors.Select(e => new { Field = e.PropertyName, Error = e.ErrorMessage });
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                errors,
-                "Validación fallida. Por favor, revise los campos.",
+                validationErrors,
+                "Errores de validación",
                 400
+            ));
+        }
+        catch (EntityInUseException ex)
+        {
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                new { Error = ex.Message, Code = ex.ErrorCode },
+                "Conflicto de regla de negocio",
+                409
+            ));
+        }
+        catch (ArgumentException ex) when (ex.ParamName == "codigo")
+        {
+            var error = new { Field = "codigo", Error = "Ya existe una planta activa con este código" };
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                error,
+                "Código duplicado",
+                409
             ));
         }
         catch (Exception ex)
@@ -87,12 +110,16 @@ public class UpdatePlantaFunction
                 Exception = ex.Message,
                 InnerException = ex.InnerException?.Message,
             };
-            
+
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 errorMessage,
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Planta.DTOs;
 using Function.Blending.Core.Application.Planta.Queries;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -37,7 +38,8 @@ public class GetPlantaByIdFunction
                 ));
             }
 
-            var result = await _mediator.Send(new GetPlantaByIdQuery(plantaId));
+            var queryRequest = new GetPlantaByIdQuery(plantaId, req);
+            var result = await _mediator.Send(queryRequest);
             
             if (result == null)
             {
@@ -64,6 +66,10 @@ public class GetPlantaByIdFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

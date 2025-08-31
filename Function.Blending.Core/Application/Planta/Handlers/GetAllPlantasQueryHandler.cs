@@ -8,16 +8,16 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Planta.Handlers;
 
-public class GetAllPlantasWithPaginationQueryHandler : IRequestHandler<GetAllPlantasWithPaginationQuery, PlantaResponseDTO>
+public class GetAllPlantasQueryHandler : IRequestHandler<GetAllPlantasQuery, PlantaResponseDTO>
 {
     private readonly IPlantaRepository _plantaRepository;
 
-    public GetAllPlantasWithPaginationQueryHandler(IPlantaRepository plantaRepository)
+    public GetAllPlantasQueryHandler(IPlantaRepository plantaRepository)
     {
         _plantaRepository = plantaRepository;
     }
 
-    public async Task<PlantaResponseDTO> Handle(GetAllPlantasWithPaginationQuery request, CancellationToken cancellationToken)
+    public async Task<PlantaResponseDTO> Handle(GetAllPlantasQuery request, CancellationToken cancellationToken)
     {
         try
         {

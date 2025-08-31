@@ -1,16 +1,16 @@
-using Function.Blending.Core.Application.Common.Wrappers;
-using MediatR;
+using Function.Blending.Core.Application.Common.Commands;
+using Microsoft.Azure.Functions.Worker.Http;
+using System.Text.Json.Serialization;
 
 namespace Function.Blending.Core.Application.Planta.Commands;
 
-public class DeletePlantaCommand : IRequest<BaseResponse<object>>
+public class DeletePlantaCommand : BaseCommand<bool>
 {
     public Guid Id { get; }
-    public Guid EliminadoPorId { get; }
 
-    public DeletePlantaCommand(Guid id, Guid eliminadoPorId)
+    [JsonConstructor]
+    public DeletePlantaCommand(Guid id, HttpRequestData? requestContext = null) : base(requestContext!)
     {
         Id = id;
-        EliminadoPorId = eliminadoPorId;
     }
 }

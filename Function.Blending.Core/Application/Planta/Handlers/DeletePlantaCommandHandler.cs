@@ -1,35 +1,33 @@
-using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Planta.Commands;
 using MediatR;
 
 namespace Function.Blending.Core.Application.Planta.Handlers;
 
-public class DeletePlantaCommandHandler : IRequestHandler<DeletePlantaCommand, BaseResponse<object>>
+public class DeletePlantaCommandHandler : IRequestHandler<DeletePlantaCommand, bool>
 {
     private readonly IPlantaRepository _plantaRepository;
+    private readonly IAuthorizationService _authorizationService;
 
-    public DeletePlantaCommandHandler(IPlantaRepository plantaRepository)
+    public DeletePlantaCommandHandler(IPlantaRepository plantaRepository, IAuthorizationService authorizationService)
     {
         _plantaRepository = plantaRepository;
+        _authorizationService = authorizationService;
     }
 
-    public async Task<BaseResponse<object>> Handle(DeletePlantaCommand request, CancellationToken cancellationToken)
+    public async Task<bool> Handle(DeletePlantaCommand request, CancellationToken cancellationToken)
     {
-        try
-        {
-            var planta = await _plantaRepository.GetByIdAsync(request.Id);
-            
-            if (planta == null)
-                return BaseResponse<object>.Fail("Planta no encontrada", null, 404);
+        var planta = await _plantaRepository.GetByIdAsync(request.Id);
+        
+        if (planta == null)
+            return false;
 
-            await _plantaRepository.DeleteAsync(request.Id, request.EliminadoPorId);
-            
-            return BaseResponse<object>.Success(new { }, "Planta eliminada correctamente");
-        }
-        catch (Exception ex)
-        {
-            return BaseResponse<object>.Fail($"Error al eliminar la planta: {ex.Message}", null, 500);
-        }
+        var eliminadoPorIdString = _authorizationService.GetCurrentUserId();
+        var eliminadoPorId = Guid.Parse(eliminadoPorIdString);
+
+        await _plantaRepository.DeleteAsync(request.Id, eliminadoPorId);
+        
+        return true;
     }
 }

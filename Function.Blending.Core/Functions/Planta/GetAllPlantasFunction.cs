@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Planta.DTOs;
 using Function.Blending.Core.Application.Planta.Queries;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -29,6 +30,9 @@ public class GetAllPlantasFunction
         try
         {
             var query = HttpUtility.ParseQueryString(req.Url.Query);
+            
+            // Log para debug - ver qué parámetros llegan
+            _logger.LogInformation("GetAllPlantas called with query: {QueryString}", req.Url.Query);
             
             var isHarina = query.Get("isHarina") ?? "0";
 
@@ -57,13 +61,14 @@ public class GetAllPlantasFunction
             // Solo enviar filtros si al menos uno está activo
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var result = await _mediator.Send(new GetAllPlantasWithPaginationQuery(page, size, filtersToApply, esHarina));
+            var queryRequest = new GetAllPlantasQuery(page, size, filtersToApply, esHarina, req);
+            var result = await _mediator.Send(queryRequest);
 
             if (esHarina)
             {
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<List<PlantaShortDTO>>.Success(result.PlantaShortList, "Plantas obtenidas correctamente"));
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<List<PlantaShortDTO>>.Success(result.PlantaShortList ?? new List<PlantaShortDTO>(), "Plantas obtenidas correctamente"));
             }
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<PlantaDTO>>.Success(result.PlantaPaginate, "Plantas obtenidas correctamente"));
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<PlantaDTO>>.Success(result.PlantaPaginate ?? new PagedResponse<PlantaDTO>(), "Plantas obtenidas correctamente"));
         }
         catch (ArgumentException ex)
         {
@@ -90,6 +95,10 @@ public class GetAllPlantasFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

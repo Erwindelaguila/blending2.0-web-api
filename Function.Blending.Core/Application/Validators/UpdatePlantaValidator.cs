@@ -23,8 +23,5 @@ public class UpdatePlantaValidator : AbstractValidator<UpdatePlantaCommand>
 
         RuleFor(x => x.NumeroRuma)
             .GreaterThan(0).WithMessage("El número de ruma debe ser mayor a 0");
-
-        RuleFor(x => x.ModificadoPorId)
-            .NotEmpty().WithMessage("El ID del usuario modificador es requerido");
     }
 }

@@ -1,30 +1,31 @@
 using Function.Blending.Core.Application.Planta.DTOs;
-using MediatR;
+using Function.Blending.Core.Application.Common.Commands;
+using Microsoft.Azure.Functions.Worker.Http;
+using System.Text.Json.Serialization;
 
 namespace Function.Blending.Core.Application.Planta.Commands;
 
-public class CreatePlantaCommand : IRequest<object>
+public class CreatePlantaCommand : BaseCommand<PlantaDTO>
 {
     public string Codigo { get; }
     public string Nombre { get; }
     public string? Descripcion { get; }
     public int NumeroRuma { get; }
     public bool? Activo { get; }
-    public Guid CreadoPorId { get; }
 
+    [JsonConstructor]
     public CreatePlantaCommand(
         string codigo,
         string nombre,
-        string? descripcion,
-        int numeroRuma,
-        bool? activo,
-        Guid creadoPorId)
+        string? descripcion = null,
+        int numeroRuma = 0,
+        bool? activo = null,
+        HttpRequestData? requestContext = null) : base(requestContext!)
     {
         Codigo = codigo;
         Nombre = nombre;
         Descripcion = descripcion;
         NumeroRuma = numeroRuma;
-        Activo = activo;
-        CreadoPorId = creadoPorId;
+        Activo = activo ?? true;
     }
 }

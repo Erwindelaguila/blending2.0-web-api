@@ -1,11 +1,12 @@
+using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Planta.Commands;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using System.Web;
 
 namespace Function.Blending.Core.Functions.Planta;
 
@@ -20,35 +21,41 @@ public class DeletePlantaFunction
 
     [Function(FunctionNames.Planta.Delete)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Planta.Base)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Planta.Base + "/{id}")] HttpRequestData req,
+        string id)
     {
         try
         {
-            var query = HttpUtility.ParseQueryString(req.Url.Query);
-            var idString = query["id"];
-            
-            if (string.IsNullOrEmpty(idString) || !Guid.TryParse(idString, out var plantaId))
+            if (!Guid.TryParse(id, out var plantaId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "ID de planta inválido o no proporcionado",
-                    null,
+                    "ID inválido",
+                    "El ID debe ser un GUID válido",
                     400
                 ));
             }
 
-            var eliminadoPorIdString = query["eliminadoPorId"];
-            if (string.IsNullOrEmpty(eliminadoPorIdString) || !Guid.TryParse(eliminadoPorIdString, out var eliminadoPorId))
+            var command = new DeletePlantaCommand(plantaId, req);
+            var result = await _mediator.Send(command);
+
+            if (!result)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "ID de usuario eliminador inválido o no proporcionado",
+                    "Planta no encontrada",
                     null,
-                    400
+                    404
                 ));
             }
 
-            var result = await _mediator.Send(new DeletePlantaCommand(plantaId, eliminadoPorId));
-            
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, result);
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<bool>.Success(result, "Planta eliminada exitosamente"));
+        }
+        catch (EntityInUseException ex)
+        {
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                new { Error = ex.Message, Code = ex.ErrorCode },
+                "Conflicto de regla de negocio",
+                409
+            ));
         }
         catch (Exception ex)
         {
@@ -58,12 +65,16 @@ public class DeletePlantaFunction
                 Exception = ex.Message,
                 InnerException = ex.InnerException?.Message,
             };
-            
+
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 errorMessage,
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }
