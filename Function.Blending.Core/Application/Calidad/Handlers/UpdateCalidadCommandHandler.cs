@@ -1,25 +1,28 @@
-﻿using Function.Blending.Core.Application.Calidad.Commands;
+﻿using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Application.Calidad.Commands;
 using Function.Blending.Core.Application.Calidad.DTOs;
-using Function.Blending.Core.Application.Interfaces.Repositories;
 using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Domain.Entities;
 using MediatR;
 
 namespace Function.Blending.Core.Application.Calidad.Handlers;
 
-public class UpdateCalidadCommandHandler : IRequestHandler<UpdateCalidadCommand, object>
+public class UpdateCalidadCommandHandler : IRequestHandler<UpdateCalidadCommand, CalidadDTO>
 {
-    private readonly ICalidadRepository _repository;
+    private readonly ICalidadRepository _calidadRepository;
+    private readonly IAuthorizationService _authorizationService;
 
-    public UpdateCalidadCommandHandler(ICalidadRepository repository)
+    public UpdateCalidadCommandHandler(ICalidadRepository calidadRepository, IAuthorizationService authorizationService)
     {
-        _repository = repository;
+        _calidadRepository = calidadRepository;
+        _authorizationService = authorizationService;
     }
 
-    public async Task<object> Handle(UpdateCalidadCommand request, CancellationToken cancellationToken)
+    public async Task<CalidadDTO> Handle(UpdateCalidadCommand request, CancellationToken cancellationToken)
     {
         // Obtener el registro actual para validar cambios
-        var currentCalidad = await _repository.GetByIdAsync(request.Id);
+        var currentCalidad = await _calidadRepository.GetByIdAsync(request.Id);
         if (currentCalidad == null)
             throw new BusinessRuleException($"Calidad with ID {request.Id} not found.", 
                 "CALIDAD_NOT_FOUND");
@@ -27,12 +30,15 @@ public class UpdateCalidadCommandHandler : IRequestHandler<UpdateCalidadCommand,
         // Si se intenta inactivar, validar que no esté siendo usado por Producto activo
         if (currentCalidad.Activo && request.Activo == false)
         {
-            var isUsedByActiveProducto = await _repository.IsUsedByActiveProductoAsync(request.Id);
+            var isUsedByActiveProducto = await _calidadRepository.IsUsedByActiveProductoAsync(request.Id);
             if (isUsedByActiveProducto)
             {
                 throw new EntityInUseException("la Calidad", "está siendo usada por al menos un Producto activo");
             }
         }
+
+        var modificadoPorIdString = _authorizationService.GetCurrentUserId();
+        var modificadoPorId = Guid.Parse(modificadoPorIdString);
 
         var calidad = new CalidadEntity
         {
@@ -43,11 +49,11 @@ public class UpdateCalidadCommandHandler : IRequestHandler<UpdateCalidadCommand,
             Descripcion = request.Descripcion,
             NoConforme = request.NoConforme ?? false,
             Activo = request.Activo ?? true,
-            ModificadoPorId = request.ModificadoPorId,
+            ModificadoPorId = modificadoPorId,
             ModificadoEl = DateTime.UtcNow
         };
 
-        var calidadActualizada = await _repository.UpdateAndReturnAsync(calidad);
+        var calidadActualizada = await _calidadRepository.UpdateAndReturnAsync(calidad);
 
         return new CalidadDTO
         {

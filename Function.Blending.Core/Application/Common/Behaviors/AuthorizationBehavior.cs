@@ -117,6 +117,12 @@ public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
             {
                 var entityName = requestTypeName.Replace("Get", "").Replace("ByIdQuery", "").Replace("Query", "");
                 if (entityName == "LineaProduccion") return "lineaproduccion";
+                // Casos especiales para mantener consistencia con el plural
+                if (entityName == "Calidad") return "calidades";
+                if (entityName == "Planta") return "plantas";
+                if (entityName == "Agregado") return "agregados";
+                if (entityName == "Parametro") return "parametros";
+                if (entityName == "Producto") return "productos";
                 return entityName.ToLowerInvariant() + "s";
             }
         }
@@ -127,18 +133,36 @@ public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
             {
                 var entityName = requestTypeName.Replace("Create", "").Replace("Command", "");
                 if (entityName == "LineaProduccion") return "lineaproduccion";
+                // Casos especiales para mantener consistencia con el plural
+                if (entityName == "Calidad") return "calidades";
+                if (entityName == "Planta") return "plantas";
+                if (entityName == "Agregado") return "agregados";
+                if (entityName == "Parametro") return "parametros";
+                if (entityName == "Producto") return "productos";
                 return entityName.ToLowerInvariant() + "s";
             }
             if (requestTypeName.StartsWith("Update"))
             {
                 var entityName = requestTypeName.Replace("Update", "").Replace("Command", "");
                 if (entityName == "LineaProduccion") return "lineaproduccion";
+                // Casos especiales para mantener consistencia con el plural
+                if (entityName == "Calidad") return "calidades";
+                if (entityName == "Planta") return "plantas";
+                if (entityName == "Agregado") return "agregados";
+                if (entityName == "Parametro") return "parametros";
+                if (entityName == "Producto") return "productos";
                 return entityName.ToLowerInvariant() + "s";
             }
             if (requestTypeName.StartsWith("Delete"))
             {
                 var entityName = requestTypeName.Replace("Delete", "").Replace("Command", "");
                 if (entityName == "LineaProduccion") return "lineaproduccion";
+                // Casos especiales para mantener consistencia con el plural
+                if (entityName == "Calidad") return "calidades";
+                if (entityName == "Planta") return "plantas";
+                if (entityName == "Agregado") return "agregados";
+                if (entityName == "Parametro") return "parametros";
+                if (entityName == "Producto") return "productos";
                 return entityName.ToLowerInvariant() + "s";
             }
         }

@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Application.Calidad.Queries;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -24,7 +25,7 @@ public class GetAllCalidadesWithoutPaginationFunction
     {
         try
         {
-            var result = await _mediator.Send(new GetAllCalidadesWithoutPaginationQuery());
+            var result = await _mediator.Send(new GetAllCalidadesWithoutPaginationQuery(req));
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<List<CalidadDTO>>.Success(result, "Todas las calidades obtenidas correctamente"));
         }
@@ -41,6 +42,10 @@ public class GetAllCalidadesWithoutPaginationFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

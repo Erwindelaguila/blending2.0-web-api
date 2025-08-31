@@ -154,7 +154,7 @@ public class MockGroupToScopeMapper : IGroupToScopeMapper
             {
                 "appparams.read", "appparams.write",
                 "plantas.read", "plantas.write",
-                "calidad.read", "calidad.write",
+                "calidades.read", "calidades.write",
                 "agregados.read", "agregados.write",
                 "parametros.read", "parametros.write",
                 "productos.read", "productos.write",
@@ -162,18 +162,18 @@ public class MockGroupToScopeMapper : IGroupToScopeMapper
                 "lineaproduccion.read", "lineaproduccion.write"
             },
             
-            // Grupo Operadores - solo lectura y escritura limitada
+            // Grupo Calidad - solo lectura y escritura limitada
             ["dfa05051-c3d5-4eea-a2ed-0051eba9bda0"] = new[]
             {
-                "plantas.read", "calidad.read", "parametros.read",
+                "plantas.read", "calidades.read", "parametros.read",
                 "productos.read", "tipoproduccion.read", "lineaproduccion.read"
             },
             
-            // Grupo Supervisores - lectura completa + algunas escrituras
+            // Grupo Logistica - lectura completa + algunas escrituras
             ["98b8eed2-ffcd-40fd-9979-39ee06253edf"] = new[]
             {
                 "appparams.read", "plantas.read", "plantas.write",
-                "calidad.read", "calidad.write", "parametros.read"
+                "calidades.read", "calidades.write", "parametros.read"
             }
         };
     }

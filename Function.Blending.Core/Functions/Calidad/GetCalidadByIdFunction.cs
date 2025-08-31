@@ -1,9 +1,9 @@
-using System.Threading.Tasks;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Application.Calidad.Queries;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -28,6 +28,7 @@ public class GetCalidadByIdFunction
         {
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             var idString = query["id"];
+            
             if (string.IsNullOrEmpty(idString) || !Guid.TryParse(idString, out var calidadId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
@@ -37,7 +38,8 @@ public class GetCalidadByIdFunction
                 ));
             }
 
-            var result = await _mediator.Send(new GetCalidadByIdQuery(calidadId));
+            var queryRequest = new GetCalidadByIdQuery(calidadId, req);
+            var result = await _mediator.Send(queryRequest);
 
             if (result == null)
             {
@@ -64,6 +66,10 @@ public class GetCalidadByIdFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

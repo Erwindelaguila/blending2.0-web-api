@@ -1,30 +1,30 @@
 ﻿using Function.Blending.Core.Application.Calidad.DTOs;
-using MediatR;
+using Function.Blending.Core.Application.Common.Commands;
+using Microsoft.Azure.Functions.Worker.Http;
+using System.Text.Json.Serialization;
 
 namespace Function.Blending.Core.Application.Calidad.Commands;
 
-public class UpdateCalidadCommand : IRequest<object>
+public class UpdateCalidadCommand : BaseCommand<CalidadDTO>
 {
     public Guid Id { get; }
-    public string? Codigo { get; }
-    public string? Nombre { get; }
-    public string? CodigoMaterial { get; }
+    public string Codigo { get; }
+    public string Nombre { get; }
+    public string CodigoMaterial { get; }
     public string? Descripcion { get; }
     public bool? NoConforme { get; }
     public bool? Activo { get; }
-    public Guid ModificadoPorId { get; }
-    
 
+    [JsonConstructor]
     public UpdateCalidadCommand(
-        Guid id,    
+        Guid id,
         string codigo,
         string nombre,
         string codigoMaterial,
-        string? descripcion,
-        bool? noConforme,
-        bool? activo,
-        Guid modificadoPorId
-        )
+        string? descripcion = null,
+        bool? noConforme = null,
+        bool? activo = null,
+        HttpRequestData? requestContext = null) : base(requestContext!)
     {
         Id = id;
         Codigo = codigo;
@@ -33,6 +33,5 @@ public class UpdateCalidadCommand : IRequest<object>
         Descripcion = descripcion;
         NoConforme = noConforme;
         Activo = activo;
-        ModificadoPorId = modificadoPorId;
     }
 }

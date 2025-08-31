@@ -1,10 +1,11 @@
 ﻿using System.Text.Json;
 using FluentValidation;
-using Function.Blending.Core.Application.Calidad.Commands;
-using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Calidad.Commands;
+using Function.Blending.Core.Application.Calidad.DTOs;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -42,22 +43,43 @@ public class UpdateCalidadFunction
                     BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false o null).", "Error de validación", 400));
             }
             
-            var command = JsonSerializer.Deserialize<UpdateCalidadCommand>(body, HttpResponseHelper.GetJsonDeserializerOptions());
+            var dto = JsonSerializer.Deserialize<UpdateCalidadRequestDTO>(body, HttpResponseHelper.GetJsonDeserializerOptions());
 
-            if (command == null)
+            if (dto == null)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail("Error al deserializar el comando.", "Error de validación", 400));
             }
-        
+
+            var command = new UpdateCalidadCommand(
+                dto.Id,
+                dto.Codigo,
+                dto.Nombre,
+                dto.CodigoMaterial,
+                dto.Descripcion,
+                dto.NoConforme,
+                dto.Activo,
+                req
+            );
+
             var result = await _mediator.Send(command);
             
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(result,"Calidad actualizada exitosamente"));
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<CalidadDTO>.Success(result, "Calidad actualizada exitosamente"));
+        }
+        catch (ValidationException ex)
+        {
+            var errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }).ToList();
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                errors,
+                "Validación fallida. Por favor, revise los campos.",
+                400
+            ));
         }
         catch (ArgumentException ex) when (ex.ParamName == "codigo")
         {
+            var error = new { Field = "codigo", Error = "Ya existe una calidad activa con este código" };
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                "El código de la calidad ya existe. Por favor, use un código diferente.",
+                error,
                 "Código duplicado",
                 409
             ));
@@ -67,15 +89,6 @@ public class UpdateCalidadFunction
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 ex.Message,
                 "Operación inválida",
-                400
-            ));
-        }
-        catch (ValidationException ex)
-        {
-            var errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }).ToList();
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                errors,
-                "Validación fallida. Por favor, revise los campos.",
                 400
             ));
         }
@@ -93,6 +106,10 @@ public class UpdateCalidadFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }
