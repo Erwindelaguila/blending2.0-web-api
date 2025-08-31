@@ -24,7 +24,6 @@ public class GetCalidadParametrosByCodigoQueryHandler : IRequestHandler<GetCalid
 
     public async Task<List<CalidadParametroItemDTO>> Handle(GetCalidadParametrosByCodigoQuery request, CancellationToken cancellationToken)
     {
-        // Aplicar filtro de código usando la lógica estándar (Contains)
         var calidadesQuery = _calidadRepository.GetQueryable()
             .ApplyCodigoFilter(request.CodigoCalidad, c => c.Codigo)
             .Where(c => c.Activo);

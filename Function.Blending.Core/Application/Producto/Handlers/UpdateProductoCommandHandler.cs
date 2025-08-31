@@ -7,10 +7,6 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Producto.Handlers;
 
-/// <summary>
-/// Handler para actualizar productos
-/// Incluye auditoría automática y validaciones de negocio
-/// </summary>
 public class UpdateProductoCommandHandler : IRequestHandler<UpdateProductoCommand, ProductoDTO>
 {
     private readonly IProductoRepository _productoRepository;

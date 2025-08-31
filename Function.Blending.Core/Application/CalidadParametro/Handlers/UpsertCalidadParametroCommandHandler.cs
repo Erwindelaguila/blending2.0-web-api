@@ -26,25 +26,21 @@ public class UpsertCalidadParametroCommandHandler : IRequestHandler<UpsertCalida
 
     public async Task<bool> Handle(UpsertCalidadParametroCommand request, CancellationToken cancellationToken)
     {
-        // Validar que la calidad existe y está activa
         var calidad = await _calidadRepository.GetByIdAsync(request.CalidadId);
         if (calidad == null || !calidad.Activo)
         {
             throw new ArgumentException("La calidad especificada no existe o no está activa.", nameof(request.CalidadId));
         }
 
-        // Validar que el parámetro existe y está activo
         var parametro = await _parametroRepository.GetByIdAsync(request.ParametroId);
         if (parametro == null || !parametro.Activo)
         {
             throw new ArgumentException("El parámetro especificado no existe o no está activo.", nameof(request.ParametroId));
         }
 
-        // Obtener el ID del usuario actual para la auditoría
         var currentUserIdString = _authorizationService.GetCurrentUserId();
         var currentUserId = Guid.Parse(currentUserIdString);
 
-        // Realizar el upsert
         await _calidadParametroRepository.UpsertAsync(
             request.CalidadId,
             request.ParametroId,

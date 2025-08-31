@@ -21,7 +21,6 @@ public class GetAllLineasProduccionQueryHandler : IRequestHandler<GetAllLineasPr
     {
         try
         {
-            // Verificar cancelación temprano
             cancellationToken.ThrowIfCancellationRequested();
 
             var lineasProduccionQuery = _lineaProduccionRepository.GetQueryable();
@@ -54,7 +53,6 @@ public class GetAllLineasProduccionQueryHandler : IRequestHandler<GetAllLineasPr
                 _ => lineasProduccionQuery.OrderBy(x => x.CreadoEl)
             };
 
-            // Proyección optimizada directamente a DTO
             var lineasProduccionProjected = lineasProduccionQuery.Select(lineaProduccion => new LineaProduccionDTO
             {
                 Id = lineaProduccion.Id,
@@ -68,7 +66,6 @@ public class GetAllLineasProduccionQueryHandler : IRequestHandler<GetAllLineasPr
                 ModificadoEl = lineaProduccion.ModificadoEl
             });
 
-            // Verificar cancelación antes de ejecutar consulta costosa
             cancellationToken.ThrowIfCancellationRequested();
 
             var pagedResult = await lineasProduccionProjected.ToPagedResultAsync(request.Page, request.Size, cancellationToken);
@@ -76,13 +73,11 @@ public class GetAllLineasProduccionQueryHandler : IRequestHandler<GetAllLineasPr
         }
         catch (OperationCanceledException)
         {
-            throw; // Re-lanzar para que sea manejado por la función HTTP
+            throw; 
         }
         catch (ArgumentException)
         {
-            throw; // Re-lanzar ArgumentException para que sea manejada por la función HTTP como 400
+            throw; 
         }
     }
-
-    // Ordenamiento inline sobre la query según estado
 }

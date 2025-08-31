@@ -7,10 +7,7 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Agregado.Handlers
 {
-    /// <summary>
-    /// Handler para crear agregados
-    /// Reutiliza servicios de autenticación de Function.Blending.Auth
-    /// </summary>
+
     public class CreateAgregadoCommandHandler : IRequestHandler<CreateAgregadoCommand, AgregadoDTO>
     {
         private readonly IAgregadoRepository _agregadoRepository;
@@ -26,8 +23,6 @@ namespace Function.Blending.Core.Application.Agregado.Handlers
 
         public async Task<AgregadoDTO> Handle(CreateAgregadoCommand request, CancellationToken cancellationToken)
         {
-            // Obtener usuario actual usando servicios reutilizados de Auth
-            // Obtener user ID desde headers (via AuthorizationService)
             var currentUserIdString = _authorizationService.GetCurrentUserId();
             if (!Guid.TryParse(currentUserIdString, out var currentUserId))
             {

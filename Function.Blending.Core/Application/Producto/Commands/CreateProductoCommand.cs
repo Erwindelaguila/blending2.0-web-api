@@ -3,10 +3,7 @@ using Function.Blending.Core.Application.Producto.DTOs;
 
 namespace Function.Blending.Core.Application.Producto.Commands;
 
-/// <summary>
-/// Comando para crear productos
-/// Implementa auditoría automática y validaciones de negocio
-/// </summary>
+
 public class CreateProductoCommand : BaseCommand<ProductoDTO>
 {
     public string Codigo { get; }

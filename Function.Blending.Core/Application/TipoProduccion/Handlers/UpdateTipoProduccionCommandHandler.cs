@@ -8,10 +8,7 @@ using Function.Blending.Core.Domain.Entities;
 
 namespace Function.Blending.Core.Application.TipoProduccion.Handlers;
 
-/// <summary>
-/// Handler para actualizar tipos de producción
-/// Incluye auditoría automática y validaciones de negocio
-/// </summary>
+
 public class UpdateTipoProduccionCommandHandler : IRequestHandler<UpdateTipoProduccionCommand, TipoProduccionDTO>
 {
     private readonly ITipoProduccionRepository _tipoProduccionRepository;
@@ -33,26 +30,22 @@ public class UpdateTipoProduccionCommandHandler : IRequestHandler<UpdateTipoProd
 
     public async Task<TipoProduccionDTO> Handle(UpdateTipoProduccionCommand request, CancellationToken cancellationToken)
     {
-        // Obtener usuario actual para auditoría
         var currentUserIdString = _authorizationService.GetCurrentUserId();
         if (!Guid.TryParse(currentUserIdString, out var currentUserId))
         {
             throw new UnauthorizedAccessException("User ID inválido en headers");
         }
 
-        // Obtener el TipoProduccion actual para comparar cambios
         var currentTipo = await _tipoProduccionRepository.GetByIdAsync(request.Id);
         if (currentTipo == null)
             throw new BusinessRuleException($"TipoProduccion with ID {request.Id} not found.", 
                 "TIPO_PRODUCCION_NOT_FOUND");
 
-        // Si se intenta activar el TipoProduccion
         if (request.Activo == true && currentTipo.Activo == false)
         {
             await ValidateDependenciesForActivation(request.LineaProduccionId, request.AgregadoId);
         }
 
-        // Si se intenta cambiar LineaProduccion o Agregado cuando está activo
         if (currentTipo.Activo == true && 
             (request.LineaProduccionId != currentTipo.LineaProduccionId || 
              request.AgregadoId != currentTipo.AgregadoId))
@@ -60,7 +53,6 @@ public class UpdateTipoProduccionCommandHandler : IRequestHandler<UpdateTipoProd
             await ValidateDependenciesForActivation(request.LineaProduccionId, request.AgregadoId);
         }
 
-        // Si se intenta inactivar, validar que no esté siendo usado por Producto activo
         if (currentTipo.Activo && request.Activo == false)
         {
             var isUsedByActiveProducto = await _tipoProduccionRepository.IsUsedByActiveProductoAsync(request.Id);
@@ -70,7 +62,6 @@ public class UpdateTipoProduccionCommandHandler : IRequestHandler<UpdateTipoProd
             }
         }
 
-        // Crear entidad con los nuevos datos
         var tipoToUpdate = new TipoProduccionEntity
         {
             Id = request.Id,
@@ -80,13 +71,13 @@ public class UpdateTipoProduccionCommandHandler : IRequestHandler<UpdateTipoProd
             LineaProduccionId = request.LineaProduccionId,
             AgregadoId = request.AgregadoId,
             Activo = request.Activo ?? true,
-            ModificadoPorId = currentUserId, // Auditoría automática
+            ModificadoPorId = currentUserId, 
             ModificadoEl = DateTime.UtcNow
         };
 
         var updatedTipo = await _tipoProduccionRepository.UpdateAndReturnAsync(tipoToUpdate);
 
-        // Devolver la estructura anidada con validación null
+
         var result = await _tipoProduccionRepository.GetByIdWithRelationsAsync(updatedTipo.Id);
         if (result == null)
         {
@@ -99,7 +90,6 @@ public class UpdateTipoProduccionCommandHandler : IRequestHandler<UpdateTipoProd
 
     private async Task ValidateDependenciesForActivation(Guid lineaProduccionId, Guid agregadoId)
     {
-        // Validar LineaProduccion
         var lineaProduccion = await _lineaProduccionRepository.GetByIdAsync(lineaProduccionId);
         if (lineaProduccion == null)
             throw new BusinessRuleException($"La línea de producción seleccionada ya no existe o fue eliminada.", 

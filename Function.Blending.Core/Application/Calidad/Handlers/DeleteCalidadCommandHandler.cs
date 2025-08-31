@@ -24,7 +24,6 @@ public class DeleteCalidadCommandHandler : IRequestHandler<DeleteCalidadCommand,
         if (calidad == null)
             return false;
 
-        // Validar que no esté siendo usado por Producto activo
         var isUsedByActiveProducto = await _calidadRepository.IsUsedByActiveProductoAsync(request.Id);
         if (isUsedByActiveProducto)
         {

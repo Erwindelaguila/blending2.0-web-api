@@ -2,9 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Function.Blending.Core.Application.Agregado.DTOs;
 
-/// <summary>
-/// DTO para requests de creación de agregado
-/// </summary>
+
 public class CreateAgregadoRequestDTO
 {
     public string Codigo { get; set; } = string.Empty;

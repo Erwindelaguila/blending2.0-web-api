@@ -8,10 +8,7 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Producto.Handlers;
 
-/// <summary>
-/// Handler para crear productos
-/// Incluye auditoría automática y validaciones de negocio
-/// </summary>
+
 public class CreateProductoCommandHandler : IRequestHandler<CreateProductoCommand, ProductoDTO>
 {
     private readonly IProductoRepository _productoRepository;
@@ -33,20 +30,17 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
 
     public async Task<ProductoDTO> Handle(CreateProductoCommand request, CancellationToken cancellationToken)
     {
-        // Obtener usuario actual para auditoría
         var currentUserIdString = _authorizationService.GetCurrentUserId();
         if (!Guid.TryParse(currentUserIdString, out var currentUserId))
         {
             throw new UnauthorizedAccessException("ID de usuario inválido en headers");
         }
 
-        // Validar que el código no existe
         if (await _productoRepository.ExistsActiveCodigoAsync(request.Codigo))
         {
             throw new ArgumentException("El código ya existe", "codigo");
         }
 
-        // Si se intenta crear activo, validar dependencias
         if (request.Activo ?? true)
         {
             await ValidateDependenciesForActivation(request.CalidadId, request.TipoProduccionId);
@@ -67,14 +61,12 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
         
         await _productoRepository.CreateAsync(producto);
         
-        // Obtener las relaciones para el DTO completo
         return await _productoRepository.GetByIdWithRelationsAsync(producto.Id) ?? 
                throw new InvalidOperationException("Error al crear el producto");
     }
 
     private async Task ValidateDependenciesForActivation(Guid calidadId, Guid tipoProduccionId)
     {
-        // Validar Calidad
         var calidad = await _calidadRepository.GetByIdAsync(calidadId);
         if (calidad == null)
             throw new BusinessRuleException($"La calidad seleccionada ya no existe o fue eliminada.", 
@@ -84,7 +76,6 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
             throw new BusinessRuleException($"No se puede crear/activar el Producto porque la Calidad '{calidad.Nombre}' está inactiva.", 
                 "CALIDAD_INACTIVE");
 
-        // Validar TipoProduccion
         var tipoProduccion = await _tipoProduccionRepository.GetByIdAsync(tipoProduccionId);
         if (tipoProduccion == null)
             throw new BusinessRuleException($"El tipo de producción seleccionado ya no existe o fue eliminado.", 

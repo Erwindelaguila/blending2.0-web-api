@@ -21,7 +21,6 @@ public class GetAllParametrosQueryHandler : IRequestHandler<GetAllParametrosQuer
     {
         try
         {
-            // Verificar cancelación temprano
             cancellationToken.ThrowIfCancellationRequested();
 
             var parametrosQuery = _parametroRepository.GetQueryable();
@@ -54,7 +53,6 @@ public class GetAllParametrosQueryHandler : IRequestHandler<GetAllParametrosQuer
                 _ => parametrosQuery.OrderBy(x => x.CreadoEl)
             };
 
-            // Proyectar a DTO (hacer antes de paginación para optimizar)
             var parametrosProjected = parametrosQuery.Select(parametro => new ParametroDTO
             {
                 Id = parametro.Id,
@@ -73,10 +71,8 @@ public class GetAllParametrosQueryHandler : IRequestHandler<GetAllParametrosQuer
         }
         catch (ArgumentException)
         {
-            // Re-lanzar ArgumentException para que sea manejada por la función HTTP como 400
             throw;
         }
     }
 
-    // Orden helper eliminado; lógica inline arriba
 }

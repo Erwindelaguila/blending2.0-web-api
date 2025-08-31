@@ -43,8 +43,8 @@ public class GetAllProductosFunction
             if (query["activo"] == "true")
             {
                 _logger.LogInformation("Returning active productos for combo");
-                var activosResult = await _mediator.Send(new GetAllProductosQuery());
-                var activosFiltered = activosResult.Where(p => p.Activo).ToList();
+                var activosResult = await _mediator.Send(new GetAllProductosQuery(1, 1000, null));
+                var activosFiltered = activosResult.Items.Where(p => p.Activo).ToList();
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, 
                     BaseResponse<object>.Success(activosFiltered, "Productos activos obtenidos correctamente"));
             }
@@ -61,7 +61,7 @@ public class GetAllProductosFunction
             // Solo aplicar filtros si hay filtros activos
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var getAllQuery = new GetAllProductoWithPaginationQuery(page, size, filtersToApply);
+            var getAllQuery = new GetAllProductosQuery(page, size, filtersToApply);
 
             var result = await _mediator.Send(getAllQuery);
             

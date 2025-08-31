@@ -3,14 +3,11 @@ using Function.Blending.Core.Application.AppParam.DTOs;
 
 namespace Function.Blending.Core.Application.AppParam.Commands;
 
-/// <summary>
-/// Command para actualizar un parámetro de aplicación
-/// Hereda de BaseCommand para mantener el contexto necesario para autenticación
-/// </summary>
+
 public class UpdateAppParamCommand : BaseCommand<object>
 {
-    public string Key { get; } // Key actual de la URL
-    public string? NewKey { get; } // Nuevo key del body (opcional)
+    public string Key { get; } 
+    public string? NewKey { get; } 
     public string Value { get; }
     public string? Description { get; }
     public string? Category { get; }

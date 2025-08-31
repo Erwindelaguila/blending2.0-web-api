@@ -110,7 +110,6 @@ public class UpdateAgregadoFunction
         }
         finally
         {
-            // ✅ LIMPIAR contexto de autorización
             AuthorizationService.ClearCurrentRequestHeaders();
         }
     }

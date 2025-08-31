@@ -6,10 +6,7 @@ using Function.Blending.Core.Application.Common.Exceptions;
 
 namespace Function.Blending.Core.Application.TipoProduccion.Handlers;
 
-/// <summary>
-/// Handler para eliminar tipos de producción
-/// Incluye auditoría automática y validaciones de negocio
-/// </summary>
+
 public class DeleteTipoProduccionCommandHandler : IRequestHandler<DeleteTipoProduccionCommand, bool>
 {
     private readonly ITipoProduccionRepository _tipoProduccionRepository;
@@ -25,7 +22,6 @@ public class DeleteTipoProduccionCommandHandler : IRequestHandler<DeleteTipoProd
 
     public async Task<bool> Handle(DeleteTipoProduccionCommand request, CancellationToken cancellationToken)
     {
-        // Obtener usuario actual para auditoría
         var currentUserIdString = _authorizationService.GetCurrentUserId();
         if (!Guid.TryParse(currentUserIdString, out var currentUserId))
         {
@@ -38,20 +34,18 @@ public class DeleteTipoProduccionCommandHandler : IRequestHandler<DeleteTipoProd
 
         try
         {
-            // Validar que no esté siendo usado por Producto activo
             var isUsedByActiveProducto = await _tipoProduccionRepository.IsUsedByActiveProductoAsync(request.Id);
             if (isUsedByActiveProducto)
             {
                 throw new EntityInUseException("el Tipo de Producción", "está siendo usado por al menos un Producto activo");
             }
 
-            await _tipoProduccionRepository.DeleteAsync(request.Id, currentUserId); // Auditoría automática
+            await _tipoProduccionRepository.DeleteAsync(request.Id, currentUserId); 
             return true;
         }
         catch (Exception)
         {
-            // TODO: Log la excepción aquí
-            // _logger.LogError(ex, "Error al eliminar tipo de producción con ID {Id}", request.Id);
+           
             return false;
         }
     }

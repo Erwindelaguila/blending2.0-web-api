@@ -59,7 +59,7 @@ public class GetAllTipoProduccionFunction
             // Solo aplicar filtros si hay filtros activos
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var getAllQuery = new GetAllTipoProduccionWithPaginationQuery(page, size, filtersToApply);
+            var getAllQuery = new GetAllTipoProduccionQuery(page, size, filtersToApply);
 
             var result = await _mediator.Send(getAllQuery);
             

@@ -5,10 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Function.Blending.Core.Application.Common.Behaviors;
 
-/// <summary>
-/// Behavior que maneja auditoría automática para todos los Commands.
-/// Implementa Clean Architecture separando la responsabilidad de auditoría.
-/// </summary>
+
 public class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
@@ -44,7 +41,6 @@ public class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TR
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error en auditoría para command {CommandType}", typeof(TRequest).Name);
-                // No propagamos el error de auditoría para no afectar la operación principal
             }
         }
 

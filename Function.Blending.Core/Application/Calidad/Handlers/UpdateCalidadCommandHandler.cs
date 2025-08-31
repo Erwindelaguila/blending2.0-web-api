@@ -21,13 +21,11 @@ public class UpdateCalidadCommandHandler : IRequestHandler<UpdateCalidadCommand,
 
     public async Task<CalidadDTO> Handle(UpdateCalidadCommand request, CancellationToken cancellationToken)
     {
-        // Obtener el registro actual para validar cambios
         var currentCalidad = await _calidadRepository.GetByIdAsync(request.Id);
         if (currentCalidad == null)
             throw new BusinessRuleException($"Calidad with ID {request.Id} not found.", 
                 "CALIDAD_NOT_FOUND");
 
-        // Si se intenta inactivar, validar que no esté siendo usado por Producto activo
         if (currentCalidad.Activo && request.Activo == false)
         {
             var isUsedByActiveProducto = await _calidadRepository.IsUsedByActiveProductoAsync(request.Id);

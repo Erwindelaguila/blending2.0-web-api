@@ -2,9 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Function.Blending.Core.Application.Producto.DTOs;
 
-/// <summary>
-/// DTO para requests de actualización de producto
-/// </summary>
+
 public class UpdateProductoRequestDTO
 {
     public Guid Id { get; set; }

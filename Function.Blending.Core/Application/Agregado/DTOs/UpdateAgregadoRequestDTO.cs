@@ -2,9 +2,6 @@ using System.Text.Json.Serialization;
 
 namespace Function.Blending.Core.Application.Agregado.DTOs;
 
-/// <summary>
-/// DTO para requests de actualización de agregado
-/// </summary>
 public class UpdateAgregadoRequestDTO
 {
     public Guid Id { get; set; }

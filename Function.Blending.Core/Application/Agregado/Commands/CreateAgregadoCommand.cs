@@ -3,10 +3,6 @@ using Function.Blending.Core.Application.Common.Commands;
 
 namespace Function.Blending.Core.Application.Agregado.Commands
 {
-    /// <summary>
-    /// Command para crear un agregado
-    /// Hereda de BaseCommand para mantener el contexto necesario para autenticación
-    /// </summary>
     public class CreateAgregadoCommand : BaseCommand<AgregadoDTO>
     {
         public string Codigo { get; }

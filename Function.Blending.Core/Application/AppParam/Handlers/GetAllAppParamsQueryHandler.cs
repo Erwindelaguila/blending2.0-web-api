@@ -20,10 +20,10 @@ public class GetAllAppParamsQueryHandler : IRequestHandler<GetAllAppParamsQuery,
     {
         var queryable = _appParamRepository.GetQueryable();
 
-        // FILTRO OBLIGATORIO: Solo mostrar los que tienen isVisible = true
+        
         queryable = queryable.Where(ap => ap.IsVisible);
 
-        // Aplicar filtros adicionales desde FilterDTO
+   
         if (request.Filters != null)
         {
             if (!string.IsNullOrWhiteSpace(request.Filters.Key))
@@ -36,7 +36,7 @@ public class GetAllAppParamsQueryHandler : IRequestHandler<GetAllAppParamsQuery,
                 queryable = queryable.Where(ap => ap.IsActive == request.Filters.IsActive.Value);
             }
 
-            // FechaDesde filtra por día exacto en CreadoEl
+  
             var fechaFiltro = request.Filters.FechaDesde;
             if (fechaFiltro.HasValue)
             {
@@ -46,10 +46,10 @@ public class GetAllAppParamsQueryHandler : IRequestHandler<GetAllAppParamsQuery,
             }
         }
 
-        // Contar total antes del paginado
+      
         var total = await queryable.CountAsync(cancellationToken);
 
-        // Aplicar paginado y ordenar
+     
         var items = await queryable
             .OrderBy(ap => ap.CreadoEl)
             .Skip((request.Page - 1) * request.Size)

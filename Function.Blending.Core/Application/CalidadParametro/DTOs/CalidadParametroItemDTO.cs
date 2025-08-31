@@ -10,7 +10,7 @@ public class CalidadParametroItemDTO
     public string ParametroCodigo { get; set; } = string.Empty;
     public string ParametroNombre { get; set; } = string.Empty;
     public decimal Valor { get; set; }
-    public bool EsDefault { get; set; } // Indica si es un valor por defecto (no existe en BD)
+    public bool EsDefault { get; set; } 
     public bool Activo { get; set; }
     public Guid CreadoPorId { get; set; }
     public DateTime CreadoEl { get; set; }

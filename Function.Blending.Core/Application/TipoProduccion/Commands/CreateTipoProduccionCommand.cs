@@ -3,10 +3,7 @@ using Function.Blending.Core.Application.TipoProduccion.DTOs;
 
 namespace Function.Blending.Core.Application.TipoProduccion.Commands;
 
-/// <summary>
-/// Command para crear un tipo de producción
-/// Hereda de BaseCommand para mantener el contexto necesario para autenticación
-/// </summary>
+
 public class CreateTipoProduccionCommand : BaseCommand<TipoProduccionDTO>
 {
     public string Codigo { get; }

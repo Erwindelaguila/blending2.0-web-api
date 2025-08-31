@@ -23,7 +23,6 @@ public class UpdateParametroCommandHandler : IRequestHandler<UpdateParametroComm
         var modificadoPorIdString = _authorizationService.GetCurrentUserId();
         var modificadoPorId = Guid.Parse(modificadoPorIdString);
 
-        // Crear entidad con los nuevos datos
         var parametroToUpdate = new ParametroEntity
         {
             Id = request.Id,

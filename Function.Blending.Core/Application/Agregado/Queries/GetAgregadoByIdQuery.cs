@@ -3,10 +3,6 @@ using Function.Blending.Core.Application.Common.Queries;
 
 namespace Function.Blending.Core.Application.Agregado.Queries;
 
-/// <summary>
-/// Query para obtener un agregado por ID
-/// Hereda de BaseQuery para autorización automática
-/// </summary>
 public class GetAgregadoByIdQuery : BaseQuery<AgregadoDTO?>
 {
     public Guid Id { get; }

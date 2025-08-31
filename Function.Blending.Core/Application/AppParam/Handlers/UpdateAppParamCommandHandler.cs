@@ -8,10 +8,7 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.AppParam.Handlers;
 
-/// <summary>
-/// Handler para actualizar parámetros de aplicación
-/// Reutiliza servicios de autenticación de Function.Blending.Auth
-/// </summary>
+
 public class UpdateAppParamCommandHandler : IRequestHandler<UpdateAppParamCommand, object>
 {
     private readonly IAppParamRepository _appParamRepository;
@@ -106,9 +103,7 @@ public class UpdateAppParamCommandHandler : IRequestHandler<UpdateAppParamComman
         }
         else
         {
-            // Si NO cambia el código: UPDATE normal
-            
-            // Validar isDisableable antes de cambiar IsActive
+
             if (request.IsActive.HasValue && !request.IsActive.Value)
             {
                 if (existingAppParam.IsDisableable)
@@ -117,7 +112,7 @@ public class UpdateAppParamCommandHandler : IRequestHandler<UpdateAppParamComman
                 }
             }
 
-            // Actualizar campos permitidos
+
             existingAppParam.Value = request.Value;
             if (request.Description != null)
                 existingAppParam.Description = request.Description;

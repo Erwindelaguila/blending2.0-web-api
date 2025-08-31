@@ -1,24 +1,16 @@
-using Function.Blending.Core.Application.Common.Queries;
-using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.TipoProduccion.DTOs;
+using Function.Blending.Core.Application.Common.Wrappers;
+using MediatR;
 
 namespace Function.Blending.Core.Application.TipoProduccion.Queries;
 
-/// <summary>
-/// Query para obtener todos los tipos de producción con paginación
-/// Hereda de BaseQuery para autorización automática
-/// </summary>
-public class GetAllTipoProduccionQuery : BaseQuery<PagedResponse<TipoProduccionDTO>>
+public class GetAllTipoProduccionQuery : IRequest<PagedResponse<TipoProduccionDTO>>
 {
     public int Page { get; }
     public int Size { get; }
     public TipoProduccionFilterDTO? Filters { get; }
 
-    public GetAllTipoProduccionQuery(
-        int page, 
-        int size, 
-        TipoProduccionFilterDTO? filters,
-        object requestContext) : base(requestContext)
+    public GetAllTipoProduccionQuery(int page, int size, TipoProduccionFilterDTO? filters = null)
     {
         Page = page;
         Size = size;

@@ -21,7 +21,6 @@ public class DeleteLineaProduccionCommandHandler : IRequestHandler<DeleteLineaPr
 
     public async Task<bool> Handle(DeleteLineaProduccionCommand request, CancellationToken cancellationToken)
     {
-        // Obtener User ID desde el contexto de autorización
         var currentUserIdString = _authorizationService.GetCurrentUserId();
         if (!Guid.TryParse(currentUserIdString, out var currentUserId))
         {
@@ -32,7 +31,6 @@ public class DeleteLineaProduccionCommandHandler : IRequestHandler<DeleteLineaPr
         if (linea == null)
             return false;
 
-        // Validación de regla de negocio: no se puede eliminar si está siendo usado por TipoProducción activo
         var isUsedByActiveTipoProduccion = await _lineaProduccionRepository.IsUsedByActiveTipoProduccionAsync(request.Id);
         if (isUsedByActiveTipoProduccion)
         {
@@ -46,7 +44,6 @@ public class DeleteLineaProduccionCommandHandler : IRequestHandler<DeleteLineaPr
         }
         catch (Exception)
         {
-            // Si falla por constraint de BD, lanzar excepción más específica
             throw new EntityInUseException("la Línea de Producción", "tiene dependencias en la base de datos");
         }
     }

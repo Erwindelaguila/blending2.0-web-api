@@ -6,10 +6,7 @@ using Function.Blending.Core.Application.Common.Exceptions;
 
 namespace Function.Blending.Core.Application.Producto.Handlers;
 
-/// <summary>
-/// Handler para eliminar productos
-/// Incluye auditoría automática y validaciones de negocio
-/// </summary>
+
 public class DeleteProductoCommandHandler : IRequestHandler<DeleteProductoCommand, bool>
 {
     private readonly IProductoRepository _productoRepository;
@@ -25,7 +22,6 @@ public class DeleteProductoCommandHandler : IRequestHandler<DeleteProductoComman
 
     public async Task<bool> Handle(DeleteProductoCommand request, CancellationToken cancellationToken)
     {
-        // Obtener usuario actual para auditoría
         var currentUserIdString = _authorizationService.GetCurrentUserId();
         if (!Guid.TryParse(currentUserIdString, out var currentUserId))
         {
@@ -38,13 +34,12 @@ public class DeleteProductoCommandHandler : IRequestHandler<DeleteProductoComman
 
         try
         {
-            await _productoRepository.DeleteAsync(request.Id, currentUserId); // Auditoría automática
+            await _productoRepository.DeleteAsync(request.Id, currentUserId); 
             return true;
         }
         catch (Exception)
         {
-            // TODO: Log la excepción aquí
-            // _logger.LogError(ex, "Error al eliminar producto con ID {Id}", request.Id);
+           
             return false;
         }
     }

@@ -4,16 +4,10 @@ using Microsoft.Azure.Functions.Worker.Http;
 
 namespace Function.Blending.Core.Application.Common.Helpers;
 
-/// <summary>
-/// Helper para configurar headers de autorización desde Behaviors
-/// Mantiene la compatibilidad con Azure Functions
-/// </summary>
+
 public static class AuthorizationContextHelper
 {
-    /// <summary>
-    /// Configura los headers de autorización para el AuthorizationService
-    /// desde el contexto de un BaseCommand
-    /// </summary>
+    
     public static void SetupAuthorizationFromCommand(
         object requestContext, 
         IAuthorizationService authorizationService)
@@ -24,10 +18,7 @@ public static class AuthorizationContextHelper
         }
     }
 
-    /// <summary>
-    /// Configura headers de autorización para Azure Functions
-    /// Extrae X-User-Groups del request y los configura en el AuthorizationService
-    /// </summary>
+    
     private static void SetupAuthorizationHeaders(HttpRequestData req, IAuthorizationService authorizationService)
     {
         var headers = new Dictionary<string, string>();

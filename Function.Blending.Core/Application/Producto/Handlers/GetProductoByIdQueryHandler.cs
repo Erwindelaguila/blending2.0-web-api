@@ -16,7 +16,6 @@ public class GetProductoByIdQueryHandler : IRequestHandler<GetProductoByIdQuery,
 
     public async Task<ProductoDTO?> Handle(GetProductoByIdQuery request, CancellationToken cancellationToken)
     {
-        // Usar el método que devuelve estructura anidada con relaciones
         return await _productoRepository.GetByIdWithRelationsAsync(request.Id);
     }
 }

@@ -33,7 +33,6 @@ public class GetAllPlantasQueryHandler : IRequestHandler<GetAllPlantasQuery, Pla
                     request.Filters.Estado,
                     x => x.Activo);
 
-                // Filtro por día exacto: CreadoEl o ModificadoEl dentro del día [FechaDesde, FechaDesde + 1)
                 if (request.Filters.FechaDesde.HasValue)
                 {
                     var start = request.Filters.FechaDesde.Value.Date;
@@ -45,7 +44,6 @@ public class GetAllPlantasQueryHandler : IRequestHandler<GetAllPlantasQuery, Pla
                 }
             }
 
-            // Orden: por estado si viene, si no por CreadoEl
             plantasQuery = request.Filters?.Estado switch
             {
                 "1" => plantasQuery.OrderByDescending(x => x.Activo).ThenBy(x => x.CreadoEl),
@@ -71,7 +69,6 @@ public class GetAllPlantasQueryHandler : IRequestHandler<GetAllPlantasQuery, Pla
 
             }
 
-            // Proyectar a DTO (hacer antes de paginación para optimizar)
             var plantasProjected = plantasQuery.Select(planta => new PlantaDTO
             {
                 Id = planta.Id,
@@ -98,10 +95,8 @@ public class GetAllPlantasQueryHandler : IRequestHandler<GetAllPlantasQuery, Pla
         }
         catch (ArgumentException)
         {
-            // Re-lanzar ArgumentException para que sea manejada por la función HTTP como 400
             throw;
         }
     }
 
-    // Orden helper eliminado; lógica inline arriba para simplicidad
 }

@@ -3,10 +3,7 @@ using Function.Blending.Core.Application.Common.Commands;
 
 namespace Function.Blending.Core.Application.Agregado.Commands
 {
-    /// <summary>
-    /// Command para actualizar un agregado
-    /// Hereda de BaseCommand para mantener el contexto necesario para autenticación
-    /// </summary>
+   
     public class UpdateAgregadoCommand : BaseCommand<AgregadoDTO>
     {
         public Guid Id { get; }

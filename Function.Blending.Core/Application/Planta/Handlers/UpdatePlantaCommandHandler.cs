@@ -23,7 +23,6 @@ public class UpdatePlantaCommandHandler : IRequestHandler<UpdatePlantaCommand, P
         var modificadoPorIdString = _authorizationService.GetCurrentUserId();
         var modificadoPorId = Guid.Parse(modificadoPorIdString);
 
-        // Crear entidad con los nuevos datos
         var plantaToUpdate = new PlantaEntity
         {
             Id = request.Id,

@@ -3,10 +3,7 @@ using Function.Blending.Core.Application.AppParam.DTOs;
 
 namespace Function.Blending.Core.Application.AppParam.Commands;
 
-/// <summary>
-/// Command para crear un nuevo parámetro de aplicación
-/// Hereda de BaseCommand para mantener el contexto necesario para autenticación
-/// </summary>
+
 public class CreateAppParamCommand : BaseCommand<AppParamDTO>
 {
     public string Key { get; }

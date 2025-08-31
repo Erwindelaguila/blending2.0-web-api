@@ -3,10 +3,7 @@ using Function.Blending.Core.Application.Producto.DTOs;
 
 namespace Function.Blending.Core.Application.Producto.Commands;
 
-/// <summary>
-/// Command para actualizar un producto
-/// Hereda de BaseCommand para mantener el contexto necesario para autenticación
-/// </summary>
+
 public class UpdateProductoCommand : BaseCommand<ProductoDTO>
 {
     public Guid Id { get; }

@@ -8,10 +8,7 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.TipoProduccion.Handlers;
 
-/// <summary>
-/// Handler para crear tipos de producción
-/// Incluye auditoría automática y validaciones de negocio
-/// </summary>
+
 public class CreateTipoProduccionCommandHandler : IRequestHandler<CreateTipoProduccionCommand, TipoProduccionDTO>
 {
     private readonly ITipoProduccionRepository _tipoProduccionRepository;
@@ -67,11 +64,9 @@ public class CreateTipoProduccionCommandHandler : IRequestHandler<CreateTipoProd
         
         await _tipoProduccionRepository.CreateAsync(tipo);
         
-        // Obtener las relaciones para el DTO completo
         var lineaProduccion = await _lineaProduccionRepository.GetByIdAsync(request.LineaProduccionId);
         var agregado = await _agregadoRepository.GetByIdAsync(request.AgregadoId);
         
-        // Crear el DTO de respuesta
         return new TipoProduccionDTO
         {
             Id = tipo.Id,
@@ -98,7 +93,6 @@ public class CreateTipoProduccionCommandHandler : IRequestHandler<CreateTipoProd
 
     private async Task ValidateDependenciesForActivation(Guid lineaProduccionId, Guid agregadoId)
     {
-        // Validar LineaProduccion
         var lineaProduccion = await _lineaProduccionRepository.GetByIdAsync(lineaProduccionId);
         if (lineaProduccion == null)
             throw new BusinessRuleException($"La línea de producción seleccionada ya no existe o fue eliminada.", 

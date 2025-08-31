@@ -27,9 +27,7 @@ public class DeleteAppParamFunction
         _auditService = auditService;
     }
 
-    /// <summary>
-    /// Configura los headers de autorización desde HttpRequestData para Azure Functions.
-    /// </summary>
+
     private void SetupAuthorizationHeaders(HttpRequestData req)
     {
         var headers = new Dictionary<string, string>();
@@ -39,7 +37,6 @@ public class DeleteAppParamFunction
             headers[header.Key] = header.Value.FirstOrDefault() ?? "";
         }
         
-        // Configurar headers en el AuthorizationService estático para Azure Functions
         AuthorizationService.SetCurrentRequestHeaders(headers);
     }
 
@@ -65,7 +62,6 @@ public class DeleteAppParamFunction
                     403
                 ));
             }
-            // ===== FIN AUTORIZACIÓN =====
 
             if (string.IsNullOrWhiteSpace(key))
             {
@@ -114,7 +110,6 @@ public class DeleteAppParamFunction
         }
         finally
         {
-            // Limpiar headers del contexto de Azure Functions
             AuthorizationService.ClearCurrentRequestHeaders();
         }
     }

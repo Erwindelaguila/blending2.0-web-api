@@ -22,7 +22,6 @@ public class CreateLineaProduccionCommandHandler : IRequestHandler<CreateLineaPr
 
     public async Task<LineaProduccionDTO> Handle(CreateLineaProduccionCommand request, CancellationToken cancellationToken)
     {
-        // Obtener User ID desde el contexto de autorización
         var currentUserIdString = _authorizationService.GetCurrentUserId();
         if (!Guid.TryParse(currentUserIdString, out var currentUserId))
         {

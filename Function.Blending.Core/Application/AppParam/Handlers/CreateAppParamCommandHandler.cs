@@ -8,10 +8,7 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.AppParam.Handlers;
 
-/// <summary>
-/// Handler para crear parámetros de aplicación
-/// Incluye auditoría automática y validaciones de negocio
-/// </summary>
+
 public class CreateAppParamCommandHandler : IRequestHandler<CreateAppParamCommand, AppParamDTO>
 {
     private readonly IAppParamRepository _appParamRepository;
@@ -27,15 +24,14 @@ public class CreateAppParamCommandHandler : IRequestHandler<CreateAppParamComman
 
     public async Task<AppParamDTO> Handle(CreateAppParamCommand request, CancellationToken cancellationToken)
     {
-        // Validar que no existe un AppParam con la misma clave
+     
         var exists = await _appParamRepository.ExistsAsync(request.Key);
         if (exists)
         {
             throw new DuplicateKeyException("parámetro", request.Key);
         }
 
-        // Obtener usuario actual usando servicios reutilizados de Auth
-        // Obtener user ID desde headers (via AuthorizationService)
+     
         var currentUserIdString = _authorizationService.GetCurrentUserId();
         if (!Guid.TryParse(currentUserIdString, out var currentUserId))
         {

@@ -7,10 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Function.Blending.Core.Application.Common.Behaviors;
 
-/// <summary>
-/// Behavior que maneja autorización automática para todos los Commands.
-/// Implementa Clean Architecture separando la responsabilidad de autorización.
-/// </summary>
+
 public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
