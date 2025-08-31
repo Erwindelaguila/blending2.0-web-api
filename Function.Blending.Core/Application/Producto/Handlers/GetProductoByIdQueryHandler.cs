@@ -8,6 +8,7 @@ namespace Function.Blending.Core.Application.Producto.Handlers;
 public class GetProductoByIdQueryHandler : IRequestHandler<GetProductoByIdQuery, ProductoDTO?>
 {
     private readonly IProductoRepository _productoRepository;
+
     public GetProductoByIdQueryHandler(IProductoRepository productoRepository)
     {
         _productoRepository = productoRepository;
@@ -15,6 +16,7 @@ public class GetProductoByIdQueryHandler : IRequestHandler<GetProductoByIdQuery,
 
     public async Task<ProductoDTO?> Handle(GetProductoByIdQuery request, CancellationToken cancellationToken)
     {
+        // Usar el método que devuelve estructura anidada con relaciones
         return await _productoRepository.GetByIdWithRelationsAsync(request.Id);
     }
 }

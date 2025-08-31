@@ -37,7 +37,7 @@ public class GetTipoProduccionByIdFunction
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                     "ID de tipo de producción inválido o no proporcionado",
-                    "Error de validación",
+                    null,
                     400
                 ));
             }
@@ -48,7 +48,7 @@ public class GetTipoProduccionByIdFunction
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                     "Tipo de producción no encontrado",
-                    "Recurso no encontrado",
+                    null,
                     404
                 ));
             }

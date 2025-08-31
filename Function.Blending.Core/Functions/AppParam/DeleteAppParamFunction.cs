@@ -76,7 +76,7 @@ public class DeleteAppParamFunction
                 ));
             }
 
-            var command = new DeleteAppParamCommand(key);
+            var command = new DeleteAppParamCommand(key, req);
             
             var result = await _mediator.Send(command);
             

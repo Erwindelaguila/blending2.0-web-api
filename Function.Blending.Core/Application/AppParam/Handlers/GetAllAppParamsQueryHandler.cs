@@ -51,7 +51,7 @@ public class GetAllAppParamsQueryHandler : IRequestHandler<GetAllAppParamsQuery,
 
         // Aplicar paginado y ordenar
         var items = await queryable
-            .OrderBy(ap => ap.Key)
+            .OrderBy(ap => ap.CreadoEl)
             .Skip((request.Page - 1) * request.Size)
             .Take(request.Size)
             .Select(ap => new AppParamDTO

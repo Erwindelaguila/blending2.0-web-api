@@ -1,10 +1,10 @@
+using Function.Blending.Core.Application.Producto.DTOs;
+using Function.Blending.Core.Application.Producto.Queries;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Interfaces.Repositories;
-using Function.Blending.Core.Application.Producto.DTOs;
-using Function.Blending.Core.Application.Producto.Queries;
+using Function.Blending.Core.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Function.Blending.Core.Application.Producto.Handlers;
 
@@ -21,133 +21,58 @@ public class GetAllProductoWithPaginationQueryHandler : IRequestHandler<GetAllPr
     {
         try
         {
-            // Usar el IQueryable del modelo EF directamente para poder aplicar Include antes de proyectar
-            var productoEntityQuery = _productoRepository.GetEntityQueryable();
-
-            // Aplicar filtros si existen
+            // Obtener todos los datos con estructura anidada
+            var allProductos = await _productoRepository.GetAllWithRelationsAsync();
+            
+            // Aplicar filtros en memoria usando request.Filters
             if (request.Filters != null)
             {
-                productoEntityQuery = productoEntityQuery.ApplyCodigoFilter(
-                    request.Filters.Codigo,
-                    x => x.Codigo);
-
-                productoEntityQuery = productoEntityQuery.ApplyEstadoFilter(
-                    request.Filters.Estado,
-                    x => x.Activo);
+                if (!string.IsNullOrWhiteSpace(request.Filters.Codigo))
+                    allProductos = allProductos.Where(x => x.Codigo.Contains(request.Filters.Codigo, StringComparison.OrdinalIgnoreCase)).ToList();
+                
+                if (!string.IsNullOrWhiteSpace(request.Filters.Estado))
+                {
+                    var isActivo = request.Filters.Estado == "1" || request.Filters.Estado.ToLower() == "activo";
+                    allProductos = allProductos.Where(x => x.Activo == isActivo).ToList();
+                }
 
                 if (request.Filters.FechaDesde.HasValue)
                 {
                     var start = request.Filters.FechaDesde.Value.Date;
                     var end = start.AddDays(1);
-            productoEntityQuery = productoEntityQuery.Where(x =>
+                    allProductos = allProductos.Where(x =>
                         (x.CreadoEl >= start && x.CreadoEl < end) ||
-                        (x.ModificadoEl.HasValue && x.ModificadoEl.Value >= start && x.ModificadoEl.Value < end)
-                    );
-                }
-
-                // Filtro por CalidadId
-                if (request.Filters.CalidadId.HasValue)
-                {
-                    productoEntityQuery = productoEntityQuery.Where(x => x.CalidadId == request.Filters.CalidadId.Value);
-                }
-
-                // Filtro por TipoProduccionId  
-                if (request.Filters.TipoProduccionId.HasValue)
-                {
-                    productoEntityQuery = productoEntityQuery.Where(x => x.TipoProduccionId == request.Filters.TipoProduccionId.Value);
+                        (x.ModificadoEl.HasValue && x.ModificadoEl >= start && x.ModificadoEl < end)
+                    ).ToList();
                 }
             }
 
-            // Contar registros ANTES de cualquier proyección o Include
-        var totalCount = await productoEntityQuery.CountAsync(cancellationToken);
-            
-            if (totalCount == 0)
-            {
-                return new PagedResponse<ProductoDTO>
-                {
-                    Items = new List<ProductoDTO>(),
-                    Pagination = new PaginationInfo
-                    {
-                        CurrentPage = request.Page,
-                        TotalPages = 0,
-                        PageSize = request.Size,
-                        TotalCount = 0,
-                        HasPrevious = false,
-                        HasNext = false,
-                        PreviousPage = null,
-                        NextPage = null
-                    }
-                };
-            }
-
-            // Aplicar Include ANTES de proyección
-            productoEntityQuery = productoEntityQuery
-                .Include(p => p.Calidad)
-                .Include(p => p.TipoProduccion);
-
-            // Orden: por estado si viene, si no por CreadoEl
-            productoEntityQuery = request.Filters?.Estado switch
-            {
-                "1" => productoEntityQuery.OrderByDescending(x => x.Activo).ThenBy(x => x.CreadoEl),
-                "0" => productoEntityQuery.OrderBy(x => x.Activo).ThenBy(x => x.CreadoEl),
-                _ => productoEntityQuery.OrderBy(x => x.CreadoEl)
-            };
-
-            // Calcular paginación
-            var totalPages = (int)Math.Ceiling(totalCount / (double)request.Size);
-            var page = request.Page > totalPages ? totalPages : request.Page;
-            
-            // Obtener datos paginados con proyección
-            var items = await productoEntityQuery
-                .Skip((page - 1) * request.Size)
+            // Aplicar paginación
+            var totalRecords = allProductos.Count;
+            var productosPaginated = allProductos
+                .Skip((request.Page - 1) * request.Size)
                 .Take(request.Size)
-                .Select(producto => new ProductoDTO
-                {
-                    Id = producto.Id,
-                    Codigo = producto.Codigo,
-                    Nombre = producto.Nombre,
-                    Descripcion = producto.Descripcion,
-                    Calidad = new CalidadRelacion
-                    {
-                        Id = producto.Calidad!.Id,
-                        Codigo = producto.Calidad.Codigo
-                    },
-                    TipoProduccion = new TipoProduccionRelacion
-                    {
-                        Id = producto.TipoProduccion!.Id,
-                        Codigo = producto.TipoProduccion.Codigo
-                    },
-                    Activo = producto.Activo,
-                    CreadoPorId = producto.CreadoPorId,
-                    CreadoEl = producto.CreadoEl,
-                    ModificadoPorId = producto.ModificadoPorId,
-                    ModificadoEl = producto.ModificadoEl
-                })
-                .ToListAsync(cancellationToken);
+                .ToList();
 
-            var pagedResult = new PagedResponse<ProductoDTO>
+            return new PagedResponse<ProductoDTO>
             {
-                Items = items,
+                Items = productosPaginated,
                 Pagination = new PaginationInfo
                 {
-                    CurrentPage = page,
-                    TotalPages = totalPages,
+                    CurrentPage = request.Page,
                     PageSize = request.Size,
-                    TotalCount = totalCount,
-                    HasPrevious = page > 1,
-                    HasNext = page < totalPages,
-                    PreviousPage = page > 1 ? page - 1 : null,
-                    NextPage = page < totalPages ? page + 1 : null
+                    TotalCount = totalRecords,
+                    TotalPages = (int)Math.Ceiling((double)totalRecords / request.Size),
+                    HasPrevious = request.Page > 1,
+                    HasNext = request.Page < (int)Math.Ceiling((double)totalRecords / request.Size),
+                    PreviousPage = request.Page > 1 ? request.Page - 1 : null,
+                    NextPage = request.Page < (int)Math.Ceiling((double)totalRecords / request.Size) ? request.Page + 1 : null
                 }
             };
-            return pagedResult;
         }
-        catch (ArgumentException)
+        catch (Exception ex)
         {
-            // Re-lanzar ArgumentException para que sea manejada por la función HTTP como 400
-            throw;
+            throw new Exception("Error al obtener los productos paginados", ex);
         }
     }
-
-    // Orden helper eliminado; lógica inline arriba
 }

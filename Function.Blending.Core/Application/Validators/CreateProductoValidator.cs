@@ -19,7 +19,5 @@ public class CreateProductoValidator : AbstractValidator<CreateProductoCommand>
             .NotEmpty().WithMessage("El Id de calidad es requerido");
         RuleFor(x => x.TipoProduccionId)
             .NotEmpty().WithMessage("El Id de tipo de producción es requerido");
-        RuleFor(x => x.CreadoPorId)
-            .NotEmpty().WithMessage("El Id del usuario creador es requerido");
     }
 }

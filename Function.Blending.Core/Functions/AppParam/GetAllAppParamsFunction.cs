@@ -4,6 +4,7 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.AppParam.Queries;
 using Function.Blending.Core.Application.AppParam.DTOs;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -58,6 +59,10 @@ public class GetAllAppParamsFunction
             );
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, errorResponse);
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.AppParam.Queries;
 using Function.Blending.Core.Application.AppParam.DTOs;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -41,8 +42,8 @@ public class GetAppParamByIdFunction
             if (result == null)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<AppParamDTO>.Fail(
-                    $"AppParam with key '{key}' not found",
-                    "Parámetro de aplicación no encontrado",
+                    $"Parámetro de aplicación con clave '{key}' no encontrado",
+                    null,
                     404
                 ));
             }
@@ -63,9 +64,13 @@ public class GetAppParamByIdFunction
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<AppParamDTO>.Fail(
                 errorMessage,
-                "Error interno del servidor",
+                null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

@@ -1,4 +1,5 @@
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Producto.Commands;
 using Function.Blending.Core.Application.Producto.DTOs;
 using Function.Blending.Core.Application.Common.Exceptions;
@@ -7,24 +8,44 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Producto.Handlers;
 
+/// <summary>
+/// Handler para crear productos
+/// Incluye auditoría automática y validaciones de negocio
+/// </summary>
 public class CreateProductoCommandHandler : IRequestHandler<CreateProductoCommand, ProductoDTO>
 {
     private readonly IProductoRepository _productoRepository;
     private readonly ICalidadRepository _calidadRepository;
     private readonly ITipoProduccionRepository _tipoProduccionRepository;
+    private readonly IAuthorizationService _authorizationService;
     
     public CreateProductoCommandHandler(
         IProductoRepository productoRepository,
         ICalidadRepository calidadRepository,
-        ITipoProduccionRepository tipoProduccionRepository)
+        ITipoProduccionRepository tipoProduccionRepository,
+        IAuthorizationService authorizationService)
     {
-        _productoRepository = productoRepository;
-        _calidadRepository = calidadRepository;
-        _tipoProduccionRepository = tipoProduccionRepository;
+        _productoRepository = productoRepository ?? throw new ArgumentNullException(nameof(productoRepository));
+        _calidadRepository = calidadRepository ?? throw new ArgumentNullException(nameof(calidadRepository));
+        _tipoProduccionRepository = tipoProduccionRepository ?? throw new ArgumentNullException(nameof(tipoProduccionRepository));
+        _authorizationService = authorizationService ?? throw new ArgumentNullException(nameof(authorizationService));
     }
 
     public async Task<ProductoDTO> Handle(CreateProductoCommand request, CancellationToken cancellationToken)
     {
+        // Obtener usuario actual para auditoría
+        var currentUserIdString = _authorizationService.GetCurrentUserId();
+        if (!Guid.TryParse(currentUserIdString, out var currentUserId))
+        {
+            throw new UnauthorizedAccessException("ID de usuario inválido en headers");
+        }
+
+        // Validar que el código no existe
+        if (await _productoRepository.ExistsActiveCodigoAsync(request.Codigo))
+        {
+            throw new ArgumentException("El código ya existe", "codigo");
+        }
+
         // Si se intenta crear activo, validar dependencias
         if (request.Activo ?? true)
         {
@@ -40,12 +61,13 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
             CalidadId = request.CalidadId,
             TipoProduccionId = request.TipoProduccionId,
             Activo = request.Activo ?? true,
-            CreadoPorId = request.CreadoPorId,
+            CreadoPorId = currentUserId,
             CreadoEl = DateTime.UtcNow
         };
+        
         await _productoRepository.CreateAsync(producto);
         
-        // Devolver la estructura anidada
+        // Obtener las relaciones para el DTO completo
         return await _productoRepository.GetByIdWithRelationsAsync(producto.Id) ?? 
                throw new InvalidOperationException("Error al crear el producto");
     }
@@ -55,21 +77,21 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
         // Validar Calidad
         var calidad = await _calidadRepository.GetByIdAsync(calidadId);
         if (calidad == null)
-            throw new BusinessRuleException($"Calidad with ID {calidadId} not found.", 
+            throw new BusinessRuleException($"La calidad seleccionada ya no existe o fue eliminada.", 
                 "CALIDAD_NOT_FOUND");
         
         if (calidad.Activo == false)
-            throw new BusinessRuleException($"Cannot create/activate Producto because Calidad '{calidad.Nombre}' is inactive.", 
+            throw new BusinessRuleException($"No se puede crear/activar el Producto porque la Calidad '{calidad.Nombre}' está inactiva.", 
                 "CALIDAD_INACTIVE");
 
         // Validar TipoProduccion
         var tipoProduccion = await _tipoProduccionRepository.GetByIdAsync(tipoProduccionId);
         if (tipoProduccion == null)
-            throw new BusinessRuleException($"TipoProduccion with ID {tipoProduccionId} not found.", 
+            throw new BusinessRuleException($"El tipo de producción seleccionado ya no existe o fue eliminado.", 
                 "TIPO_PRODUCCION_NOT_FOUND");
         
         if (tipoProduccion.Activo == false)
-            throw new BusinessRuleException($"Cannot create/activate Producto because TipoProduccion '{tipoProduccion.Nombre}' is inactive.", 
+            throw new BusinessRuleException($"No se puede crear/activar el Producto porque el Tipo de Producción '{tipoProduccion.Nombre}' está inactivo.", 
                 "TIPO_PRODUCCION_INACTIVE");
     }
 }

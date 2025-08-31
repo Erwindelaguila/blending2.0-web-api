@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.AppParam.Commands;
 using Function.Blending.Core.Application.AppParam.DTOs;
 using Function.Blending.Core.Application.Common.Exceptions;
+using Function.Blending.Core.Domain.Entities;
 using MediatR;
 
 namespace Function.Blending.Core.Application.AppParam.Handlers;
@@ -27,7 +28,6 @@ public class UpdateAppParamCommandHandler : IRequestHandler<UpdateAppParamComman
     public async Task<object> Handle(UpdateAppParamCommand request, CancellationToken cancellationToken)
     {
         // Obtener usuario actual usando servicios reutilizados de Auth
-        // Obtener user ID desde headers (via AuthorizationService)
         var currentUserIdString = _authorizationService.GetCurrentUserId();
         if (!Guid.TryParse(currentUserIdString, out var currentUserId))
         {
@@ -66,20 +66,20 @@ public class UpdateAppParamCommandHandler : IRequestHandler<UpdateAppParamComman
             // Si cambia el código: ELIMINAR el viejo y CREAR uno nuevo
             await _appParamRepository.DeleteAsync(request.Key);
             
-            var newAppParam = new Domain.Entities.AppParamEntity
+            var newAppParam = new AppParamEntity
             {
                 Key = finalKey,
                 Value = request.Value,
-                Description = request.Description,
+                Description = request.Description ?? existingAppParam.Description,
                 Category = request.Category ?? existingAppParam.Category,
                 Group = request.Group ?? existingAppParam.Group,
                 IsActive = request.IsActive ?? existingAppParam.IsActive,
-                IsInternal = existingAppParam.IsInternal, // Mantener valor original
-                IsVisible = existingAppParam.IsVisible,   // Mantener valor original
-                IsDisableable = existingAppParam.IsDisableable, // Mantener valor original
-                IsRemovable = existingAppParam.IsRemovable,     // Mantener valor original
-                CreadoPorId = existingAppParam.CreadoPorId,     // Mantener creador original
-                CreadoEl = existingAppParam.CreadoEl,           // Mantener fecha creación original
+                IsInternal = existingAppParam.IsInternal,
+                IsVisible = existingAppParam.IsVisible,
+                IsDisableable = existingAppParam.IsDisableable,
+                IsRemovable = existingAppParam.IsRemovable,
+                CreadoPorId = existingAppParam.CreadoPorId,
+                CreadoEl = existingAppParam.CreadoEl,
                 ModificadoPorId = currentUserId,
                 ModificadoEl = DateTime.UtcNow
             };
@@ -119,8 +119,8 @@ public class UpdateAppParamCommandHandler : IRequestHandler<UpdateAppParamComman
 
             // Actualizar campos permitidos
             existingAppParam.Value = request.Value;
-            existingAppParam.Description = request.Description;
-            
+            if (request.Description != null)
+                existingAppParam.Description = request.Description;
             if (request.Category != null)
                 existingAppParam.Category = request.Category;
             if (request.Group != null)

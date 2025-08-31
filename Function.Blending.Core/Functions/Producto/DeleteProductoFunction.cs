@@ -1,54 +1,68 @@
+using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Producto.Commands;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 
-using System.Web;
-
 namespace Function.Blending.Core.Functions.Producto;
 
+/// <summary>
+/// Función para eliminar productos
+/// Implementa auditoría automática y validaciones de negocio
+/// </summary>
 public class DeleteProductoFunction
 {
     private readonly IMediator _mediator;
 
     public DeleteProductoFunction(IMediator mediator)
     {
-        _mediator = mediator;
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     }
 
     [Function(FunctionNames.Producto.Delete)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Production.ProductoBase)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Production.ProductoBase + "/{id}")] HttpRequestData req,
+        string id)
     {
         try
         {
-            var query = HttpUtility.ParseQueryString(req.Url.Query);
-            var idString = query["id"];
-            if (string.IsNullOrEmpty(idString) || !Guid.TryParse(idString, out var productoId))
+            if (!Guid.TryParse(id, out var productoId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "ID de producto inválido o no proporcionado",
-                    null,
+                    "ID inválido",
+                    "El ID debe ser un GUID válido",
                     400
                 ));
             }
 
-            var eliminadoPorIdString = query["eliminadoPorId"];
-            if (string.IsNullOrEmpty(eliminadoPorIdString) || !Guid.TryParse(eliminadoPorIdString, out var eliminadoPorId))
+            var command = new DeleteProductoCommand(productoId, req);
+
+            var result = await _mediator.Send(command);
+
+            if (!result)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "ID de usuario eliminador inválido o no proporcionado",
-                    null,
-                    400
+                    "Producto no encontrado",
+                    "Recurso no encontrado",
+                    404
                 ));
             }
 
-            var result = await _mediator.Send(new DeleteProductoCommand(productoId, eliminadoPorId));
-            
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, result);
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, 
+                BaseResponse<bool>.Success(result, "Producto eliminado exitosamente"));
+        }
+        catch (EntityInUseException ex)
+        {
+            var error = new { Message = ex.Message };
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                error,
+                "No se puede eliminar",
+                400
+            ));
         }
         catch (Exception ex)
         {
@@ -63,6 +77,10 @@ public class DeleteProductoFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }
