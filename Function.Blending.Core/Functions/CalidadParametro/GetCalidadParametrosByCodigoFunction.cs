@@ -2,6 +2,7 @@ using Function.Blending.Core.Application.CalidadParametro.Queries;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -60,6 +61,10 @@ public class GetCalidadParametrosByCodigoFunction
                     "Error interno del servidor", 
                     "Ocurrió un error al procesar la solicitud",
                     500));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

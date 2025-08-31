@@ -1,5 +1,6 @@
 using Function.Blending.Core.Application.CalidadParametro.Commands;
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Interfaces.Services;
 using MediatR;
 
 namespace Function.Blending.Core.Application.CalidadParametro.Handlers;
@@ -9,15 +10,18 @@ public class UpsertCalidadParametroCommandHandler : IRequestHandler<UpsertCalida
     private readonly ICalidadParametroRepository _calidadParametroRepository;
     private readonly ICalidadRepository _calidadRepository;
     private readonly IParametroRepository _parametroRepository;
+    private readonly IAuthorizationService _authorizationService;
 
     public UpsertCalidadParametroCommandHandler(
         ICalidadParametroRepository calidadParametroRepository,
         ICalidadRepository calidadRepository,
-        IParametroRepository parametroRepository)
+        IParametroRepository parametroRepository,
+        IAuthorizationService authorizationService)
     {
         _calidadParametroRepository = calidadParametroRepository;
         _calidadRepository = calidadRepository;
         _parametroRepository = parametroRepository;
+        _authorizationService = authorizationService;
     }
 
     public async Task<bool> Handle(UpsertCalidadParametroCommand request, CancellationToken cancellationToken)
@@ -36,12 +40,16 @@ public class UpsertCalidadParametroCommandHandler : IRequestHandler<UpsertCalida
             throw new ArgumentException("El parámetro especificado no existe o no está activo.", nameof(request.ParametroId));
         }
 
+        // Obtener el ID del usuario actual para la auditoría
+        var currentUserIdString = _authorizationService.GetCurrentUserId();
+        var currentUserId = Guid.Parse(currentUserIdString);
+
         // Realizar el upsert
         await _calidadParametroRepository.UpsertAsync(
             request.CalidadId,
             request.ParametroId,
             request.Valor,
-            request.ModificadoPorId);
+            currentUserId);
 
         return true;
     }

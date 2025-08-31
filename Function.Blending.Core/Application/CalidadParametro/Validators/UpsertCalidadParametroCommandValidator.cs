@@ -18,9 +18,5 @@ public class UpsertCalidadParametroCommandValidator : AbstractValidator<UpsertCa
         RuleFor(x => x.Valor)
             .GreaterThanOrEqualTo(0)
             .WithMessage("El valor debe ser mayor o igual a 0.");
-
-        RuleFor(x => x.ModificadoPorId)
-            .NotEmpty()
-            .WithMessage("El ID del usuario modificador es requerido.");
     }
 }

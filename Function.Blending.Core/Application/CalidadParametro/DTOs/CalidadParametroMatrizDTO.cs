@@ -39,7 +39,6 @@ public class UpsertCalidadParametroDTO
 public class UpsertCalidadParametroBatchDTO
 {
     public List<CalidadParametroCambioDTO> Cambios { get; set; } = new();
-    public Guid ModificadoPorId { get; set; }
 }
 
 public class CalidadParametroCambioDTO

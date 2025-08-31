@@ -1,11 +1,18 @@
-using MediatR;
+using Function.Blending.Core.Application.Common.Commands;
+using Microsoft.Azure.Functions.Worker.Http;
 
 namespace Function.Blending.Core.Application.CalidadParametro.Commands;
 
-public class UpsertCalidadParametroBatchCommand : IRequest<int>
+public class UpsertCalidadParametroBatchCommand : BaseCommand<int>
 {
     public List<CalidadParametroCambio> Cambios { get; set; } = new();
-    public Guid ModificadoPorId { get; set; }
+
+    public UpsertCalidadParametroBatchCommand(
+        List<CalidadParametroCambio> cambios,
+        HttpRequestData requestContext) : base(requestContext)
+    {
+        Cambios = cambios ?? new List<CalidadParametroCambio>();
+    }
 }
 
 public class CalidadParametroCambio
