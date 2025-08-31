@@ -9,6 +9,7 @@ using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace Function.Blending.Core.Functions.Producto;
 
@@ -78,7 +79,7 @@ public class CreateProductoFunction
                 400
             ));
         }
-        catch (ArgumentException ex) when (ex.ParamName == "codigo")
+        catch (DbUpdateException ex) when (ex.InnerException?.Message?.Contains("Cannot insert duplicate key") == true && ex.InnerException.Message.Contains("UQ_Producto_Codigo_Activo"))
         {
             var error = new { Field = "codigo", Error = "Ya existe un producto activo con este código" };
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
