@@ -8,19 +8,22 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Parametro.Handlers;
 
-public class GetAllParametrosWithPaginationQueryHandler : IRequestHandler<GetAllParametrosWithPaginationQuery, PagedResponse<ParametroDTO>>
+public class GetAllParametrosQueryHandler : IRequestHandler<GetAllParametrosQuery, PagedResponse<ParametroDTO>>
 {
     private readonly IParametroRepository _parametroRepository;
 
-    public GetAllParametrosWithPaginationQueryHandler(IParametroRepository parametroRepository)
+    public GetAllParametrosQueryHandler(IParametroRepository parametroRepository)
     {
         _parametroRepository = parametroRepository;
     }
 
-    public async Task<PagedResponse<ParametroDTO>> Handle(GetAllParametrosWithPaginationQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResponse<ParametroDTO>> Handle(GetAllParametrosQuery request, CancellationToken cancellationToken)
     {
         try
         {
+            // Verificar cancelación temprano
+            cancellationToken.ThrowIfCancellationRequested();
+
             var parametrosQuery = _parametroRepository.GetQueryable();
 
             if (request.Filters != null)
@@ -44,7 +47,6 @@ public class GetAllParametrosWithPaginationQueryHandler : IRequestHandler<GetAll
                 }
             }
 
-            // Orden: por estado si viene, si no por CreadoEl
             parametrosQuery = request.Filters?.Estado switch
             {
                 "1" => parametrosQuery.OrderByDescending(x => x.Activo).ThenBy(x => x.CreadoEl),

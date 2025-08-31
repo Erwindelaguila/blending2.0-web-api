@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Parametro.DTOs;
 using Function.Blending.Core.Application.Parametro.Queries;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -37,7 +38,8 @@ public class GetParametroByIdFunction
                 ));
             }
 
-            var result = await _mediator.Send(new GetParametroByIdQuery(parametroId));
+            var queryRequest = new GetParametroByIdQuery(parametroId, req);
+            var result = await _mediator.Send(queryRequest);
             
             if (result == null)
             {
@@ -64,6 +66,10 @@ public class GetParametroByIdFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

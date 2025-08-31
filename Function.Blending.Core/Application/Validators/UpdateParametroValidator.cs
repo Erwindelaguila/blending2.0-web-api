@@ -20,8 +20,5 @@ public class UpdateParametroValidator : AbstractValidator<UpdateParametroCommand
 
         RuleFor(x => x.Descripcion)
             .MaximumLength(150).WithMessage("La descripción no puede tener más de 150 caracteres");
-
-        RuleFor(x => x.ModificadoPorId)
-            .NotEmpty().WithMessage("El Id del modificador es requerido");
     }
 }

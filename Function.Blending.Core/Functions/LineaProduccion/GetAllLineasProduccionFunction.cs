@@ -39,7 +39,7 @@ public class GetAllLineasProduccionFunction
             if (query["activo"] == "true")
             {
                 _logger.LogInformation("Returning active lineas produccion for combo");
-                var activasResult = await _mediator.Send(new GetAllLineasProduccionActivasQuery(), cts.Token);
+                var activasResult = await _mediator.Send(new GetAllLineasProduccionActivasQuery(req), cts.Token);
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(activasResult, "Líneas de producción activas obtenidas correctamente"));
             }
             

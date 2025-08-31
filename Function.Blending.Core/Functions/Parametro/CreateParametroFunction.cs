@@ -3,8 +3,10 @@ using FluentValidation;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Parametro.Commands;
 using Function.Blending.Core.Application.Parametro.DTOs;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -42,13 +44,21 @@ public class CreateParametroFunction
                     BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false o null).", "Error de validación", 400));
             }
             
-            var command = JsonSerializer.Deserialize<CreateParametroCommand>(body, HttpResponseHelper.GetJsonDeserializerOptions());
+            var dto = JsonSerializer.Deserialize<CreateParametroRequestDTO>(body, HttpResponseHelper.GetJsonDeserializerOptions());
 
-            if (command == null)
+            if (dto == null)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail("Error al deserializar el comando.", "Error de validación", 400));
             }
+
+            var command = new CreateParametroCommand(
+                dto.Codigo,
+                dto.Nombre, 
+                dto.Descripcion,
+                dto.Activo,
+                req
+            );
         
             var result = await _mediator.Send(command);
             
@@ -86,6 +96,10 @@ public class CreateParametroFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

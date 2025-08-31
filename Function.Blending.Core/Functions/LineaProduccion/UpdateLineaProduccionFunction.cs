@@ -36,8 +36,13 @@ public class UpdateLineaProduccionFunction
                     BaseResponse<object>.Fail("El cuerpo de la solicitud está vacío.", "Error de validación", 400));
             }
 
-            var jsonDocument = JsonDocument.Parse(body);
-            var root = jsonDocument.RootElement;
+            var (isValid, errorField) = JsonValidationHelper.ValidateBooleanProperties(body, "activo");
+
+            if (!isValid)
+            {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req,
+                    BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false o null).", "Error de validación", 400));
+            }
 
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             if (!Guid.TryParse(query["id"], out var lineaProduccionId))
@@ -49,31 +54,21 @@ public class UpdateLineaProduccionFunction
                 ));
             }
 
-            if (!root.TryGetProperty("codigo", out var codigoElement) || string.IsNullOrWhiteSpace(codigoElement.GetString()))
-            {
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "Código es requerido",
-                    "El código es requerido",
-                    400
-                ));
-            }
+            var dto = JsonSerializer.Deserialize<UpdateLineaProduccionRequestDTO>(body, HttpResponseHelper.GetJsonDeserializerOptions());
 
-            if (!root.TryGetProperty("nombre", out var nombreElement) || string.IsNullOrWhiteSpace(nombreElement.GetString()))
+            if (dto == null)
             {
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "Nombre es requerido", 
-                    "El nombre es requerido",
-                    400
-                ));
+                return await HttpResponseHelper.WriteBaseResponseAsync(req,
+                    BaseResponse<object>.Fail("Error al deserializar el comando.", "Error de validación", 400));
             }
 
             var command = new UpdateLineaProduccionCommand(
-                id: lineaProduccionId,
-                codigo: codigoElement.GetString()!,
-                nombre: nombreElement.GetString()!,
-                descripcion: root.TryGetProperty("descripcion", out var descElement) ? descElement.GetString() : null,
-                activo: root.TryGetProperty("activo", out var activoElement) ? activoElement.GetBoolean() : null,
-                requestContext: req
+                lineaProduccionId,
+                dto.Codigo,
+                dto.Nombre,
+                dto.Descripcion,
+                dto.Activo,
+                req
             );
 
             var result = await _mediator.Send(command);

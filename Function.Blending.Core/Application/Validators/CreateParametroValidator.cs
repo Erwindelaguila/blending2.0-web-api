@@ -17,8 +17,5 @@ public class CreateParametroValidator : AbstractValidator<CreateParametroCommand
 
         RuleFor(x => x.Descripcion)
             .MaximumLength(150).WithMessage("La descripción no puede tener más de 150 caracteres");
-
-        RuleFor(x => x.CreadoPorId)
-            .NotEmpty().WithMessage("El ID del usuario creador es requerido");
     }
 }

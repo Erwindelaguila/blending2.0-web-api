@@ -1,6 +1,7 @@
 using Function.Blending.Core.Application.LineaProduccion.DTOs;
 using Function.Blending.Core.Application.Common.Commands;
 using Microsoft.Azure.Functions.Worker.Http;
+using System.Text.Json.Serialization;
 
 namespace Function.Blending.Core.Application.LineaProduccion.Commands;
 
@@ -11,6 +12,7 @@ public class CreateLineaProduccionCommand : BaseCommand<LineaProduccionDTO>
     public string? Descripcion { get; }
     public bool? Activo { get; }
 
+    [JsonConstructor]
     public CreateLineaProduccionCommand(
         string codigo,
         string nombre,

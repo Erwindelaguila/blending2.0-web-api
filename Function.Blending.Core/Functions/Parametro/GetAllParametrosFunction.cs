@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Parametro.DTOs;
 using Function.Blending.Core.Application.Parametro.Queries;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -50,7 +51,8 @@ public class GetAllParametrosFunction
             // Solo enviar filtros si al menos uno está activo
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var result = await _mediator.Send(new GetAllParametrosWithPaginationQuery(page, size, filtersToApply));
+            var queryRequest = new GetAllParametrosQuery(page, size, filtersToApply, req);
+            var result = await _mediator.Send(queryRequest);
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<ParametroDTO>>.Success(result, "Parámetros obtenidos correctamente"));
         }
@@ -79,6 +81,10 @@ public class GetAllParametrosFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

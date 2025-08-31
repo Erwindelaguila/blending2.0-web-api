@@ -1,11 +1,12 @@
+using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Parametro.Commands;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using System.Web;
 
 namespace Function.Blending.Core.Functions.Parametro;
 
@@ -20,34 +21,23 @@ public class DeleteParametroFunction
 
     [Function(FunctionNames.Parametro.Delete)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Parametro.Base)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Parametro.Base + "/{id}")] HttpRequestData req,
+        string id)
     {
         try
         {
-            var query = HttpUtility.ParseQueryString(req.Url.Query);
-            var idString = query["id"];
-            
-            if (string.IsNullOrEmpty(idString) || !Guid.TryParse(idString, out var parametroId))
+            if (!Guid.TryParse(id, out var parametroId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "ID de parametro inválido o no proporcionado",
-                    null,
+                    "ID inválido",
+                    "El ID debe ser un GUID válido",
                     400
                 ));
             }
 
-            var eliminadoPorIdString = query["eliminadoPorId"];
-            if (string.IsNullOrEmpty(eliminadoPorIdString) || !Guid.TryParse(eliminadoPorIdString, out var eliminadoPorId))
-            {
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "ID de usuario eliminador inválido o no proporcionado",
-                    null,
-                    400
-                ));
-            }
+            var command = new DeleteParametroCommand(parametroId, req);
+            var result = await _mediator.Send(command);
 
-            var result = await _mediator.Send(new DeleteParametroCommand(parametroId, eliminadoPorId));
-            
             if (!result)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
@@ -59,6 +49,14 @@ public class DeleteParametroFunction
 
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<bool>.Success(result, "Parametro eliminado exitosamente"));
         }
+        catch (EntityInUseException ex)
+        {
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                new { Error = ex.Message, Code = ex.ErrorCode },
+                "Conflicto de regla de negocio",
+                409
+            ));
+        }
         catch (Exception ex)
         {
             var errorMessage = new
@@ -67,12 +65,16 @@ public class DeleteParametroFunction
                 Exception = ex.Message,
                 InnerException = ex.InnerException?.Message,
             };
-            
+
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 errorMessage,
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }
