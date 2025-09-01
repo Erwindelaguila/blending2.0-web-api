@@ -1,10 +1,13 @@
-using MediatR;
+using Function.Blending.Core.Application.Common.Commands;
+using Function.Blending.Core.Application.AppParam.DTOs;
 
 namespace Function.Blending.Core.Application.AppParam.Commands;
 
-public class UpdateAppParamCommand : IRequest<object>
+
+public class UpdateAppParamCommand : BaseCommand<object>
 {
-    public string Key { get; }
+    public string Key { get; } 
+    public string? NewKey { get; } 
     public string Value { get; }
     public string? Description { get; }
     public string? Category { get; }
@@ -14,10 +17,10 @@ public class UpdateAppParamCommand : IRequest<object>
     public bool? IsVisible { get; }
     public bool? IsDisableable { get; }
     public bool? IsRemovable { get; }
-    public Guid ModificadoPorId { get; }
 
     public UpdateAppParamCommand(
         string key,
+        string? newKey,
         string value,
         string? description,
         string? category,
@@ -27,9 +30,10 @@ public class UpdateAppParamCommand : IRequest<object>
         bool? isVisible,
         bool? isDisableable,
         bool? isRemovable,
-        Guid modificadoPorId)
+        object requestContext) : base(requestContext)
     {
         Key = key;
+        NewKey = newKey;
         Value = value;
         Description = description;
         Category = category;
@@ -39,6 +43,5 @@ public class UpdateAppParamCommand : IRequest<object>
         IsVisible = isVisible;
         IsDisableable = isDisableable;
         IsRemovable = isRemovable;
-        ModificadoPorId = modificadoPorId;
     }
 }

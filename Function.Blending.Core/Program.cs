@@ -1,10 +1,15 @@
 using FluentValidation;
 using Function.Blending.Core.Application.Common.Behaviors;
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Infrastructure.Services;
 using Function.Blending.Core.Infrastructure.Mappings;
 using Function.Blending.Core.Infrastructure.Persistence;
 using Function.Blending.Core.Infrastructure.Persistence.Mappings;
 using Function.Blending.Core.Infrastructure.Persistence.Repositories;
+// ❌ YA NO NECESARIOS - Function.Auth ya no proporciona servicios de JWT
+// using Function.Blending.Auth.Application.Interfaces.Services;
+// using Function.Blending.Auth.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +23,6 @@ var host = new HostBuilder()
     {
         logging.ClearProviders();
         logging.AddConsole();
-
 
         logging.AddFilter((category, level) =>
         {
@@ -61,6 +65,22 @@ var host = new HostBuilder()
         services.AddScoped<ICalidadParametroRepository, CalidadParametroRepository>();
         services.AddScoped<IAppParamRepository, AppParamRepository>();
         
+        // === Servicios de Autenticación (Reutilizando de Function.Blending.Auth) ===
+        // Servicios compartidos - siguiendo principio DRY
+        // ===== SERVICIOS SIMPLIFICADOS PARA APIM =====
+        // Ya no necesitamos validación JWT - APIM/Gateway lo maneja
+        // services.AddScoped<IAuthorizationHeaderExtractor, AuthorizationHeaderExtractor>(); // ❌ ELIMINADO
+        // services.AddScoped<ITokenClaimExtractor, TokenClaimExtractor>(); // ❌ ELIMINADO
+        // services.AddScoped<ITokenClaimValidator, TokenClaimValidator>(); // ❌ ELIMINADO
+        // services.AddScoped<ITokenConfigurationService, TokenConfigurationService>(); // ❌ ELIMINADO
+        // services.AddScoped<ITokenSignatureValidator, TokenSignatureValidator>(); // ❌ ELIMINADO
+        
+        // ✅ SERVICIO DE USUARIO ACTUAL SIMPLIFICADO
+        // Servicios de autorización y auditoría
+        services.AddHttpContextAccessor(); // ← AGREGAMOS ESTO
+        services.AddScoped<IAuthorizationService, AuthorizationService>();
+        services.AddScoped<IAuditService, AuditService>();
+        
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
         services.AddMediatR(cfg=>  cfg.RegisterServicesFromAssemblyContaining<Program>());
@@ -68,11 +88,13 @@ var host = new HostBuilder()
         // Registrar validadores
         services.AddValidatorsFromAssemblyContaining<Program>();
         
-        // Registrar pipeline de validación
+        // Registrar pipeline behaviors - Clean Architecture
+        // Orden importante: Validación → Autorización → Auditoría
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuditBehavior<,>));
         
     })
-
     .Build();
 
 host.Run();

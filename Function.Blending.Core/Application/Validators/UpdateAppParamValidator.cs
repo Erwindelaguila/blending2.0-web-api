@@ -24,7 +24,6 @@ public class UpdateAppParamValidator : AbstractValidator<UpdateAppParamCommand>
         RuleFor(x => x.Group)
             .MaximumLength(50).WithMessage("El grupo no puede exceder 50 caracteres");
 
-        RuleFor(x => x.ModificadoPorId)
-            .NotEmpty().WithMessage("El ID del usuario modificador es requerido");
+        // ModificadoPorId se obtiene automáticamente del JWT - no se valida
     }
 }

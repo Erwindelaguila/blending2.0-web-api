@@ -20,47 +20,38 @@ public class GetAllAppParamsQueryHandler : IRequestHandler<GetAllAppParamsQuery,
     {
         var queryable = _appParamRepository.GetQueryable();
 
-        // Aplicar filtros
-        if (!string.IsNullOrWhiteSpace(request.Key))
-        {
-            queryable = queryable.Where(ap => ap.Key.Contains(request.Key));
-        }
+        
+        queryable = queryable.Where(ap => ap.IsVisible);
 
-        if (request.IsActive.HasValue)
+   
+        if (request.Filters != null)
         {
-            queryable = queryable.Where(ap => ap.IsActive == request.IsActive.Value);
-        }
-
-        if (request.Fecha.HasValue)
-        {
-            var fechaInicio = request.Fecha.Value.Date;
-            var fechaFin = fechaInicio.AddDays(1);
-            queryable = queryable.Where(ap => ap.CreadoEl >= fechaInicio && ap.CreadoEl < fechaFin);
-        }
-
-        if (request.GlobalConfig)
-        {
-            var appParamsShort = queryable.Select(appParams => new AppParamSortDTO()
+            if (!string.IsNullOrWhiteSpace(request.Filters.Key))
             {
-                Key = appParams.Key,
-                Value = appParams.Value
+                queryable = queryable.Where(ap => ap.Key.Contains(request.Filters.Key));
+            }
 
-            });
-
-            var listShortAppParams = appParamsShort.ToList();
-
-            return new AppParamResponseDTO
+            if (request.Filters.IsActive.HasValue)
             {
-                AppParamShortList= listShortAppParams,
-            };
+                queryable = queryable.Where(ap => ap.IsActive == request.Filters.IsActive.Value);
+            }
+
+  
+            var fechaFiltro = request.Filters.FechaDesde;
+            if (fechaFiltro.HasValue)
+            {
+                var fechaInicio = fechaFiltro.Value.Date;
+                var fechaFin = fechaInicio.AddDays(1);
+                queryable = queryable.Where(ap => ap.CreadoEl >= fechaInicio && ap.CreadoEl < fechaFin);
+            }
         }
 
-        // Contar total antes del paginado
+      
         var total = await queryable.CountAsync(cancellationToken);
 
-        // Aplicar paginado y ordenar
+     
         var items = await queryable
-            .OrderBy(ap => ap.Key)
+            .OrderBy(ap => ap.CreadoEl)
             .Skip((request.Page - 1) * request.Size)
             .Take(request.Size)
             .Select(ap => new AppParamDTO

@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Application.Calidad.Queries;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -37,8 +38,8 @@ public class GetAllCalidadFunction
             if (query["activo"] == "true")
             {
                 _logger.LogInformation("Returning active calidades for combo");
-                var activasResult = await _mediator.Send(new GetAllCalidadesActivasQuery());
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(activasResult, "Calidades activas obtenidas correctamente"));
+                var activasResult = await _mediator.Send(new GetAllCalidadesActivasQuery(req));
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<List<CalidadActivaDTO>>.Success(activasResult, "Calidades activas obtenidas correctamente"));
             }
             
             // Obtener parámetros de paginación con valores por defecto
@@ -58,7 +59,7 @@ public class GetAllCalidadFunction
             // Solo enviar filtros si al menos uno está activo
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var result = await _mediator.Send(new GetAllCalidadesQuery(page, size, filtersToApply));
+            var result = await _mediator.Send(new GetAllCalidadesQuery(page, size, filtersToApply, req));
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<CalidadDTO>>.Success(result, "Calidades obtenidas correctamente"));
         }
@@ -87,6 +88,10 @@ public class GetAllCalidadFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

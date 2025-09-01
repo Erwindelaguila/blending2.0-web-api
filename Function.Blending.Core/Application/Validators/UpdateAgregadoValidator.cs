@@ -17,10 +17,6 @@ public class UpdateAgregadoValidator : AbstractValidator<UpdateAgregadoCommand>
             .MaximumLength(50).WithMessage("El nombre no puede tener más de 50 caracteres");
         RuleFor(x => x.Descripcion)
             .MaximumLength(150).WithMessage("La descripción no puede tener más de 150 caracteres");
-        When(x => x.ModificadoPorId.HasValue, () =>
-        {
-            RuleFor(x => x.ModificadoPorId)
-                .NotEmpty().WithMessage("El Id del modificador no puede ser vacío");
-        });
+        // ModificadoPorId ya no se valida aquí porque se extrae del JWT
     }
 }

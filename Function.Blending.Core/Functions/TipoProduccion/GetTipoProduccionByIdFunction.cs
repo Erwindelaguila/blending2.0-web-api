@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.TipoProduccion.DTOs;
 using Function.Blending.Core.Application.TipoProduccion.Queries;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -10,13 +11,17 @@ using System.Web;
 
 namespace Function.Blending.Core.Functions.TipoProduccion;
 
+/// <summary>
+/// Función para obtener tipo de producción por ID
+/// Implementa patrón clean code con manejo de errores estandarizado
+/// </summary>
 public class GetTipoProduccionByIdFunction
 {
     private readonly IMediator _mediator;
 
     public GetTipoProduccionByIdFunction(IMediator mediator)
     {
-        _mediator = mediator;
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     }
 
     [Function(FunctionNames.TipoProduccion.GetById)]
@@ -27,6 +32,7 @@ public class GetTipoProduccionByIdFunction
         {
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             var idString = query["id"];
+            
             if (string.IsNullOrEmpty(idString) || !Guid.TryParse(idString, out var tipoProduccionId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
@@ -47,7 +53,8 @@ public class GetTipoProduccionByIdFunction
                 ));
             }
 
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<TipoProduccionDTO>.Success(result, "Tipo de producción obtenido correctamente"));
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, 
+                BaseResponse<TipoProduccionDTO>.Success(result, "Tipo de producción obtenido correctamente"));
         }
         catch (Exception ex)
         {
@@ -62,6 +69,10 @@ public class GetTipoProduccionByIdFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

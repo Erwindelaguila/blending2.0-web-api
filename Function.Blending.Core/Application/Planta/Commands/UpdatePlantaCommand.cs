@@ -1,9 +1,11 @@
 using Function.Blending.Core.Application.Planta.DTOs;
-using MediatR;
+using Function.Blending.Core.Application.Common.Commands;
+using Microsoft.Azure.Functions.Worker.Http;
+using System.Text.Json.Serialization;
 
 namespace Function.Blending.Core.Application.Planta.Commands;
 
-public class UpdatePlantaCommand : IRequest<object>
+public class UpdatePlantaCommand : BaseCommand<PlantaDTO>
 {
     public Guid Id { get; }
     public string Codigo { get; }
@@ -11,16 +13,16 @@ public class UpdatePlantaCommand : IRequest<object>
     public string? Descripcion { get; }
     public int NumeroRuma { get; }
     public bool? Activo { get; }
-    public Guid ModificadoPorId { get; }
 
+    [JsonConstructor]
     public UpdatePlantaCommand(
         Guid id,
         string codigo,
         string nombre,
-        string? descripcion,
-        int numeroRuma,
-        bool? activo,
-        Guid modificadoPorId)
+        string? descripcion = null,
+        int numeroRuma = 0,
+        bool? activo = null,
+        HttpRequestData? requestContext = null) : base(requestContext!)
     {
         Id = id;
         Codigo = codigo;
@@ -28,6 +30,5 @@ public class UpdatePlantaCommand : IRequest<object>
         Descripcion = descripcion;
         NumeroRuma = numeroRuma;
         Activo = activo;
-        ModificadoPorId = modificadoPorId;
     }
 }

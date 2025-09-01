@@ -20,8 +20,5 @@ public class CreatePlantaValidator : AbstractValidator<CreatePlantaCommand>
 
         RuleFor(x => x.NumeroRuma)
             .GreaterThan(0).WithMessage("El número de ruma debe ser mayor a 0");
-
-        RuleFor(x => x.CreadoPorId)
-            .NotEmpty().WithMessage("El ID del usuario creador es requerido");
     }
 }

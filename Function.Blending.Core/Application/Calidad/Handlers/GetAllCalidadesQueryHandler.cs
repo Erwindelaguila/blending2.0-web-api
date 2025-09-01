@@ -33,7 +33,6 @@ public class GetAllCalidadesQueryHandler : IRequestHandler<GetAllCalidadesQuery,
                     request.Filters.Estado,
                     x => x.Activo);
 
-                // Filtro por día exacto: CreadoEl o ModificadoEl dentro del día [FechaDesde, FechaDesde + 1)
                 if (request.Filters.FechaDesde.HasValue)
                 {
                     var start = request.Filters.FechaDesde.Value.Date;
@@ -45,7 +44,6 @@ public class GetAllCalidadesQueryHandler : IRequestHandler<GetAllCalidadesQuery,
                 }
             }
 
-            // Orden: por estado si viene, si no por CreadoEl
             calidadesQuery = request.Filters?.Estado switch
             {
                 "1" => calidadesQuery.OrderByDescending(x => x.Activo).ThenBy(x => x.CreadoEl),
@@ -53,7 +51,6 @@ public class GetAllCalidadesQueryHandler : IRequestHandler<GetAllCalidadesQuery,
                 _ => calidadesQuery.OrderBy(x => x.CreadoEl)
             };
 
-            // Proyectar a DTO (hacer antes de paginación para optimizar)
             var calidadesProjected = calidadesQuery.Select(calidad => new CalidadDTO
             {
                 Id = calidad.Id,
@@ -74,10 +71,8 @@ public class GetAllCalidadesQueryHandler : IRequestHandler<GetAllCalidadesQuery,
         }
         catch (ArgumentException)
         {
-            // Re-lanzar ArgumentException para que sea manejada por la función HTTP como 400
             throw;
         }
     }
 
-    // Orden helper eliminado; la lógica se inlinea arriba para simplicidad
 }

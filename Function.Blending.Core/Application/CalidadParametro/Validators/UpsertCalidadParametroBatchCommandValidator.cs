@@ -7,10 +7,6 @@ public class UpsertCalidadParametroBatchCommandValidator : AbstractValidator<Ups
 {
     public UpsertCalidadParametroBatchCommandValidator()
     {
-        RuleFor(x => x.ModificadoPorId)
-            .NotEmpty()
-            .WithMessage("El ID del usuario modificador es requerido.");
-
         RuleFor(x => x.Cambios)
             .NotEmpty()
             .WithMessage("Debe especificar al menos un cambio.");

@@ -1,23 +1,29 @@
-﻿using Function.Blending.Core.Application.Calidad.Commands;
+﻿using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Application.Calidad.Commands;
 using Function.Blending.Core.Application.Calidad.DTOs;
-using Function.Blending.Core.Application.Interfaces.Repositories;
 using Function.Blending.Core.Domain.Entities;
 using MediatR;
 
 namespace Function.Blending.Core.Application.Calidad.Handlers;
 
-public class CreateCalidadCommandHandler : IRequestHandler<CreateCalidadCommand, object>
+public class CreateCalidadCommandHandler : IRequestHandler<CreateCalidadCommand, CalidadDTO>
 {
     private readonly ICalidadRepository _calidadRepository;
+    private readonly IAuthorizationService _authorizationService;
 
-    public CreateCalidadCommandHandler(ICalidadRepository calidadRepository)
+    public CreateCalidadCommandHandler(ICalidadRepository calidadRepository, IAuthorizationService authorizationService)
     {
         _calidadRepository = calidadRepository;
+        _authorizationService = authorizationService;
     }
 
-    public async Task<object> Handle(CreateCalidadCommand request, CancellationToken cancellationToken)
+    public async Task<CalidadDTO> Handle(CreateCalidadCommand request, CancellationToken cancellationToken)
     {
-        var calidad = new CalidadEntity()
+        var creadoPorIdString = _authorizationService.GetCurrentUserId();
+        var creadoPorId = Guid.Parse(creadoPorIdString);
+
+        var calidad = new CalidadEntity
         {
             Id = Guid.NewGuid(),
             Codigo = request.Codigo,
@@ -26,7 +32,7 @@ public class CreateCalidadCommandHandler : IRequestHandler<CreateCalidadCommand,
             Descripcion = request.Descripcion,
             NoConforme = request.NoConforme ?? false,
             Activo = request.Activo ?? true,
-            CreadoPorId = request.CreadoPorId,
+            CreadoPorId = creadoPorId,
             CreadoEl = DateTime.UtcNow,
             Eliminado = false
         };

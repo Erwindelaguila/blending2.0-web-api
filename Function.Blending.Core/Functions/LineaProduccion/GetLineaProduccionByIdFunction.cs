@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.LineaProduccion.DTOs;
 using Function.Blending.Core.Application.LineaProduccion.Queries;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -36,7 +37,8 @@ public class GetLineaProduccionByIdFunction
                 ));
             }
 
-            var result = await _mediator.Send(new GetLineaProduccionByIdQuery(lineaProduccionId));
+            var queryRequest = new GetLineaProduccionByIdQuery(lineaProduccionId, req);
+            var result = await _mediator.Send(queryRequest);
 
             if (result == null)
             {
@@ -62,6 +64,10 @@ public class GetLineaProduccionByIdFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

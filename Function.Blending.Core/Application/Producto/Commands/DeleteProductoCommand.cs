@@ -1,16 +1,14 @@
-using Function.Blending.Core.Application.Common.Wrappers;
-using MediatR;
+using Function.Blending.Core.Application.Common.Commands;
 
 namespace Function.Blending.Core.Application.Producto.Commands;
 
-public class DeleteProductoCommand : IRequest<BaseResponse<object>>
+
+public class DeleteProductoCommand : BaseCommand<bool>
 {
     public Guid Id { get; }
-    public Guid EliminadoPorId { get; }
 
-    public DeleteProductoCommand(Guid id, Guid eliminadoPorId)
+    public DeleteProductoCommand(Guid id, object requestContext) : base(requestContext)
     {
         Id = id;
-        EliminadoPorId = eliminadoPorId;
     }
 }

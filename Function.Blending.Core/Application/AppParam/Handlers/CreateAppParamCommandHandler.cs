@@ -1,22 +1,43 @@
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.AppParam.Commands;
 using Function.Blending.Core.Application.AppParam.DTOs;
+using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Domain.Entities;
 using MediatR;
 
 namespace Function.Blending.Core.Application.AppParam.Handlers;
 
-public class CreateAppParamCommandHandler : IRequestHandler<CreateAppParamCommand, object>
+
+public class CreateAppParamCommandHandler : IRequestHandler<CreateAppParamCommand, AppParamDTO>
 {
     private readonly IAppParamRepository _appParamRepository;
+    private readonly IAuthorizationService _authorizationService;
 
-    public CreateAppParamCommandHandler(IAppParamRepository appParamRepository)
+    public CreateAppParamCommandHandler(
+        IAppParamRepository appParamRepository,
+        IAuthorizationService authorizationService)
     {
-        _appParamRepository = appParamRepository;
+        _appParamRepository = appParamRepository ?? throw new ArgumentNullException(nameof(appParamRepository));
+        _authorizationService = authorizationService ?? throw new ArgumentNullException(nameof(authorizationService));
     }
 
-    public async Task<object> Handle(CreateAppParamCommand request, CancellationToken cancellationToken)
+    public async Task<AppParamDTO> Handle(CreateAppParamCommand request, CancellationToken cancellationToken)
     {
+     
+        var exists = await _appParamRepository.ExistsAsync(request.Key);
+        if (exists)
+        {
+            throw new DuplicateKeyException("parámetro", request.Key);
+        }
+
+     
+        var currentUserIdString = _authorizationService.GetCurrentUserId();
+        if (!Guid.TryParse(currentUserIdString, out var currentUserId))
+        {
+            throw new UnauthorizedAccessException("User ID inválido en headers");
+        }
+
         var appParam = new AppParamEntity
         {
             Key = request.Key,
@@ -24,12 +45,14 @@ public class CreateAppParamCommandHandler : IRequestHandler<CreateAppParamComman
             Description = request.Description,
             Category = request.Category,
             Group = request.Group,
-            IsActive = request.IsActive ?? true,
-            IsInternal = request.IsInternal ?? false,
-            IsVisible = request.IsVisible ?? true,
-            IsDisableable = request.IsDisableable ?? true,
-            IsRemovable = request.IsRemovable ?? true,
-            CreadoPorId = request.CreadoPorId,
+            // USUARIO CREA TODO PERMISIVO
+            IsActive = true,                    // Siempre activo
+            IsInternal = false,                 // Siempre false = puede modificar código  
+            IsVisible = true,                   // Siempre visible
+            IsDisableable = false,              // Siempre false = SÍ se puede desactivar (editable)
+            IsRemovable = true,                 // Siempre true = se puede eliminar
+            // CAMPOS DE AUDITORÍA AUTOMÁTICOS
+            CreadoPorId = currentUserId,        // Del token JWT
             CreadoEl = DateTime.UtcNow
         };
 

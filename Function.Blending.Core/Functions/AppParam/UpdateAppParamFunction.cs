@@ -1,10 +1,12 @@
 using System.Text.Json;
 using FluentValidation;
+using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.AppParam.Commands;
 using Function.Blending.Core.Application.AppParam.DTOs;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -22,72 +24,99 @@ public class UpdateAppParamFunction
 
     [Function(FunctionNames.AppParam.Update)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.AppParam.GetByKey + "/{key}")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.AppParam.GetById + "/{key}")] HttpRequestData req,
         string key)
     {
         try
         {
             var body = await req.ReadAsStringAsync();
-            
             if (string.IsNullOrEmpty(body))
             {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req,
+                    BaseResponse<object>.Fail("El cuerpo de la solicitud está vacío.", "Error de validación", 400));
+            }
+
+            var (isValid, errorField) = JsonValidationHelper.ValidateBooleanProperties(body, "isActive", "isInternal", "isVisible", "isDisableable", "isRemovable");
+
+            if (!isValid)
+            {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req,
+                    BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false).", "Error de validación", 400));
+            }
+
+            if (string.IsNullOrEmpty(key))
+            {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "Request body is empty",
-                    "Cuerpo de la solicitud vacío",
+                    "La clave del parámetro es requerida.",
+                    "Error de validación",
                     400
                 ));
             }
 
-            var jsonDocument = JsonDocument.Parse(body);
-            var root = jsonDocument.RootElement;
-
-            // Validar campos requeridos
-            if (!root.TryGetProperty("value", out var valueElement) || string.IsNullOrWhiteSpace(valueElement.GetString()))
+            var dto = JsonSerializer.Deserialize<UpdateAppParamRequestDTO>(body, new JsonSerializerOptions
             {
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "Value is required",
-                    "El valor es requerido",
-                    400
-                ));
-            }
+                PropertyNameCaseInsensitive = true
+            });
 
-            if (!root.TryGetProperty("modificadoPorId", out var modificadoPorIdElement) || 
-                !Guid.TryParse(modificadoPorIdElement.GetString(), out var modificadoPorId))
+            if (dto == null)
             {
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                    "Valid ModificadoPorId is required",
-                    "Se requiere un ModificadoPorId válido",
-                    400
-                ));
+                return await HttpResponseHelper.WriteBaseResponseAsync(req,
+                    BaseResponse<object>.Fail("Error al deserializar el cuerpo de la solicitud.", "Error de validación", 400));
             }
 
             var command = new UpdateAppParamCommand(
-                key: key,
-                value: valueElement.GetString()!,
-                description: root.TryGetProperty("description", out var descElement) ? descElement.GetString() : null,
-                category: null, // El frontend no envía esto - mantener valor existente
-                group: null, // El frontend no envía esto - mantener valor existente
-                isActive: root.TryGetProperty("isActive", out var activeElement) ? activeElement.GetBoolean() : null,
-                isInternal: null, // El frontend no envía esto - mantener valor existente
-                isVisible: null, // El frontend no envía esto - mantener valor existente
-                isDisableable: null, // El frontend no envía esto - mantener valor existente
-                isRemovable: null, // El frontend no envía esto - mantener valor existente
-                modificadoPorId: modificadoPorId
+                key: key, // Key actual de la ruta
+                newKey: dto.Key, // Nuevo key del body (puede ser null)
+                value: dto.Value,
+                description: dto.Description,
+                category: dto.Category,
+                group: dto.Group,
+                isActive: dto.IsActive,
+                isInternal: dto.IsInternal,
+                isVisible: dto.IsVisible,
+                isDisableable: dto.IsDisableable,
+                isRemovable: dto.IsRemovable,
+                requestContext: req
             );
 
             var result = await _mediator.Send(command);
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(
                 result, 
-                "AppParam actualizado exitosamente"
+                "Parámetro actualizado correctamente"
             ));
         }
         catch (ValidationException ex)
         {
-            var errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }).ToList();
+            var validationErrors = ex.Errors.Select(e => new { Field = e.PropertyName, Error = e.ErrorMessage });
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                errors,
-                "Validación fallida. Por favor, revise los campos.",
+                validationErrors,
+                "Errores de validación",
+                400
+            ));
+        }
+        catch (EntityInUseException ex)
+        {
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                new { Error = ex.Message, Code = ex.ErrorCode },
+                "Conflicto de regla de negocio",
+                409
+            ));
+        }
+        catch (DuplicateKeyException ex)
+        {
+            var error = new { Field = "key", Error = ex.Message };
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                error,
+                "Código duplicado",
+                409
+            ));
+        }
+        catch (BusinessRuleException ex)
+        {
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                ex.Message,
+                "Error de validación de negocio",
                 400
             ));
         }
@@ -107,12 +136,16 @@ public class UpdateAppParamFunction
                 Exception = ex.Message,
                 InnerException = ex.InnerException?.Message,
             };
-            
+
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 errorMessage,
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

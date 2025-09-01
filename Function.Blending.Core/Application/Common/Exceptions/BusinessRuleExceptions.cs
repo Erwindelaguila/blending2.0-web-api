@@ -18,3 +18,11 @@ public class EntityInUseException : BusinessRuleException
     {
     }
 }
+
+public class DuplicateKeyException : BusinessRuleException
+{
+    public DuplicateKeyException(string entityType, string key) 
+        : base($"Ya existe un {entityType} con el código '{key}'", "DUPLICATE_KEY")
+    {
+    }
+}

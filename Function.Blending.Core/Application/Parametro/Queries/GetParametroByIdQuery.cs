@@ -1,13 +1,14 @@
 using Function.Blending.Core.Application.Parametro.DTOs;
-using MediatR;
+using Function.Blending.Core.Application.Common.Queries;
+using Microsoft.Azure.Functions.Worker.Http;
 
 namespace Function.Blending.Core.Application.Parametro.Queries;
 
-public class GetParametroByIdQuery : IRequest<ParametroDTO?>
+public class GetParametroByIdQuery : BaseQuery<ParametroDTO?>
 {
     public Guid Id { get; }
 
-    public GetParametroByIdQuery(Guid id)
+    public GetParametroByIdQuery(Guid id, HttpRequestData? requestContext = null) : base(requestContext!)
     {
         Id = id;
     }

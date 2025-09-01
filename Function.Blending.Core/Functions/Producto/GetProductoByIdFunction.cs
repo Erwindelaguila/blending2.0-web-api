@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Producto.DTOs;
 using Function.Blending.Core.Application.Producto.Queries;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -10,13 +11,17 @@ using System.Web;
 
 namespace Function.Blending.Core.Functions.Producto;
 
+/// <summary>
+/// Función para obtener producto por ID
+/// Implementa patrón clean code con manejo de errores estandarizado
+/// </summary>
 public class GetProductoByIdFunction
 {
     private readonly IMediator _mediator;
 
     public GetProductoByIdFunction(IMediator mediator)
     {
-        _mediator = mediator;
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     }
 
     [Function(FunctionNames.Producto.GetById)]
@@ -27,6 +32,7 @@ public class GetProductoByIdFunction
         {
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             var idString = query["id"];
+            
             if (string.IsNullOrEmpty(idString) || !Guid.TryParse(idString, out var productoId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
@@ -36,7 +42,8 @@ public class GetProductoByIdFunction
                 ));
             }
 
-            var result = await _mediator.Send(new GetProductoByIdQuery(productoId));
+            var queryRequest = new GetProductoByIdQuery(productoId, req);
+            var result = await _mediator.Send(queryRequest);
 
             if (result == null)
             {
@@ -47,7 +54,8 @@ public class GetProductoByIdFunction
                 ));
             }
 
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<ProductoDTO>.Success(result, "Producto obtenido correctamente"));
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, 
+                BaseResponse<ProductoDTO>.Success(result, "Producto obtenido correctamente"));
         }
         catch (Exception ex)
         {
@@ -55,13 +63,17 @@ public class GetProductoByIdFunction
             {
                 Message = "Ocurrió un error inesperado.",
                 Exception = ex.Message,
-                InnerException = ex.InnerException?.Message
+                InnerException = ex.InnerException?.Message,
             };
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 errorMessage,
-                "Error interno del servidor",
+                null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

@@ -5,9 +5,12 @@ using Function.Blending.Core.Application.Agregado.DTOs;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using System.Net;
+using Function.Blending.Core.Infrastructure.Services;
 
 namespace Function.Blending.Core.Functions.Agregado;
 
@@ -41,14 +44,22 @@ public class CreateAgregadoFunction
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false o null).", "Error de validación", 400));
             }
+            
+            var dto = JsonSerializer.Deserialize<CreateAgregadoRequestDTO>(body, HttpResponseHelper.GetJsonDeserializerOptions());
 
-            var command = JsonSerializer.Deserialize<CreateAgregadoCommand>(body, HttpResponseHelper.GetJsonDeserializerOptions());
-
-            if (command == null)
+            if (dto == null)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail("Error al deserializar el comando.", "Error de validación", 400));
             }
+
+            var command = new CreateAgregadoCommand(
+                dto.Codigo,
+                dto.Nombre,
+                dto.Descripcion,
+                dto.Activo,
+                req
+            );
 
             var result = await _mediator.Send(command);
 
@@ -86,6 +97,10 @@ public class CreateAgregadoFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

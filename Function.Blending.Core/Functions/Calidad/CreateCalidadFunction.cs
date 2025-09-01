@@ -1,13 +1,14 @@
 ﻿using System.Text.Json;
-using Function.Blending.Core.Application.Calidad.Commands;
-using MediatR;
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
 using FluentValidation;
-using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Calidad.Commands;
+using Function.Blending.Core.Application.Calidad.DTOs;
+using Function.Blending.Core.Infrastructure.Services;
+using MediatR;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 
 namespace Function.Blending.Core.Functions.Calidad;
 
@@ -27,13 +28,13 @@ public class CreateCalidadFunction
         try
         {
             var body = await req.ReadAsStringAsync();
-            
+
             if (string.IsNullOrEmpty(body))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail("El cuerpo de la solicitud está vacío.", "Error de validación", 400));
             }
-            
+
             var (isValid, errorField) = JsonValidationHelper.ValidateBooleanProperties(body, "activo", "noConforme");
 
             if (!isValid)
@@ -42,25 +43,27 @@ public class CreateCalidadFunction
                     BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false o null).", "Error de validación", 400));
             }
             
-            var command = JsonSerializer.Deserialize<CreateCalidadCommand>(body, HttpResponseHelper.GetJsonDeserializerOptions());
+            var dto = JsonSerializer.Deserialize<CreateCalidadRequestDTO>(body, HttpResponseHelper.GetJsonDeserializerOptions());
 
-            if (command == null)
+            if (dto == null)
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req,
                     BaseResponse<object>.Fail("Error al deserializar el comando.", "Error de validación", 400));
             }
-        
+
+            var command = new CreateCalidadCommand(
+                dto.Codigo,
+                dto.Nombre,
+                dto.CodigoMaterial,
+                dto.Descripcion,
+                dto.NoConforme,
+                dto.Activo,
+                req
+            );
+
             var result = await _mediator.Send(command);
-            
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(result,"Calidad creada exitosamente"));
-        }
-        catch (ArgumentException ex) when (ex.ParamName == "codigo")
-        {
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                "El código de la calidad ya existe. Por favor, use un código diferente.",
-                "Código duplicado",
-                409
-            ));
+
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<CalidadDTO>.Success(result, "Calidad creada exitosamente"));
         }
         catch (ValidationException ex)
         {
@@ -71,6 +74,15 @@ public class CreateCalidadFunction
                 400
             ));
         }
+        catch (ArgumentException ex) when (ex.ParamName == "codigo")
+        {
+            var error = new { Field = "codigo", Error = "Ya existe una calidad activa con este código" };
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                error,
+                "Código duplicado",
+                409
+            ));
+        }
         catch (Exception ex)
         {
             var errorMessage = new
@@ -79,12 +91,16 @@ public class CreateCalidadFunction
                 Exception = ex.Message,
                 InnerException = ex.InnerException?.Message,
             };
-            
+
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 errorMessage,
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

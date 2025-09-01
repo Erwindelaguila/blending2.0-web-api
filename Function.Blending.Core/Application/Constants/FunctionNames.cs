@@ -9,7 +9,6 @@ public static class FunctionNames
         public const string Delete = "DeleteCalidad";
         public const string GetAll = "GetAllCalidades";
         public const string GetById = "GetCalidadById";
-        public const string GetAllWithoutPagination = "GetAllCalidadesWithoutPagination";
     }
 
     public static class Producto
@@ -19,7 +18,6 @@ public static class FunctionNames
         public const string Delete = "DeleteProducto";
         public const string GetAll = "GetAllProductos";
         public const string GetById = "GetProductoById";
-        public const string GetAllWithoutPagination = "GetAllProductosWithoutPagination";
     }
 
     public static class Planta
@@ -29,7 +27,6 @@ public static class FunctionNames
         public const string Delete = "DeletePlanta";
         public const string GetAll = "GetAllPlantas";
         public const string GetById = "GetPlantaById";
-        public const string GetAllWithoutPagination = "GetAllPlantasWithoutPagination";
     }
 
     public static class Parametro
@@ -39,7 +36,6 @@ public static class FunctionNames
         public const string Delete = "DeleteParametro";
         public const string GetAll = "GetAllParametros";
         public const string GetById = "GetParametroById";
-        public const string GetAllWithoutPagination = "GetAllParametrosWithoutPagination";
     }
 
     public static class TipoProduccion
@@ -49,7 +45,6 @@ public static class FunctionNames
         public const string Delete = "DeleteTipoProduccion";
         public const string GetAll = "GetAllTipoProduccion";
         public const string GetById = "GetTipoProduccionById";
-        public const string GetAllWithoutPagination = "GetAllTipoProduccionWithoutPagination";
     }
 
     public static class Agregado
@@ -59,7 +54,6 @@ public static class FunctionNames
         public const string Delete = "DeleteAgregado";
         public const string GetAll = "GetAllAgregados";
         public const string GetById = "GetAgregadoById";
-        public const string GetAllWithoutPagination = "GetAllAgregadosWithoutPagination";
     }
     public static class LineaProduccion
     {
@@ -68,29 +62,23 @@ public static class FunctionNames
         public const string Delete = "DeleteLineaProduccion";
         public const string GetAll = "GetAllLineasProduccion";
         public const string GetById = "GetLineaProduccionById";
-        public const string GetAllWithoutPagination = "GetAllLineasProduccionWithoutPagination";
     }
 
     public static class CalidadParametro
     {
         public const string GetMatriz = "GetCalidadParametroMatriz";
         public const string Upsert = "UpsertCalidadParametro";
+        public const string GetByCodigo = "GetCalidadParametrosByCodigo";
     }
 
+    // AppParam - Solo las funciones que realmente existen
     public static class AppParam
     {
         public const string Create = "CreateAppParam";
         public const string Update = "UpdateAppParam";
-        public const string Delete = "DeleteAppParam";
+        public const string Delete = "DeleteAppParam";          
         public const string GetAll = "GetAllAppParams";
-        public const string GetByKey = "GetAppParamByKey";
-        public const string GetByCategory = "GetAppParamsByCategory";
-        public const string GetByGroup = "GetAppParamsByGroup";
-    }
-
-    public static class User
-    {
-        public const string GetMenu = "GetUserMenu";
+        public const string GetById = "GetAppParamById";
     }
     
     // Agrega otras funciones según tu dominio...

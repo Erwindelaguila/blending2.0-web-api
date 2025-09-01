@@ -1,4 +1,5 @@
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Parametro.Commands;
 using Function.Blending.Core.Application.Parametro.DTOs;
 using Function.Blending.Core.Domain.Entities;
@@ -9,15 +10,19 @@ namespace Function.Blending.Core.Application.Parametro.Handlers;
 public class UpdateParametroCommandHandler : IRequestHandler<UpdateParametroCommand, ParametroDTO>
 {
     private readonly IParametroRepository _parametroRepository;
+    private readonly IAuthorizationService _authorizationService;
 
-    public UpdateParametroCommandHandler(IParametroRepository parametroRepository)
+    public UpdateParametroCommandHandler(IParametroRepository parametroRepository, IAuthorizationService authorizationService)
     {
         _parametroRepository = parametroRepository;
+        _authorizationService = authorizationService;
     }
 
     public async Task<ParametroDTO> Handle(UpdateParametroCommand request, CancellationToken cancellationToken)
     {
-        // Crear entidad con los nuevos datos
+        var modificadoPorIdString = _authorizationService.GetCurrentUserId();
+        var modificadoPorId = Guid.Parse(modificadoPorIdString);
+
         var parametroToUpdate = new ParametroEntity
         {
             Id = request.Id,
@@ -25,7 +30,7 @@ public class UpdateParametroCommandHandler : IRequestHandler<UpdateParametroComm
             Nombre = request.Nombre,
             Descripcion = request.Descripcion,
             Activo = request.Activo ?? true,
-            ModificadoPorId = request.ModificadoPorId,
+            ModificadoPorId = modificadoPorId,
             ModificadoEl = DateTime.UtcNow
         };
 

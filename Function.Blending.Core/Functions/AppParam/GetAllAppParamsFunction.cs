@@ -4,6 +4,7 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.AppParam.Queries;
 using Function.Blending.Core.Application.AppParam.DTOs;
+using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -26,42 +27,21 @@ public class GetAllAppParamsFunction
         try
         {
             var queryParams = HttpUtility.ParseQueryString(req.Url.Query);
-
-            var isGlobalConfig = queryParams.Get("isGlobal") ?? "0";
-
-            if (isGlobalConfig != "0" && isGlobalConfig != "1")
-            {
-                throw new ArgumentException("El parámetro 'isHarina' debe ser '0' o '1'.");
-            }
-
-            // Aquí puedes convertirlo a bool si quieres
-            bool globalConfig = isGlobalConfig == "1";
-
-
-            var query = new GetAllAppParamsQuery
-            {
-                Page = int.TryParse(queryParams["page"], out var page) ? page : 1,
-                Size = int.TryParse(queryParams["size"], out var size) ? size : 10,
-                Key = queryParams["key"],
-                IsActive = bool.TryParse(queryParams["isActive"], out var isActive) ? isActive : null,
-                Fecha = DateTime.TryParse(queryParams["fecha"], out var fecha) ? fecha : null,
-                GlobalConfig = globalConfig
-            };
-
+            
+            var page = int.TryParse(queryParams["page"], out var p) ? p : 1;
+            var size = int.TryParse(queryParams["size"], out var s) ? s : 10;
+            var filters = QueryParameterHelper.ParseAppParamFilters(queryParams);
+            
+            var query = new GetAllAppParamsQuery(page, size, filters);
+            
             var result = await _mediator.Send(query);
-
-            if (globalConfig)
-            {
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<List<AppParamSortDTO>>.Success(
-                    result.AppParamShortList,
-                    "AppParams obtenidos exitosamente"
-                ));
-            }
-
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<AppParamDTO>>.Success(
-                result.AppParamPaginate,
+            
+            var response = BaseResponse<PagedResponse<AppParamDTO>>.Success(
+                result, 
                 "AppParams obtenidos exitosamente"
-            ));
+            );
+            
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, response);
         }
         catch (Exception ex)
         {
@@ -71,12 +51,18 @@ public class GetAllAppParamsFunction
                 Exception = ex.Message,
                 InnerException = ex.InnerException?.Message,
             };
-
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<AppParamDTO>>.Fail(
+            
+            var errorResponse = BaseResponse<PagedResponse<AppParamDTO>>.Fail(
                 errorMessage,
                 null,
                 500
-            ));
+            );
+            
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, errorResponse);
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

@@ -1,15 +1,14 @@
-using MediatR;
+using Function.Blending.Core.Application.Common.Commands;
+using Microsoft.Azure.Functions.Worker.Http;
 
 namespace Function.Blending.Core.Application.Parametro.Commands;
 
-public class DeleteParametroCommand : IRequest<bool>
+public class DeleteParametroCommand : BaseCommand<bool>
 {
     public Guid Id { get; }
-    public Guid EliminadoPorId { get; }
 
-    public DeleteParametroCommand(Guid id, Guid eliminadoPorId)
+    public DeleteParametroCommand(Guid id, HttpRequestData? requestContext = null) : base(requestContext!)
     {
         Id = id;
-        EliminadoPorId = eliminadoPorId;
     }
 }

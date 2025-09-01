@@ -38,33 +38,6 @@ public class AppParamRepository : IAppParamRepository
         return entity;
     }
 
-    public async Task<List<AppParamEntity>> GetByCategoryAsync(string category)
-    {
-        var models = await _context.AppParam
-            .Where(ap => ap.Category == category)
-            .ToListAsync();
-        var entities = _mapper.Map<List<AppParamEntity>>(models);
-        return entities;
-    }
-
-    public async Task<List<AppParamEntity>> GetByGroupAsync(string group)
-    {
-        var models = await _context.AppParam
-            .Where(ap => ap.Group == group)
-            .ToListAsync();
-        var entities = _mapper.Map<List<AppParamEntity>>(models);
-        return entities;
-    }
-
-    public async Task<List<AppParamEntity>> GetByCategoryAndGroupAsync(string category, string group)
-    {
-        var models = await _context.AppParam
-            .Where(ap => ap.Category == category && ap.Group == group)
-            .ToListAsync();
-        var entities = _mapper.Map<List<AppParamEntity>>(models);
-        return entities;
-    }
-
     public async Task<bool> ExistsAsync(string key)
     {
         return await _context.AppParam.AnyAsync(ap => ap.Key == key);
@@ -114,6 +87,16 @@ public class AppParamRepository : IAppParamRepository
         var model = _mapper.Map<AppParam>(appParam);
         _context.AppParam.Add(model);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<AppParamEntity> CreateAndReturnAsync(AppParamEntity appParam)
+    {
+        var model = _mapper.Map<AppParam>(appParam);
+        _context.AppParam.Add(model);
+        await _context.SaveChangesAsync();
+        
+        var createdEntity = _mapper.Map<AppParamEntity>(model);
+        return createdEntity;
     }
 
     public async Task UpdateAsync(AppParamEntity appParam)

@@ -8,6 +8,7 @@ namespace Function.Blending.Core.Application.Producto.Handlers;
 public class GetProductoByIdQueryHandler : IRequestHandler<GetProductoByIdQuery, ProductoDTO?>
 {
     private readonly IProductoRepository _productoRepository;
+
     public GetProductoByIdQueryHandler(IProductoRepository productoRepository)
     {
         _productoRepository = productoRepository;

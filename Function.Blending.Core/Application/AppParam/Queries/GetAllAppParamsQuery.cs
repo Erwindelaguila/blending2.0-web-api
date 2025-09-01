@@ -6,10 +6,14 @@ namespace Function.Blending.Core.Application.AppParam.Queries;
 
 public class GetAllAppParamsQuery : IRequest<AppParamResponseDTO>
 {
-    public int Page { get; set; } = 1;
-    public int Size { get; set; } = 10;
-    public string? Key { get; set; }
-    public bool? IsActive { get; set; }
-    public DateTime? Fecha { get; set; }
-    public bool GlobalConfig  { get; set; }
+    public int Page { get; }
+    public int Size { get; }
+    public AppParamFilterDTO? Filters { get; }
+
+    public GetAllAppParamsQuery(int page, int size, AppParamFilterDTO? filters = null)
+    {
+        Page = page;
+        Size = size;
+        Filters = filters;
+    }
 }

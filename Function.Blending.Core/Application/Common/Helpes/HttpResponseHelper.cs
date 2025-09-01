@@ -7,11 +7,7 @@ namespace Function.Blending.Core.Application.Common.Helpers;
 
 public static class HttpResponseHelper
 {
-    /// <summary>
-    /// Opciones de serialización JSON consistentes para toda la aplicación
-    /// </summary>
-    /// <returns>JsonSerializerOptions configurado con camelCase</returns>
-    public static JsonSerializerOptions GetJsonSerializerOptions()
+        public static JsonSerializerOptions GetJsonSerializerOptions()
     {
         return new JsonSerializerOptions
         {
@@ -20,10 +16,7 @@ public static class HttpResponseHelper
         };
     }
 
-    /// <summary>
-    /// Opciones de deserialización JSON consistentes para toda la aplicación
-    /// </summary>
-    /// <returns>JsonSerializerOptions configurado con camelCase y case-insensitive</returns>
+    
     public static JsonSerializerOptions GetJsonDeserializerOptions()
     {
         return new JsonSerializerOptions

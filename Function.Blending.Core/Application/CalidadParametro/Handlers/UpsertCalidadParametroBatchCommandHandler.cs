@@ -1,5 +1,6 @@
 using Function.Blending.Core.Application.CalidadParametro.Commands;
 using Function.Blending.Core.Application.Interfaces.Repositories;
+using Function.Blending.Core.Application.Interfaces.Services;
 using MediatR;
 
 namespace Function.Blending.Core.Application.CalidadParametro.Handlers;
@@ -9,15 +10,18 @@ public class UpsertCalidadParametroBatchCommandHandler : IRequestHandler<UpsertC
     private readonly ICalidadParametroRepository _calidadParametroRepository;
     private readonly ICalidadRepository _calidadRepository;
     private readonly IParametroRepository _parametroRepository;
+    private readonly IAuthorizationService _authorizationService;
 
     public UpsertCalidadParametroBatchCommandHandler(
         ICalidadParametroRepository calidadParametroRepository,
         ICalidadRepository calidadRepository,
-        IParametroRepository parametroRepository)
+        IParametroRepository parametroRepository,
+        IAuthorizationService authorizationService)
     {
         _calidadParametroRepository = calidadParametroRepository;
         _calidadRepository = calidadRepository;
         _parametroRepository = parametroRepository;
+        _authorizationService = authorizationService;
     }
 
     public async Task<int> Handle(UpsertCalidadParametroBatchCommand request, CancellationToken cancellationToken)
@@ -47,11 +51,15 @@ public class UpsertCalidadParametroBatchCommandHandler : IRequestHandler<UpsertC
             throw new ArgumentException("Uno o más parámetros especificados no existen o no están activos.");
         }
 
+        // Obtener el ID del usuario actual para la auditoría
+        var currentUserIdString = _authorizationService.GetCurrentUserId();
+        var currentUserId = Guid.Parse(currentUserIdString);
+
         // Convertir a tuplas para el repositorio
         var cambiosTuplas = request.Cambios.Select(c => (c.CalidadId, c.ParametroId, c.Valor)).ToList();
 
         // Realizar el batch upsert
-        var processedCount = await _calidadParametroRepository.UpsertBatchAsync(cambiosTuplas, request.ModificadoPorId);
+        var processedCount = await _calidadParametroRepository.UpsertBatchAsync(cambiosTuplas, currentUserId);
 
         return processedCount;
     }

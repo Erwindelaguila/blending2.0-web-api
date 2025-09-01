@@ -11,7 +11,6 @@ public interface IProductoRepository
     Task<ProductoDTO?> GetByIdWithRelationsAsync(Guid id);
     Task<bool> ExistsActiveCodigoAsync(string codigo, Guid? excludeId = null);
     IQueryable<ProductoEntity> GetQueryable();
-    // Nuevo: expone IQueryable del modelo EF para escenarios que requieren Include sobre relaciones
     IQueryable<Function.Blending.Core.Infrastructure.Persistence.Models.Producto> GetEntityQueryable();
     Task CreateAsync(ProductoEntity producto);
     Task UpdateAsync(ProductoEntity producto);

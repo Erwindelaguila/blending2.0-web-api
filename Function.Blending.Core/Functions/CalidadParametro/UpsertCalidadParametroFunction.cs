@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.CalidadParametro.DTOs;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Infrastructure.Services;
 using FluentValidation;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
@@ -49,17 +50,15 @@ public class UpsertCalidadParametroFunction
                     BaseResponse<object>.Fail("Error al deserializar el comando.", "Error de validación", 400));
             }
 
-            // Convertir DTO a Command
-            var command = new UpsertCalidadParametroBatchCommand
+            // Convertir DTO a Command con RequestContext
+            var cambios = batchDto.Cambios.Select(c => new CalidadParametroCambio
             {
-                ModificadoPorId = batchDto.ModificadoPorId,
-                Cambios = batchDto.Cambios.Select(c => new CalidadParametroCambio
-                {
-                    CalidadId = c.CalidadId,
-                    ParametroId = c.ParametroId,
-                    Valor = c.Valor
-                }).ToList()
-            };
+                CalidadId = c.CalidadId,
+                ParametroId = c.ParametroId,
+                Valor = c.Valor
+            }).ToList();
+
+            var command = new UpsertCalidadParametroBatchCommand(cambios, req);
 
             var result = await _mediator.Send(command);
 
@@ -101,6 +100,10 @@ public class UpsertCalidadParametroFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }

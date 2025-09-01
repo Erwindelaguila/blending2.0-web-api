@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Producto.Queries;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Producto.DTOs;
+using Function.Blending.Core.Infrastructure.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -11,6 +12,10 @@ using System.Net;
 
 namespace Function.Blending.Core.Functions.Producto;
 
+/// <summary>
+/// Función para obtener todos los productos con paginación
+/// Implementa patrón clean code con manejo de errores estandarizado
+/// </summary>
 public class GetAllProductosFunction
 {
     private readonly ILogger<GetAllProductosFunction> _logger;
@@ -20,57 +25,53 @@ public class GetAllProductosFunction
         ILogger<GetAllProductosFunction> logger,
         IMediator mediator)
     {
-        _logger = logger;
-        _mediator = mediator;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     }
 
     [Function(FunctionNames.Producto.GetAll)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = ApiRoutes.Core.Production.ProductoBase)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Production.ProductoBase)] HttpRequestData req)
     {
         try
         {
-            _logger.LogInformation("GetAllProductosFunction procesando... Query: {Query}", req.Url.Query);
+            _logger.LogInformation("GetAllProductosFunction procesando...");
 
             var query = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
 
-            // Endpoint para combos (activos solamente)
+            // Verificar si es solicitud de activos (para combos)
             if (query["activo"] == "true")
             {
                 _logger.LogInformation("Returning active productos for combo");
-                // Reutilizamos el handler sin paginación para minimizar duplicación.
-                var activosFilters = new ProductoFilterDTO { Estado = "1" }; // Estado 1 => activos
-                var activosResult = await _mediator.Send(new GetAllProductoWithoutPaginationQuery(activosFilters));
-                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(activosResult, "Productos activos obtenidos correctamente"));
+                var activosResult = await _mediator.Send(new GetAllProductosQuery(1, 1000, null));
+                var activosFiltered = activosResult.Items.Where(p => p.Activo).ToList();
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, 
+                    BaseResponse<object>.Success(activosFiltered, "Productos activos obtenidos correctamente"));
             }
 
-            // Parámetros de paginación (defaults)
+            // Obtener parámetros de paginación con valores por defecto
             if (!int.TryParse(query["page"], out var page) || page < 1)
                 page = 1;
+                
             if (!int.TryParse(query["size"], out var size) || size < 1 || size > 100)
                 size = 10;
 
             var filters = QueryParameterHelper.ParseProductoFilters(query);
+            
+            // Solo aplicar filtros si hay filtros activos
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var getAllQuery = new GetAllProductoWithPaginationQuery(page, size, filtersToApply);
-            var result = await _mediator.Send(getAllQuery);
+            var getAllQuery = new GetAllProductosQuery(page, size, filtersToApply);
 
-            return await HttpResponseHelper.WriteBaseResponseAsync(req,
-                BaseResponse<PagedResponse<ProductoDTO>>.Success(result, "Productos obtenidos correctamente"));
-        }
-        catch (ArgumentException ex)
-        {
-            _logger.LogWarning(ex, "Validation error in GetAllProductosFunction: {Message}", ex.Message);
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                ex.Message,
-                null,
-                400
-            ));
+            var result = await _mediator.Send(getAllQuery);
+            
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, 
+                BaseResponse<object>.Success(result, "Productos obtenidos correctamente"));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en GetAllProductosFunction: {Message}", ex.Message);
+            
             var errorMessage = new
             {
                 Message = "Ocurrió un error inesperado.",
@@ -82,6 +83,10 @@ public class GetAllProductosFunction
                 null,
                 500
             ));
+        }
+        finally
+        {
+            AuthorizationService.ClearCurrentRequestHeaders();
         }
     }
 }
