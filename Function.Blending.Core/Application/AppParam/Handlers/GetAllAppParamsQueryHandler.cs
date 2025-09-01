@@ -46,6 +46,23 @@ public class GetAllAppParamsQueryHandler : IRequestHandler<GetAllAppParamsQuery,
             }
         }
 
+        if (request.IsGlobal)
+        {
+            var itemsShort = await queryable
+                .Select(ap => new AppParamSortDTO
+                {
+                    Key = ap.Key,
+                    Value = ap.Value,
+                })
+                .ToListAsync(cancellationToken);
+            
+            return new AppParamResponseDTO
+            {
+                AppParamShortList = itemsShort,
+            };
+            
+        }
+
       
         var total = await queryable.CountAsync(cancellationToken);
 

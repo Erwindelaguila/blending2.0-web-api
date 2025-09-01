@@ -28,20 +28,45 @@ public class GetAllAppParamsFunction
         {
             var queryParams = HttpUtility.ParseQueryString(req.Url.Query);
             
+            
+            var isGlobal = queryParams.Get("isGlobal") ?? "0";
+
+            if (isGlobal != "0" && isGlobal != "1")
+            {
+                throw new ArgumentException("El parámetro 'isHarina' debe ser '0' o '1'.");
+            }
+
+            // Aquí puedes convertirlo a bool si quieres
+            bool isGlobalConfig = isGlobal == "1";
+            
             var page = int.TryParse(queryParams["page"], out var p) ? p : 1;
             var size = int.TryParse(queryParams["size"], out var s) ? s : 10;
             var filters = QueryParameterHelper.ParseAppParamFilters(queryParams);
             
-            var query = new GetAllAppParamsQuery(page, size, filters);
+            var query = new GetAllAppParamsQuery(page, size, filters, isGlobalConfig);
             
             var result = await _mediator.Send(query);
-            
-            var response = BaseResponse<PagedResponse<AppParamDTO>>.Success(
-                result, 
+
+
+            if (isGlobalConfig)
+            {
+                var responseShortList = BaseResponse<List<AppParamSortDTO>>.Success(
+                    result.AppParamShortList, 
+                    "AppParams obtenidos exitosamente"
+                );
+
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, responseShortList);
+            }
+            var responsePaginate = BaseResponse<PagedResponse<AppParamDTO>>.Success(
+                result.AppParamPaginate, 
                 "AppParams obtenidos exitosamente"
             );
+
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, responsePaginate);
             
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, response);
+            
+
+            
         }
         catch (Exception ex)
         {
