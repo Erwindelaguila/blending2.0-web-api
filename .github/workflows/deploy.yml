@@ -3,8 +3,6 @@ name: Deploy Functions (Monorepo)
 on:
   push:
     branches:
-      - develop
-      - main
       - blending-core-develop
     paths:
       - 'Function.Blending.Core/**'
