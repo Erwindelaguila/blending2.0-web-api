@@ -1,4 +1,4 @@
-name: Deploy Functions (Monorepo)
+name: Deploy Functions (Monorepo Ordered)
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
       - 'Function.Blending.Upload/**'
 
 jobs:
-  # Job para determinar qué proyectos han cambiado
+  # Detecta qué carpetas cambiaron
   changes:
     runs-on: ubuntu-latest
     outputs:
@@ -34,25 +34,9 @@ jobs:
             upload:
               - 'Function.Blending.Upload/**'
 
-  # Deploy Function Core
-  deploy-core:
-    needs: changes
-    if: ${{ needs.changes.outputs.core == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-      - run: dotnet restore Function.Blending.Core/Function.Blending.Core.csproj
-      - run: dotnet build Function.Blending.Core/Function.Blending.Core.csproj -c Release --no-restore
-      - run: dotnet publish Function.Blending.Core/Function.Blending.Core.csproj -c Release -o ./publish/core --no-build
-      - uses: azure/functions-action@v1
-        with:
-          package: './publish/core'
-          publish-profile: ${{ secrets.AZURE_FUNC_CORE_PUBLISH_PROFILE }}
-
-  # Deploy Function Auth
+  # ==============================
+  # 1. Deploy Function Auth
+  # ==============================
   deploy-auth:
     needs: changes
     if: ${{ needs.changes.outputs.auth == 'true' }}
@@ -67,12 +51,36 @@ jobs:
       - run: dotnet publish Function.Blending.Auth/Function.Blending.Auth.csproj -c Release -o ./publish/auth --no-build
       - uses: azure/functions-action@v1
         with:
+          app-name: ${{ vars.AZURE_FUNC_AUTH_NAME }}
           package: './publish/auth'
           publish-profile: ${{ secrets.AZURE_FUNC_AUTH_PUBLISH_PROFILE }}
 
-  # Deploy Function Opt
+  # ==============================
+  # 2. Deploy Function Core
+  # ==============================
+  deploy-core:
+    needs: deploy-auth
+    if: ${{ needs.changes.outputs.core == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet restore Function.Blending.Core/Function.Blending.Core.csproj
+      - run: dotnet build Function.Blending.Core/Function.Blending.Core.csproj -c Release --no-restore
+      - run: dotnet publish Function.Blending.Core/Function.Blending.Core.csproj -c Release -o ./publish/core --no-build
+      - uses: azure/functions-action@v1
+        with:
+          app-name: ${{ vars.AZURE_FUNC_CORE_NAME }}
+          package: './publish/core'
+          publish-profile: ${{ secrets.AZURE_FUNC_CORE_PUBLISH_PROFILE }}
+
+  # ==============================
+  # 3. Deploy Function Opt
+  # ==============================
   deploy-opt:
-    needs: changes
+    needs: deploy-core
     if: ${{ needs.changes.outputs.opt == 'true' }}
     runs-on: ubuntu-latest
     steps:
@@ -85,12 +93,15 @@ jobs:
       - run: dotnet publish Function.Blending.Opt/Function.Blending.Opt.csproj -c Release -o ./publish/opt --no-build
       - uses: azure/functions-action@v1
         with:
+          app-name: ${{ vars.AZURE_FUNC_OPT_NAME }}
           package: './publish/opt'
           publish-profile: ${{ secrets.AZURE_FUNC_OPT_PUBLISH_PROFILE }}
 
-  # Deploy Function Upload
+  # ==============================
+  # 4. Deploy Function Upload
+  # ==============================
   deploy-upload:
-    needs: changes
+    needs: deploy-opt
     if: ${{ needs.changes.outputs.upload == 'true' }}
     runs-on: ubuntu-latest
     steps:
@@ -103,5 +114,6 @@ jobs:
       - run: dotnet publish Function.Blending.Upload/Function.Blending.Upload.csproj -c Release -o ./publish/upload --no-build
       - uses: azure/functions-action@v1
         with:
+          app-name: ${{ vars.AZURE_FUNC_UPLOAD_NAME }}
           package: './publish/upload'
           publish-profile: ${{ secrets.AZURE_FUNC_UPLOAD_PUBLISH_PROFILE }}
