@@ -39,30 +39,16 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.core == 'true' }}
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
-    
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Setup .NET 8
-        uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-
-      - name: Restore dependencies
-        run: dotnet restore Function.Blending.Core/Function.Blending.Core.csproj
-
-      - name: Build proyecto
-        run: dotnet build Function.Blending.Core/Function.Blending.Core.csproj -c Release --no-restore
-
-      - name: Publish proyecto
-        run: dotnet publish Function.Blending.Core/Function.Blending.Core.csproj -c Release -o ./publish/core --no-build
-
-      - name: Deploy a Azure Functions
-        uses: azure/functions-action@v1
+      - run: dotnet restore Function.Blending.Core/Function.Blending.Core.csproj
+      - run: dotnet build Function.Blending.Core/Function.Blending.Core.csproj -c Release --no-restore
+      - run: dotnet publish Function.Blending.Core/Function.Blending.Core.csproj -c Release -o ./publish/core --no-build
+      - uses: azure/functions-action@v1
         with:
-          app-name: ${{ vars.AZURE_FUNC_CORE_NAME }}
           package: './publish/core'
           publish-profile: ${{ secrets.AZURE_FUNC_CORE_PUBLISH_PROFILE }}
 
@@ -71,30 +57,16 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.auth == 'true' }}
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
-    
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Setup .NET 8
-        uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-
-      - name: Restore dependencies
-        run: dotnet restore Function.Blending.Auth/Function.Blending.Auth.csproj
-
-      - name: Build proyecto
-        run: dotnet build Function.Blending.Auth/Function.Blending.Auth.csproj -c Release --no-restore
-
-      - name: Publish proyecto
-        run: dotnet publish Function.Blending.Auth/Function.Blending.Auth.csproj -c Release -o ./publish/auth --no-build
-
-      - name: Deploy a Azure Functions
-        uses: azure/functions-action@v1
+      - run: dotnet restore Function.Blending.Auth/Function.Blending.Auth.csproj
+      - run: dotnet build Function.Blending.Auth/Function.Blending.Auth.csproj -c Release --no-restore
+      - run: dotnet publish Function.Blending.Auth/Function.Blending.Auth.csproj -c Release -o ./publish/auth --no-build
+      - uses: azure/functions-action@v1
         with:
-          app-name: ${{ vars.AZURE_FUNC_AUTH_NAME }}
           package: './publish/auth'
           publish-profile: ${{ secrets.AZURE_FUNC_AUTH_PUBLISH_PROFILE }}
 
@@ -103,30 +75,16 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.opt == 'true' }}
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
-    
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Setup .NET 8
-        uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-
-      - name: Restore dependencies
-        run: dotnet restore Function.Blending.Opt/Function.Blending.Opt.csproj
-
-      - name: Build proyecto
-        run: dotnet build Function.Blending.Opt/Function.Blending.Opt.csproj -c Release --no-restore
-
-      - name: Publish proyecto
-        run: dotnet publish Function.Blending.Opt/Function.Blending.Opt.csproj -c Release -o ./publish/opt --no-build
-
-      - name: Deploy a Azure Functions
-        uses: azure/functions-action@v1
+      - run: dotnet restore Function.Blending.Opt/Function.Blending.Opt.csproj
+      - run: dotnet build Function.Blending.Opt/Function.Blending.Opt.csproj -c Release --no-restore
+      - run: dotnet publish Function.Blending.Opt/Function.Blending.Opt.csproj -c Release -o ./publish/opt --no-build
+      - uses: azure/functions-action@v1
         with:
-          app-name: ${{ vars.AZURE_FUNC_OPT_NAME }}
           package: './publish/opt'
           publish-profile: ${{ secrets.AZURE_FUNC_OPT_PUBLISH_PROFILE }}
 
@@ -135,29 +93,15 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.upload == 'true' }}
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
-    
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Setup .NET 8
-        uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-
-      - name: Restore dependencies
-        run: dotnet restore Function.Blending.Upload/Function.Blending.Upload.csproj
-
-      - name: Build proyecto
-        run: dotnet build Function.Blending.Upload/Function.Blending.Upload.csproj -c Release --no-restore
-
-      - name: Publish proyecto
-        run: dotnet publish Function.Blending.Upload/Function.Blending.Upload.csproj -c Release -o ./publish/upload --no-build
-
-      - name: Deploy a Azure Functions
-        uses: azure/functions-action@v1
+      - run: dotnet restore Function.Blending.Upload/Function.Blending.Upload.csproj
+      - run: dotnet build Function.Blending.Upload/Function.Blending.Upload.csproj -c Release --no-restore
+      - run: dotnet publish Function.Blending.Upload/Function.Blending.Upload.csproj -c Release -o ./publish/upload --no-build
+      - uses: azure/functions-action@v1
         with:
-          app-name: ${{ vars.AZURE_FUNC_UPLOAD_NAME }}
           package: './publish/upload'
           publish-profile: ${{ secrets.AZURE_FUNC_UPLOAD_PUBLISH_PROFILE }}
