@@ -7,6 +7,7 @@ using Function.Blending.Core.Infrastructure.Mappings;
 using Function.Blending.Core.Infrastructure.Persistence;
 using Function.Blending.Core.Infrastructure.Persistence.Mappings;
 using Function.Blending.Core.Infrastructure.Persistence.Repositories;
+// Trigger deployment - Core function updated
 // ❌ YA NO NECESARIOS - Function.Auth ya no proporciona servicios de JWT
 // using Function.Blending.Auth.Application.Interfaces.Services;
 // using Function.Blending.Auth.Infrastructure.Services;

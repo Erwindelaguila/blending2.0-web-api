@@ -7,6 +7,8 @@ using System.Reflection;
 using Function.Blending.Auth.Application.Interfaces.Services;
 using Function.Blending.Auth.Infrastructure.Services;
 
+// Trigger deployment - Auth function updated
+
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication()
     .ConfigureServices(services =>

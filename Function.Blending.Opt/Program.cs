@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+// Trigger deployment - Opt function updated
+
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication()
     .ConfigureLogging(logging =>
