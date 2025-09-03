@@ -1,0 +1,156 @@
+name: Deploy Blending Functions (Monorepo)
+
+on:
+  push:
+    branches:
+      - blending-core-develop
+    paths:
+      - 'Function.Blending.Auth/**'
+      - 'Function.Blending.Core/**'
+      - 'Function.Blending.Opt/**'
+      - 'Function.Blending.Upload/**'
+  workflow_dispatch:
+
+jobs:
+  # Detectar qué carpetas cambiaron
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      auth: ${{ steps.filter.outputs.auth }}
+      core: ${{ steps.filter.outputs.core }}
+      opt: ${{ steps.filter.outputs.opt }}
+      upload: ${{ steps.filter.outputs.upload }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            auth:
+              - 'Function.Blending.Auth/**'
+            core:
+              - 'Function.Blending.Core/**'
+            opt:
+              - 'Function.Blending.Opt/**'
+            upload:
+              - 'Function.Blending.Upload/**'
+
+  # ==============================
+  # Deploy Function Auth
+  # ==============================
+  deploy-auth:
+    needs: changes
+    if: ${{ needs.changes.outputs.auth == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - run: dotnet restore Function.Blending.Auth/Function.Blending.Auth.csproj
+      - run: dotnet build Function.Blending.Auth/Function.Blending.Auth.csproj -c Release --no-restore
+      - run: dotnet publish Function.Blending.Auth/Function.Blending.Auth.csproj -c Release -o ./publish/auth --no-build
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPP_CLIENTID_AUTH }}
+          tenant-id: ${{ secrets.AZUREAPP_TENANTID }}
+          subscription-id: ${{ secrets.AZUREAPP_SUBSCRIPTIONID }}
+
+      - name: Deploy to Azure Functions (Auth)
+        uses: Azure/functions-action@v1
+        with:
+          app-name: func-blending-auth
+          package: ./publish/auth
+
+  # ==============================
+  # Deploy Function Core
+  # ==============================
+  deploy-core:
+    needs: [changes, deploy-auth]
+    if: ${{ needs.changes.outputs.core == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - run: dotnet restore Function.Blending.Core/Function.Blending.Core.csproj
+      - run: dotnet build Function.Blending.Core/Function.Blending.Core.csproj -c Release --no-restore
+      - run: dotnet publish Function.Blending.Core/Function.Blending.Core.csproj -c Release -o ./publish/core --no-build
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPP_CLIENTID_CORE }}
+          tenant-id: ${{ secrets.AZUREAPP_TENANTID }}
+          subscription-id: ${{ secrets.AZUREAPP_SUBSCRIPTIONID }}
+
+      - name: Deploy to Azure Functions (Core)
+        uses: Azure/functions-action@v1
+        with:
+          app-name: func-blending-core
+          package: ./publish/core
+
+  # ==============================
+  # Deploy Function Opt
+  # ==============================
+  deploy-opt:
+    needs: [changes, deploy-core]
+    if: ${{ needs.changes.outputs.opt == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - run: dotnet restore Function.Blending.Opt/Function.Blending.Opt.csproj
+      - run: dotnet build Function.Blending.Opt/Function.Blending.Opt.csproj -c Release --no-restore
+      - run: dotnet publish Function.Blending.Opt/Function.Blending.Opt.csproj -c Release -o ./publish/opt --no-build
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPP_CLIENTID_OPT }}
+          tenant-id: ${{ secrets.AZUREAPP_TENANTID }}
+          subscription-id: ${{ secrets.AZUREAPP_SUBSCRIPTIONID }}
+
+      - name: Deploy to Azure Functions (Opt)
+        uses: Azure/functions-action@v1
+        with:
+          app-name: func-blending-opt
+          package: ./publish/opt
+
+  # ==============================
+  # Deploy Function Upload
+  # ==============================
+  deploy-upload:
+    needs: [changes, deploy-opt]
+    if: ${{ needs.changes.outputs.upload == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - run: dotnet restore Function.Blending.Upload/Function.Blending.Upload.csproj
+      - run: dotnet build Function.Blending.Upload/Function.Blending.Upload.csproj -c Release --no-restore
+      - run: dotnet publish Function.Blending.Upload/Function.Blending.Upload.csproj -c Release -o ./publish/upload --no-build
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPP_CLIENTID_UPLOAD }}
+          tenant-id: ${{ secrets.AZUREAPP_TENANTID }}
+          subscription-id: ${{ secrets.AZUREAPP_SUBSCRIPTIONID }}
+
+      - name: Deploy to Azure Functions (Upload)
+        uses: Azure/functions-action@v1
+        with:
+          app-name: func-blending-upload
+          package: ./publish/upload
