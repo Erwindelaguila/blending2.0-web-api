@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 
 // Trigger deployment - Opt function updated
 // Fixed OIDC permissions for Azure deployment
+// Force redeploy - Testing monorepo workflow
 
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication()

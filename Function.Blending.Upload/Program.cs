@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 
 // Trigger deployment - Upload function updated
 // Fixed OIDC permissions for Azure deployment
+// Force redeploy - Testing monorepo workflow
 
 var builder = FunctionsApplication.CreateBuilder(args);
 
