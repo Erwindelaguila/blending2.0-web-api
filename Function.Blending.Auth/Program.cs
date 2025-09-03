@@ -8,6 +8,7 @@ using Function.Blending.Auth.Application.Interfaces.Services;
 using Function.Blending.Auth.Infrastructure.Services;
 
 // Trigger deployment - Auth function updated
+// Fixed OIDC permissions for Azure deployment
 
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication()

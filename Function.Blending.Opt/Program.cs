@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 // Trigger deployment - Opt function updated
+// Fixed OIDC permissions for Azure deployment
 
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication()
@@ -19,7 +20,7 @@ var host = new HostBuilder()
         // Filtro espec�fico para suprimir logs de AutoMapper.LicenseValidator
         logging.AddFilter((category, level) =>
         {
-            if (category.Contains("AutoMapper.LicenseValidator"))
+            if (category?.Contains("AutoMapper.LicenseValidator") == true)
                 return false; // Suprime todo log de esa categor�a
 
             return true; // Permite el resto

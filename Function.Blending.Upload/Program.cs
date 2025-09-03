@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 // Trigger deployment - Upload function updated
+// Fixed OIDC permissions for Azure deployment
 
 var builder = FunctionsApplication.CreateBuilder(args);
 
