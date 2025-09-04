@@ -1,0 +1,15 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "SAP_API_KEY": "ST3xF0AL8LfhYZaqyCIaiCcBGGaTBaOF",
+    "BlobStorage:AccountName": "tasaexcels",
+    "BlobStorage:AccountKey": "I3v9106oEBfmpYj7X9JiaeZTDOjqZRomoOZ6IZRBAJ1Hj2N/yPnkoZXV/fSOyavD/0Exn612RQf4+ASthy98og==",
+    "BlobStorage:ContainerName": "tasaexcels-dev"
+  },
+  "Host": {
+    "CORS": "*",
+    "CORS_SUPPORT_CREDENTIALS": true
+  }
+}
