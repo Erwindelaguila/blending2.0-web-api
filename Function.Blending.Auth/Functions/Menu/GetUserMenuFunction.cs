@@ -62,7 +62,7 @@ namespace Function.Blending.Auth.Functions.Menu
         {
             try
             {
-                _logger.LogInformation("Iniciando procesamiento de solicitud de menú de usuario");
+                _logger.LogInformation($"Iniciando procesamiento de solicitud de menú de usuario ${req.Headers}");
 
                 // PASO 1: Extraer información de usuario desde headers agregados por APIM
                 // HeaderUserService lee X-User-Id, X-User-Name, X-User-Groups, etc.
