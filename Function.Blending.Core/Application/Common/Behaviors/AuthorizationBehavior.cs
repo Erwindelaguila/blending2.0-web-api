@@ -44,6 +44,17 @@ public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
 
         if (requestContext != null && !string.IsNullOrEmpty(requiredScope))
         {
+            // TEMPORAL: Deshabilitar autorización para Calidad GAAAA
+            if (requiredScope.StartsWith("calidades."))
+            {
+                _logger.LogDebug("Autorización deshabilitada temporalmente para Calidad - scope: {RequiredScope}", requiredScope);
+                // Configurar contexto sin validar scope
+                AuthorizationContextHelper.SetupAuthorizationFromCommand(
+                    requestContext, 
+                    _authorizationService);
+                return await next();
+            }
+
             // Configurar contexto de autorización PARA TODA LA CADENA
             AuthorizationContextHelper.SetupAuthorizationFromCommand(
                 requestContext, 

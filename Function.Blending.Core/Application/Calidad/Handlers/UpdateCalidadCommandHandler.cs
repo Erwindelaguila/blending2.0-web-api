@@ -1,5 +1,5 @@
 ﻿using Function.Blending.Core.Application.Interfaces.Repositories;
-using Function.Blending.Core.Application.Interfaces.Services;
+// using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Calidad.Commands;
 using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Application.Common.Exceptions;
@@ -11,12 +11,12 @@ namespace Function.Blending.Core.Application.Calidad.Handlers;
 public class UpdateCalidadCommandHandler : IRequestHandler<UpdateCalidadCommand, CalidadDTO>
 {
     private readonly ICalidadRepository _calidadRepository;
-    private readonly IAuthorizationService _authorizationService;
+    // private readonly IAuthorizationService _authorizationService;
 
-    public UpdateCalidadCommandHandler(ICalidadRepository calidadRepository, IAuthorizationService authorizationService)
+    public UpdateCalidadCommandHandler(ICalidadRepository calidadRepository/*, IAuthorizationService authorizationService*/)
     {
         _calidadRepository = calidadRepository;
-        _authorizationService = authorizationService;
+        // _authorizationService = authorizationService;
     }
 
     public async Task<CalidadDTO> Handle(UpdateCalidadCommand request, CancellationToken cancellationToken)
@@ -35,8 +35,9 @@ public class UpdateCalidadCommandHandler : IRequestHandler<UpdateCalidadCommand,
             }
         }
 
-        var modificadoPorIdString = _authorizationService.GetCurrentUserId();
-        var modificadoPorId = Guid.Parse(modificadoPorIdString);
+        // var modificadoPorIdString = _authorizationService.GetCurrentUserId();
+        // var modificadoPorId = Guid.Parse(modificadoPorIdString);
+        var modificadoPorId = Guid.NewGuid(); // Valor temporal mientras no hay autorización
 
         var calidad = new CalidadEntity
         {

@@ -1,5 +1,5 @@
 ﻿using Function.Blending.Core.Application.Interfaces.Repositories;
-using Function.Blending.Core.Application.Interfaces.Services;
+// using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Calidad.Commands;
 using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Domain.Entities;
@@ -10,18 +10,19 @@ namespace Function.Blending.Core.Application.Calidad.Handlers;
 public class CreateCalidadCommandHandler : IRequestHandler<CreateCalidadCommand, CalidadDTO>
 {
     private readonly ICalidadRepository _calidadRepository;
-    private readonly IAuthorizationService _authorizationService;
+    // private readonly IAuthorizationService _authorizationService;
 
-    public CreateCalidadCommandHandler(ICalidadRepository calidadRepository, IAuthorizationService authorizationService)
+    public CreateCalidadCommandHandler(ICalidadRepository calidadRepository/*, IAuthorizationService authorizationService*/)
     {
         _calidadRepository = calidadRepository;
-        _authorizationService = authorizationService;
+        // _authorizationService = authorizationService;
     }
 
     public async Task<CalidadDTO> Handle(CreateCalidadCommand request, CancellationToken cancellationToken)
     {
-        var creadoPorIdString = _authorizationService.GetCurrentUserId();
-        var creadoPorId = Guid.Parse(creadoPorIdString);
+        // var creadoPorIdString = _authorizationService.GetCurrentUserId();
+        // var creadoPorId = Guid.Parse(creadoPorIdString);
+        var creadoPorId = Guid.NewGuid(); // Valor temporal mientras no hay autorización
 
         var calidad = new CalidadEntity
         {
