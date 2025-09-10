@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
@@ -6,24 +7,73 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="AutoMapper" Version="15.0.1" />
-    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.20.1" />
-    <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.3.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.0.1" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.15.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.6" />
+    <Compile Remove="CarpetaEjemplo\**" />
+    <Compile Remove="Functions\DependencyInjection\**" />
+    <EmbeddedResource Remove="CarpetaEjemplo\**" />
+    <EmbeddedResource Remove="Functions\DependencyInjection\**" />
+    <None Remove="CarpetaEjemplo\**" />
+    <None Remove="Functions\DependencyInjection\**" />
   </ItemGroup>
+
   <ItemGroup>
-    <Folder Include="Templates\" />
+  <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  <PackageReference Include="AutoMapper" Version="13.0.1" />
+  <PackageReference Include="Azure.Identity" Version="1.15.0" />
+  <PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.8.0" />
+
+  <!-- AutoMapper + DI extensions -->
+
+  <!-- FluentValidation / MediatR -->
+  <PackageReference Include="FluentValidation" Version="12.0.0" />
+  <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
+  <PackageReference Include="MediatR" Version="12.2.0" />
+
+  <!-- Azure Functions Isolated -->
+  <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />
+  <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.0.0" />
+  <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="2.0.0" />
+  <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.3.0" />
+  <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.0.2" />
+  <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.5" />
+
+  <!-- EF Core 9 + provider SQL Server -->
+  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.8" />
+  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.8">
+    <PrivateAssets>all</PrivateAssets>
+    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+  </PackageReference>
+  <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.8" />
+  <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.8" />
+  <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.8" />
+
+  <!-- Bump Http extensions a 8.x (mejor compatibilidad con .NET 8) -->
+  <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+  <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.8" />
+  <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.14.0" />
+  <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
+  <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
+  <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
+
+  <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+
+  <PackageReference Include="TimeZoneConverter" Version="6.1.0" />
+</ItemGroup>
+
+  <ItemGroup>
+    <None Update="local.settings.dev">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+    <None Update="local.settings.dev">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Application\Features\LogEjecucion\Validators\Output\" />
+  </ItemGroup>
+
 </Project>
