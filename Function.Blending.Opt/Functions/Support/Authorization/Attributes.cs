@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Function.Blending.Opt.Functions.Support.Http;
+using System;
 
 namespace Function.Blending.Opt.Functions.Support.Authorization;
 
@@ -19,5 +20,5 @@ public sealed class RequireScopesAttribute : Attribute
 public sealed class ValidateHmacAttribute : Attribute
 {
   public string HeaderName { get; }
-  public ValidateHmacAttribute(string headerName = "X-Signature") => HeaderName = headerName;
+  public ValidateHmacAttribute(string headerName = HmacKeys.XSignatureHeaderKey) => HeaderName = headerName;
 }

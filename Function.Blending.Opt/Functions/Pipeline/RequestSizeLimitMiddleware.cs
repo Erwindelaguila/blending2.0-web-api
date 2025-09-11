@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using Function.Blending.Opt.Functions.Configuration.Options;
+using Function.Blending.Opt.Functions.Support.Http;
 using Function.Blending.Opt.Functions.Support.ProblemDetails;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -28,7 +29,7 @@ public sealed class RequestSizeLimitMiddleware(IOptions<RequestSizeOptions> opts
         if (long.TryParse(raw, out var len) && len > _opts.MaxBytes)
         {
           var res = req.CreateResponse(HttpStatusCode.RequestEntityTooLarge);
-          var traceId = context.Items.TryGetValue("CorrelationId", out var v) ? v?.ToString() : null;
+          var traceId = context.Items.TryGetValue(CorrelationKeys.CorrelationIdItemKey, out var v) ? v?.ToString() : null;
 
           await _pdf.WriteAsync(res,
             status: 413,

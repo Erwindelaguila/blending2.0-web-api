@@ -1,6 +1,6 @@
 namespace Function.Blending.Opt.Shared.Constants;
 
-public sealed class AppParamConstants
+public sealed class AppParamKeys
 {
   public static class Cache
   { 

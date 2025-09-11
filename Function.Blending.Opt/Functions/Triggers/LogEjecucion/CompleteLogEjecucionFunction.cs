@@ -31,7 +31,7 @@ namespace Function.Blending.Opt.Functions.Triggers.LogEjecucion
     [Function(nameof(CompleteLogEjecucionFunction))]
     [AllowAnonymous]
     [Webhook]
-    [ValidateHmac("X-Signature")]
+    [ValidateHmac(HmacKeys.XSignatureHeaderKey)]
     public async Task<HttpResponseData> Run(
       [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = FunctionRoutes.Logistics.Webhook)]
       HttpRequestData req,
@@ -51,7 +51,7 @@ namespace Function.Blending.Opt.Functions.Triggers.LogEjecucion
       }
 
       // B) Usuario del sistema desde SysParam (igual que Calidad; no dependemos de oid/sub)
-      var sysParamKey = configuration[ConfigurationKeys.SysParam.SystemUser] ?? "SYS_USUARIO_SISTEMA";
+      var sysParamKey = configuration[ConfigurationKeys.SysParam.SystemUser] ?? SysParamDefaultKeys.SystemUser;
       Guid userId;
       try
       {

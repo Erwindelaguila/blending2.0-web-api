@@ -47,7 +47,7 @@ public static class ServiceCollectionExtensions
       .Configure<IConfiguration>((opts, config) =>
       {
         // DevBypass
-        if (bool.TryParse(config["Auth:DevBypass"], out var devBypass))
+        if (bool.TryParse(config[ConfigurationKeys.Auth.DevBypass], out var devBypass))
           opts.DevBypass = devBypass;
         else
           opts.DevBypass = false;
@@ -58,14 +58,14 @@ public static class ServiceCollectionExtensions
             ? Array.Empty<string>()
             : csv.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        opts.DevGroups = SplitCsv(config["Auth:DevGroups"]);
+        opts.DevGroups = SplitCsv(config[ConfigurationKeys.Auth.DevGroups]);
 
         // Allow:* (CSV)
         opts.Allow.Clear();
         foreach (var kv in config.AsEnumerable(makePathsRelative: false))
         {
           if (string.IsNullOrWhiteSpace(kv.Key)) continue;
-          if (!kv.Key.StartsWith("Auth:Allow:", StringComparison.OrdinalIgnoreCase)) continue;
+          if (!kv.Key.StartsWith($"{ConfigurationKeys.Auth.AllowSection}:", StringComparison.OrdinalIgnoreCase)) continue;
 
           var groups = SplitCsv(kv.Value);
           if (!opts.Allow.ContainsKey(kv.Key))

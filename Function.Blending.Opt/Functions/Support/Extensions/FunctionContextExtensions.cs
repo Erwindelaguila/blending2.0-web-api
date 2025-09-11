@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Function.Blending.Opt.Functions.Support.Http;
 using Function.Blending.Opt.Shared.Constants;
 using Function.Blending.Opt.Shared.Extensions;
 using Microsoft.Azure.Functions.Worker;
@@ -11,13 +12,13 @@ public static class FunctionContextExtensions
   /// Devuelve el CorrelationId almacenado en el contexto (si existe).
   /// </summary>
   public static string? GetCorrelationId(this FunctionContext ctx)
-    => ctx.Items.TryGetValue("CorrelationId", out var v) ? v?.ToString() : null;
+    => ctx.Items.TryGetValue(CorrelationKeys.CorrelationIdItemKey, out var v) ? v?.ToString() : null;
 
   /// <summary>
   /// Devuelve el ClaimsPrincipal resuelto por middlewares previos (si existe).
   /// </summary>
   public static ClaimsPrincipal? GetUser(this FunctionContext ctx)
-    => ctx.Items.TryGetValue("Principal", out var v) ? v as ClaimsPrincipal : null;
+    => ctx.Items.TryGetValue(MiscellaneousKeys.Principal, out var v) ? v as ClaimsPrincipal : null;
 
   /// <summary>
   /// Devuelve los IDs de grupos/roles del usuario, normalizados y sin duplicados.
