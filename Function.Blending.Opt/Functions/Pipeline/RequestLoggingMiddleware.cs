@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Function.Blending.Opt.Functions.Support.Http;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Functions.Worker.Middleware;
@@ -12,7 +13,7 @@ public sealed class RequestLoggingMiddleware(ILogger<RequestLoggingMiddleware> l
   {
     var sw = Stopwatch.StartNew();
     var name = context.FunctionDefinition.Name;
-    var corr = context.Items.TryGetValue("CorrelationId", out var v) ? v?.ToString() : null;
+    var corr = context.Items.TryGetValue(CorrelationKeys.CorrelationIdItemKey, out var v) ? v?.ToString() : null;
 
     logger.LogInformation("REQ start {Function} corr=({CorrelationId})", name, corr);
 

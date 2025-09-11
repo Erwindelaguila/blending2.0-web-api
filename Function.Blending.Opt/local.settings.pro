@@ -12,7 +12,7 @@
     "Auth:DevBypass": "false",
     "Auth:DevGroups": "000000000000000000000000C48B7FA6,4770b5a4-d693-46b2-9e04-eb434d2a3c1b",
 
-    // === Flags Tipos de Validación (Producción solo dejar: Auth:EnableBearerTokens = true ) ===
+    // === Flags Tipos de ValidaciÃ³n (ProducciÃ³n solo dejar: Auth:EnableBearerTokens = true ) ===
     "Auth:EnableEasyAuth": "false",
     "Auth:EnableLocalHeaderPrincipal": "true",
     "Auth:EnableHmacPrincipal": "false",
@@ -24,7 +24,7 @@
     "Auth:Bearer:Audience": "api://f8d7cce6-0cf4-46cf-a13d-66f1099c05c8",
     "Auth:Bearer:ClockSkewSeconds": "300",
 
-    // === Scopes dinámicos (CSV) ===
+    // === Scopes dinÃ¡micos (CSV) ===
     "Auth:Allow:Quality:ReadById": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
     "Auth:Allow:Quality:ReadHistory": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
     "Auth:Allow:Quality:WriteStart": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
@@ -35,21 +35,20 @@
     "Auth:Allow:Logistics:WriteStart": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
     "Auth:Allow:Logistics:ToggleConfirmed": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
 
-    // === Límites ===
+    // === LÃ­mites ===
     "Limits:WebhookMaxBytes": "2097152",
 
-    // === Catálogo AuxTable por Id ===
+    // === CatÃ¡logo AuxTable por Id ===
     "Catalog:QualityExecutionStatus:Id": "99F7B28F-4CD5-4EC7-81A3-AFF474332949",
     "Catalog:LogisticExecutionStatus:Id": "4E38D655-602E-452B-8A06-1A014247342B",
 
-    // === Catálogo AuxProp por Clave ===
+    // === CatÃ¡logo AuxProp por Clave ===
     "Catalog:QualityExecutionStatus:Prop:ExposeColor": "true",
     "Catalog:QualityExecutionStatus:Prop:ColorClave": "color",
     "Catalog:LogisticExecutionStatus:Prop:ExposeColor": "true",
     "Catalog:LogisticExecutionStatus:Prop:ColorClave": "color",
 
-
-    // === Caché de Estados de Calidad ===
+    // === CachÃ© de Estados de Calidad ===
     "Catalog:QualityExecutionStatus:Cache:Enabled": "true",
     "Catalog:QualityExecutionStatus:Cache:TtlSeconds": "300",
     "Catalog:QualityExecutionStatus:Cache:CacheNulls": "false",
@@ -57,7 +56,7 @@
     "Catalog:LogisticExecutionStatus:Cache:TtlSeconds": "300",
     "Catalog:LogisticExecutionStatus:Cache:CacheNulls": "false",
 
-    // === Catálogo AuxRow por Id ===
+    // === CatÃ¡logo AuxRow por Id ===
     "Catalog:QualityExecutionStatus:EnEjecucion": "08AB1FA5-FA0D-4BB8-8A89-453C2D4897BF",
     "Catalog:QualityExecutionStatus:Procesado": "5124313F-7DCB-47A0-B84B-5833E383231E",
     "Catalog:QualityExecutionStatus:Aceptado": "D606881A-4262-4AE0-BAF9-397F538DC710",
@@ -73,7 +72,7 @@
     "AppParam:QualityExecutionCodeFormat": "APP_CAL_CODIGO_FORMAT",
     "AppParam:LogisticExecutionCodeFormat": "APP_LOG_CODIGO_FORMAT",
 
-    // === Chaché de AppParam ===
+    // === ChachÃ© de AppParam ===
     "AppParamCache:Enabled": "true",
     "AppParamCache:DefaultTtlSeconds": "300",
     "AppParamCache:CacheNulls": "false",
@@ -83,7 +82,7 @@
     // === SysParam Keys ===
     "SysParam:SystemUser": "SYS_USUARIO_SISTEMA",
 
-    // === Caché de SysParam ===
+    // === CachÃ© de SysParam ===
     "SysParamCache:Enabled": "true",
     "SysParamCache:DefaultTtlSeconds": "300",
     "SysParamCache:CacheNulls": "false",
@@ -94,7 +93,7 @@
     "Defaults:Logistic:Execution:Format": "LOG{0:D6}",
 
     // === Logging ===
-    "Logging:LogLevel:Default": "Debug", // cambia a "Warning" para menos ruido, "Debug"/"Trace" para máximo detalle
+    "Logging:LogLevel:Default": "Debug", // cambia a "Warning" para menos ruido, "Debug"/"Trace" para mÃ¡ximo detalle
     "Logging:LogLevel:Microsoft": "Warning", // baja ruido de framework
     "Logging:LogLevel:Microsoft.Azure.Functions.Worker": "Information",
 
@@ -114,6 +113,7 @@
     "Security:Hmac:VaultUrl": "https://kvblending2.vault.azure.net/",
     "Security:Hmac:CacheSeconds": "600",
     "Security:Hmac:TenantId": "b7e26f48-2292-4a14-a355-1aeb8489ae3d", // opcional, ayuda en multi-tenant
-    "Security:Hmac:Credential:Mode": "Interactive" // usa CLI si existe; si no, abre login interactivo
+    "Security:Hmac:Credential:Mode": "Interactive", // usa CLI si existe; si no, abre login interactivo -> PROD: ManagedIdentity -> necesario(Security:Hmac:Credential:ClientId)
+    "Security:Hmac:Credential:ClientId": "<clientId-de-la-UAMI>"
   }
 }

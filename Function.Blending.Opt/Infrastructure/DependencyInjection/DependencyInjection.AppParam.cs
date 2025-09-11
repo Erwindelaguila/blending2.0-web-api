@@ -16,15 +16,15 @@ public static partial class DependencyInjection
     services.AddOptions<AppParamCacheOptions>()
       .Configure<IConfiguration>((opts, config) =>
       {
-        opts.Enabled = GetBool(config, AppParamConstants.Cache.Enabled, true);
-        opts.DefaultTtlSeconds = GetInt(config, AppParamConstants.Cache.DefaultTtlSeconds, 300);
-        opts.CacheNulls = GetBool(config, AppParamConstants.Cache.CacheNulls, false);
+        opts.Enabled = GetBool(config, AppParamKeys.Cache.Enabled, true);
+        opts.DefaultTtlSeconds = GetInt(config, AppParamKeys.Cache.DefaultTtlSeconds, 300);
+        opts.CacheNulls = GetBool(config, AppParamKeys.Cache.CacheNulls, false);
 
         opts.PerKeyTtlSeconds.Clear();
         foreach (var kv in config.AsEnumerable(makePathsRelative: false))
         {
           if (string.IsNullOrWhiteSpace(kv.Key)) continue;
-          const string prefix = AppParamConstants.Cache.PrefixPerKeyTtlSeconds;
+          const string prefix = AppParamKeys.Cache.PrefixPerKeyTtlSeconds;
           if (!kv.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) continue;
 
           var paramKey = kv.Key[prefix.Length..];

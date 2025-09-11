@@ -14,7 +14,7 @@ public static class RequestJsonExtensions
     FunctionContext ctx,
     CancellationToken cancellationToken = default)
   {
-    if (ctx.Items.TryGetValue("RawBody", out var rawObj) &&
+    if (ctx.Items.TryGetValue(HmacKeys.RawBodyItemsKey, out var rawObj) &&
         rawObj is string raw &&
         !string.IsNullOrWhiteSpace(raw))
     {

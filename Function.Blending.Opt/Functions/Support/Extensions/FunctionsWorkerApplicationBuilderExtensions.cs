@@ -1,4 +1,5 @@
 ﻿using Function.Blending.Opt.Functions.Pipeline;
+using Function.Blending.Opt.Shared.Constants;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Hosting;
 
@@ -30,11 +31,11 @@ public static class FunctionsWorkerApplicationBuilderExtensions
 
     if (enableRequestSizeLimit)
       builder.UseWhen<RequestSizeLimitMiddleware>(ctx =>
-          ctx.FunctionDefinition.InputBindings.Values.Any(b => b.Type == "httpTrigger"));
+          ctx.FunctionDefinition.InputBindings.Values.Any(b => b.Type == MiscellaneousKeys.HttpTrigger));
 
     // HMAC solo si es HTTP trigger
     builder.UseWhen<HmacValidationMiddleware>(ctx =>
-        ctx.FunctionDefinition.InputBindings.Values.Any(b => b.Type == "httpTrigger"));
+        ctx.FunctionDefinition.InputBindings.Values.Any(b => b.Type == MiscellaneousKeys.HttpTrigger));
 
     if (enableAuthentication)
     {

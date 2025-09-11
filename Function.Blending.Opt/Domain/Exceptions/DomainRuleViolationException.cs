@@ -1,4 +1,4 @@
-namespace Blending2.Domain.Exceptions;
+namespace Function.Blending.Opt.Domain.Exceptions;
 
 public sealed class DomainRuleViolationException
 {

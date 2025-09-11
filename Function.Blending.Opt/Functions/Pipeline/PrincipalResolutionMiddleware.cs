@@ -1,5 +1,6 @@
 ﻿using Function.Blending.Opt.Functions.Support.Authorization;
 using Function.Blending.Opt.Functions.Support.Security;
+using Function.Blending.Opt.Shared.Constants;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Middleware;
 
@@ -20,7 +21,7 @@ public sealed class PrincipalResolutionMiddleware : IFunctionsWorkerMiddleware
 
     // Marcar si es webhook (para que DevBypass lo ignore)
     var isWebhook = _attrReader.Get<WebhookAttribute>(context) is not null;
-    context.Items["IsWebhook"] = isWebhook;
+    context.Items[MiscellaneousKeys.IsWebhook] = isWebhook;
 
     // AllowAnonymous: salta resolución (no exige auth)
     var allowAnon = _attrReader.Get<AllowAnonymousAttribute>(context) is not null;
@@ -28,7 +29,7 @@ public sealed class PrincipalResolutionMiddleware : IFunctionsWorkerMiddleware
     {
       var principal = await _resolver.ResolveAsync(context, req);
       if (principal is not null)
-        context.Items["Principal"] = principal;
+        context.Items[MiscellaneousKeys.Principal] = principal;
     }
 
     await next(context);

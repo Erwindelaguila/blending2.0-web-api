@@ -37,16 +37,16 @@ builder.Services.AddFunctionsSupport(builder.Configuration); // capa Functions (
 // Nota: este wiring permanece aquí porque no forma parte de tu AddInfrastructure().
 builder.Services.Configure<HmacOptions>(opts =>
 {
-  opts.Resolver = builder.Configuration["Security:Hmac:Resolver"] ?? "KeyVault";
-  opts.VaultUrl = builder.Configuration["Security:Hmac:VaultUrl"] ?? string.Empty;
-  opts.CacheSeconds = int.TryParse(builder.Configuration["Security:Hmac:CacheSeconds"], out var s) ? s : 600;
-  opts.TenantId = builder.Configuration["Security:Hmac:TenantId"];
+  opts.Resolver = builder.Configuration[ConfigurationKeys.Security.Hmac.Resolver] ?? "KeyVault";
+  opts.VaultUrl = builder.Configuration[ConfigurationKeys.Security.Hmac.VaultUrl] ?? string.Empty;
+  opts.CacheSeconds = int.TryParse(builder.Configuration[ConfigurationKeys.Security.Hmac.CacheSeconds], out var s) ? s : 600;
+  opts.TenantId = builder.Configuration[ConfigurationKeys.Security.Hmac.TenantId];
 
   opts.Credential = new HmacCredentialOptions
   {
-    Mode = builder.Configuration["Security:Hmac:Credential:Mode"] ?? "DefaultNoCli",
-    ClientId = builder.Configuration["Security:Hmac:Credential:ClientId"],
-    TenantId = builder.Configuration["Security:Hmac:Credential:TenantId"] ?? builder.Configuration["Security:Hmac:TenantId"]
+    Mode = builder.Configuration[ConfigurationKeys.Security.Hmac.Credential.Mode] ?? "DefaultNoCli",
+    ClientId = builder.Configuration[ConfigurationKeys.Security.Hmac.Credential.ClientId],
+    TenantId = builder.Configuration[ConfigurationKeys.Security.Hmac.Credential.TenantId] ?? builder.Configuration[ConfigurationKeys.Security.Hmac.TenantId]
   };
 });
 
