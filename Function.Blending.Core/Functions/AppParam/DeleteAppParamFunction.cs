@@ -18,18 +18,22 @@ public class DeleteAppParamFunction
     private readonly IMediator _mediator;
     private readonly IAuthorizationService _authorizationService;
     private readonly IAuditService _auditService;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public DeleteAppParamFunction(ILogger<DeleteAppParamFunction> logger, IMediator mediator, IAuthorizationService authorizationService, IAuditService auditService)
+    public DeleteAppParamFunction(ILogger<DeleteAppParamFunction> logger, IMediator mediator, IAuthorizationService authorizationService, IAuditService auditService, IAuthorizationHeaderExtractor headerExtractor)
     {
         _logger = logger;
         _mediator = mediator;
         _authorizationService = authorizationService;
         _auditService = auditService;
+        _headerExtractor = headerExtractor;
     }
 
 
     private void SetupAuthorizationHeaders(HttpRequestData req)
     {
+        // TEMPORALMENTE DESHABILITADO - Solo probando con Agregado
+        /*
         var headers = new Dictionary<string, string>();
         
         foreach (var header in req.Headers)
@@ -38,6 +42,7 @@ public class DeleteAppParamFunction
         }
         
         AuthorizationService.SetCurrentRequestHeaders(headers);
+        */
     }
 
     [Function(FunctionNames.AppParam.Delete)]
@@ -49,6 +54,14 @@ public class DeleteAppParamFunction
 
         try
         {
+   
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             // ===== AUTORIZACIÓN =====
             // Configurar headers desde HttpRequestData para Azure Functions
             SetupAuthorizationHeaders(req);
@@ -110,7 +123,8 @@ public class DeleteAppParamFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+       
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

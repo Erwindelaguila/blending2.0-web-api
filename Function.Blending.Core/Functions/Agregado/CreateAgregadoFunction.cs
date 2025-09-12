@@ -17,10 +17,12 @@ namespace Function.Blending.Core.Functions.Agregado;
 public class CreateAgregadoFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
-    public CreateAgregadoFunction(IMediator mediator)
+    public CreateAgregadoFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator;
+        _headerExtractor = headerExtractor;
     }
 
     [Function(FunctionNames.Agregado.Create)]
@@ -29,6 +31,14 @@ public class CreateAgregadoFunction
     {
         try
         {
+      
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             var body = await req.ReadAsStringAsync();
 
             if (string.IsNullOrEmpty(body))
@@ -100,7 +110,8 @@ public class CreateAgregadoFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+       
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

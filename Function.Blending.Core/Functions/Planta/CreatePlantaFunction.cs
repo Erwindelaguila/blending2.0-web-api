@@ -3,6 +3,7 @@ using FluentValidation;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Planta.Commands;
 using Function.Blending.Core.Application.Planta.DTOs;
 using Function.Blending.Core.Infrastructure.Services;
@@ -15,10 +16,14 @@ namespace Function.Blending.Core.Functions.Planta;
 public class CreatePlantaFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public CreatePlantaFunction(IMediator mediator)
+    public CreatePlantaFunction(
+        IMediator mediator,
+        IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator;
+        _headerExtractor = headerExtractor;
     }
 
     [Function(FunctionNames.Planta.Create)]
@@ -27,6 +32,14 @@ public class CreatePlantaFunction
     {
         try
         {
+            // ✅ NUEVO: Establecer contexto JWT al inicio de la función
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             var body = await req.ReadAsStringAsync();
 
             if (string.IsNullOrEmpty(body))
@@ -99,7 +112,8 @@ public class CreatePlantaFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+           
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

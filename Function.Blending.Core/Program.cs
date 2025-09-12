@@ -7,9 +7,7 @@ using Function.Blending.Core.Infrastructure.Mappings;
 using Function.Blending.Core.Infrastructure.Persistence;
 using Function.Blending.Core.Infrastructure.Persistence.Mappings;
 using Function.Blending.Core.Infrastructure.Persistence.Repositories;
-// ❌ YA NO NECESARIOS - Function.Auth ya no proporciona servicios de JWT
-// using Function.Blending.Auth.Application.Interfaces.Services;
-// using Function.Blending.Auth.Infrastructure.Services;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
@@ -65,17 +63,12 @@ var host = new HostBuilder()
         services.AddScoped<ICalidadParametroRepository, CalidadParametroRepository>();
         services.AddScoped<IAppParamRepository, AppParamRepository>();
         
-        // === Servicios de Autenticación (Reutilizando de Function.Blending.Auth) ===
-        // Servicios compartidos - siguiendo principio DRY
-        // ===== SERVICIOS SIMPLIFICADOS PARA APIM =====
-        // Ya no necesitamos validación JWT - APIM/Gateway lo maneja
-        // services.AddScoped<IAuthorizationHeaderExtractor, AuthorizationHeaderExtractor>(); // ❌ ELIMINADO
-        // services.AddScoped<ITokenClaimExtractor, TokenClaimExtractor>(); // ❌ ELIMINADO
-        // services.AddScoped<ITokenClaimValidator, TokenClaimValidator>(); // ❌ ELIMINADO
-        // services.AddScoped<ITokenConfigurationService, TokenConfigurationService>(); // ❌ ELIMINADO
-        // services.AddScoped<ITokenSignatureValidator, TokenSignatureValidator>(); // ❌ ELIMINADO
+        // === Servicios de Autenticación JWT ===
+        // Servicios para decodificar y validar tokens JWT directamente
+        services.AddScoped<IAuthorizationHeaderExtractor, AuthorizationHeaderExtractor>();
+        services.AddScoped<ITokenClaimExtractor, TokenClaimExtractor>();
         
-        // ✅ SERVICIO DE USUARIO ACTUAL SIMPLIFICADO
+        // SERVICIO DE USUARIO ACTUAL SIMPLIFICADO
         // Servicios de autorización y auditoría
         services.AddHttpContextAccessor(); // ← AGREGAMOS ESTO
         services.AddScoped<IAuthorizationService, AuthorizationService>();

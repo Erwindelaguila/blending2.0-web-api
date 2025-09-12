@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Agregado.DTOs;
 using Function.Blending.Core.Application.Agregado.Queries;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
@@ -14,10 +15,12 @@ namespace Function.Blending.Core.Functions.Agregado;
 public class GetAgregadoByIdFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
-    public GetAgregadoByIdFunction(IMediator mediator)
+    public GetAgregadoByIdFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator;
+        _headerExtractor = headerExtractor;
     }
 
     [Function(FunctionNames.Agregado.GetById)]
@@ -26,6 +29,14 @@ public class GetAgregadoByIdFunction
     {
         try
         {
+            
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             var idString = query["id"];
             if (string.IsNullOrEmpty(idString) || !Guid.TryParse(idString, out var agregadoId))
@@ -68,7 +79,8 @@ public class GetAgregadoByIdFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+       
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

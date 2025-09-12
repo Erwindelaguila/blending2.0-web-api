@@ -18,13 +18,16 @@ public class GetAllAgregadosFunction
 {
     private readonly IMediator _mediator;
     private readonly ILogger<GetAllAgregadosFunction> _logger;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
     public GetAllAgregadosFunction(
         IMediator mediator, 
-        ILogger<GetAllAgregadosFunction> logger)
+        ILogger<GetAllAgregadosFunction> logger,
+        IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator;
         _logger = logger;
+        _headerExtractor = headerExtractor;
     }
 
     [Function(FunctionNames.Agregado.GetAll)]
@@ -35,6 +38,13 @@ public class GetAllAgregadosFunction
         
         try
         {
+      
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
             
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             
@@ -99,7 +109,8 @@ public class GetAllAgregadosFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+         
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

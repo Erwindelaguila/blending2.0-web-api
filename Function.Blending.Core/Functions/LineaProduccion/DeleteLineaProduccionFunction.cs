@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.LineaProduccion.Commands;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
@@ -13,10 +14,12 @@ namespace Function.Blending.Core.Functions.LineaProduccion;
 public class DeleteLineaProduccionFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
-    public DeleteLineaProduccionFunction(IMediator mediator)
+    public DeleteLineaProduccionFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator;
+        _headerExtractor = headerExtractor;
     }
 
     [Function(FunctionNames.LineaProduccion.Delete)]
@@ -26,6 +29,14 @@ public class DeleteLineaProduccionFunction
     {
         try
         {
+        
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             if (!Guid.TryParse(id, out var lineaProduccionId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
@@ -74,7 +85,8 @@ public class DeleteLineaProduccionFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+           
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

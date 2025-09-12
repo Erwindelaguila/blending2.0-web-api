@@ -16,10 +16,14 @@ namespace Function.Blending.Core.Functions.Parametro;
 public class CreateParametroFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public CreateParametroFunction(IMediator mediator)
+    public CreateParametroFunction(
+        IMediator mediator,
+        IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator;
+        _headerExtractor = headerExtractor;
     }
 
     [Function(FunctionNames.Parametro.Create)]
@@ -28,6 +32,14 @@ public class CreateParametroFunction
     {
         try
         {
+            // ✅ NUEVO: Establecer contexto JWT al inicio de la función
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             var body = await req.ReadAsStringAsync();
             
             if (string.IsNullOrEmpty(body))
@@ -99,7 +111,8 @@ public class CreateParametroFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+          
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

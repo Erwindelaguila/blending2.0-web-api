@@ -2,6 +2,7 @@ using System.Web;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.AppParam.Queries;
 using Function.Blending.Core.Application.AppParam.DTOs;
 using Function.Blending.Core.Infrastructure.Services;
@@ -14,10 +15,12 @@ namespace Function.Blending.Core.Functions.AppParam;
 public class GetAllAppParamsFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public GetAllAppParamsFunction(IMediator mediator)
+    public GetAllAppParamsFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator;
+        _headerExtractor = headerExtractor;
     }
 
     [Function(FunctionNames.AppParam.GetAll)]
@@ -26,6 +29,14 @@ public class GetAllAppParamsFunction
     {
         try
         {
+         
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             var queryParams = HttpUtility.ParseQueryString(req.Url.Query);
             
             
@@ -50,6 +61,12 @@ public class GetAllAppParamsFunction
 
             if (isGlobalConfig)
             {
+                // Validar que AppParamShortList no sea null
+                if (result.AppParamShortList == null)
+                {
+                    throw new InvalidOperationException("AppParamShortList es null cuando debería tener datos");
+                }
+
                 var responseShortList = BaseResponse<List<AppParamSortDTO>>.Success(
                     result.AppParamShortList, 
                     "AppParams obtenidos exitosamente"
@@ -57,6 +74,13 @@ public class GetAllAppParamsFunction
 
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, responseShortList);
             }
+            
+            // Validar que AppParamPaginate no sea null
+            if (result.AppParamPaginate == null)
+            {
+                throw new InvalidOperationException("AppParamPaginate es null cuando debería tener datos");
+            }
+
             var responsePaginate = BaseResponse<PagedResponse<AppParamDTO>>.Success(
                 result.AppParamPaginate, 
                 "AppParams obtenidos exitosamente"
@@ -87,7 +111,8 @@ public class GetAllAppParamsFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+   
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

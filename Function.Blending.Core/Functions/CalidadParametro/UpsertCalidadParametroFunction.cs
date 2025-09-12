@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.CalidadParametro.DTOs;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Infrastructure.Services;
 using FluentValidation;
 using MediatR;
@@ -18,13 +19,16 @@ public class UpsertCalidadParametroFunction
 {
     private readonly ILogger<UpsertCalidadParametroFunction> _logger;
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; // ✅ NUEVO: Inyección para JWT
 
     public UpsertCalidadParametroFunction(
         ILogger<UpsertCalidadParametroFunction> logger,
-        IMediator mediator)
+        IMediator mediator,
+        IAuthorizationHeaderExtractor headerExtractor) // ✅ NUEVO: Inyección
     {
         _logger = logger;
         _mediator = mediator;
+        _headerExtractor = headerExtractor; // ✅ NUEVO: Asignación
     }
 
     [Function(FunctionNames.CalidadParametro.Upsert)]
@@ -33,6 +37,14 @@ public class UpsertCalidadParametroFunction
     {
         try
         {
+            // ✅ NUEVO: Establecer contexto JWT al inicio de la función
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             _logger.LogInformation("UpsertCalidadParametroFunction procesando...");
 
             var body = await req.ReadAsStringAsync();
@@ -103,7 +115,8 @@ public class UpsertCalidadParametroFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+            // ✅ NUEVO: Limpiar contexto de autenticación
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

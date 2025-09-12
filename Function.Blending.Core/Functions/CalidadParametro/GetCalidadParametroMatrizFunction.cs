@@ -2,6 +2,7 @@ using Function.Blending.Core.Application.CalidadParametro.Queries;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
@@ -15,13 +16,16 @@ public class GetCalidadParametroMatrizFunction
 {
     private readonly ILogger<GetCalidadParametroMatrizFunction> _logger;
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
     public GetCalidadParametroMatrizFunction(
         ILogger<GetCalidadParametroMatrizFunction> logger,
-        IMediator mediator)
+        IMediator mediator,
+        IAuthorizationHeaderExtractor headerExtractor)
     {
         _logger = logger;
         _mediator = mediator;
+        _headerExtractor = headerExtractor;
     }
 
     [Function(FunctionNames.CalidadParametro.GetMatriz)]
@@ -30,6 +34,14 @@ public class GetCalidadParametroMatrizFunction
     {
         try
         {
+          
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             _logger.LogInformation("GetCalidadParametroMatrizFunction procesando...");
 
             var query = new GetCalidadParametroMatrizQuery();
@@ -57,7 +69,8 @@ public class GetCalidadParametroMatrizFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+        
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

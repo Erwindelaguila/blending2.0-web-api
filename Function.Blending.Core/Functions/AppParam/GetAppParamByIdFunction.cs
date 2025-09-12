@@ -1,6 +1,7 @@
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.AppParam.Queries;
 using Function.Blending.Core.Application.AppParam.DTOs;
 using Function.Blending.Core.Infrastructure.Services;
@@ -13,10 +14,12 @@ namespace Function.Blending.Core.Functions.AppParam;
 public class GetAppParamByIdFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public GetAppParamByIdFunction(IMediator mediator)
+    public GetAppParamByIdFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator;
+        _headerExtractor = headerExtractor; 
     }
 
     [Function(FunctionNames.AppParam.GetById)]
@@ -26,6 +29,14 @@ public class GetAppParamByIdFunction
     {
         try
         {
+      
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             if (string.IsNullOrWhiteSpace(key))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<AppParamDTO>.Fail(
@@ -70,7 +81,8 @@ public class GetAppParamByIdFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+     
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.LineaProduccion.DTOs;
 using Function.Blending.Core.Application.LineaProduccion.Queries;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
@@ -14,10 +15,12 @@ namespace Function.Blending.Core.Functions.LineaProduccion;
 public class GetLineaProduccionByIdFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
-    public GetLineaProduccionByIdFunction(IMediator mediator)
+    public GetLineaProduccionByIdFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator;
+        _headerExtractor = headerExtractor;
     }
 
     [Function(FunctionNames.LineaProduccion.GetById)]
@@ -26,6 +29,14 @@ public class GetLineaProduccionByIdFunction
     {
         try
         {
+
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             var idString = query["id"];
             if (string.IsNullOrEmpty(idString) || !Guid.TryParse(idString, out var lineaProduccionId))
@@ -67,7 +78,8 @@ public class GetLineaProduccionByIdFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

@@ -2,6 +2,7 @@ using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Producto.Commands;
 using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
@@ -10,17 +11,16 @@ using Microsoft.Azure.Functions.Worker.Http;
 
 namespace Function.Blending.Core.Functions.Producto;
 
-/// <summary>
-/// Función para eliminar productos
-/// Implementa auditoría automática y validaciones de negocio
-/// </summary>
+
 public class DeleteProductoFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; // ✅ NUEVO: Inyección para JWT
 
-    public DeleteProductoFunction(IMediator mediator)
+    public DeleteProductoFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _headerExtractor = headerExtractor; // ✅ NUEVO: Asignar extractor JWT
     }
 
     [Function(FunctionNames.Producto.Delete)]
@@ -30,6 +30,14 @@ public class DeleteProductoFunction
     {
         try
         {
+            // ✅ NUEVO: Establecer contexto JWT al inicio de la función
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             if (!Guid.TryParse(id, out var productoId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
@@ -80,7 +88,8 @@ public class DeleteProductoFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+            // ✅ NUEVO: Limpiar contexto JWT al final de la función
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

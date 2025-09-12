@@ -4,6 +4,7 @@ using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Producto.Commands;
 using Function.Blending.Core.Application.Producto.DTOs;
 using Function.Blending.Core.Infrastructure.Services;
@@ -14,17 +15,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Function.Blending.Core.Functions.Producto;
 
-/// <summary>
-/// Función para actualizar productos
-/// Implementa patrón clean code con DTOs y validaciones declarativas
-/// </summary>
+
 public class UpdateProductoFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public UpdateProductoFunction(IMediator mediator)
+    public UpdateProductoFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _headerExtractor = headerExtractor; 
     }
 
     [Function(FunctionNames.Producto.Update)]
@@ -33,6 +33,13 @@ public class UpdateProductoFunction
     {
         try
         {
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             var body = await req.ReadAsStringAsync();
             if (string.IsNullOrEmpty(body))
             {
@@ -114,7 +121,7 @@ public class UpdateProductoFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }
