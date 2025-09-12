@@ -13,9 +13,9 @@ public partial class CalOutDetalle
 
     public string? Ruma { get; set; }
 
-    public int? KilosUsados { get; set; }
+    public decimal KilosUsados { get; set; }
 
-    public int? Cantidad { get; set; }
+    public decimal Cantidad { get; set; }
 
     public string? Codigo { get; set; }
 
@@ -27,7 +27,7 @@ public partial class CalOutDetalle
 
     public string? FechaContabilizacion { get; set; }
 
-    public DateTime? NuevaFechaFabricacion { get; set; }
+    public string NuevaFechaFabricacion { get; set; } = null!;
 
     public Guid CreadoPorId { get; set; }
 
@@ -38,6 +38,8 @@ public partial class CalOutDetalle
     public DateTime? ModificadoEl { get; set; }
 
     public bool Aceptado { get; set; }
+
+    public string FechaFabricacion { get; set; } = null!;
 
     public virtual ICollection<CalOutDetOtros> CalOutDetOtros { get; set; } = new List<CalOutDetOtros>();
 

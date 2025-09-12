@@ -147,6 +147,9 @@ public sealed class CalEjecucionRepository(
 
     using var tx = await db.Database.BeginTransactionAsync(ct);
 
+    var outRes = await db.Set<E.CalOutResumen>().AsNoTracking().Where(x => x.EjecucionId == id).ToListAsync(ct);
+    var outDet = await db.Set<E.CalOutDetalle>().AsNoTracking().Where(x => x.EjecucionId == id).ToListAsync(ct);
+
     // ¿Ya existen outputs? (idempotencia)
     var outResExists = await db.Set<E.CalOutResumen>().AsNoTracking().AnyAsync(x => x.EjecucionId == id, ct);
     var outDetExists = await db.Set<E.CalOutDetalle>().AsNoTracking().AnyAsync(x => x.EjecucionId == id, ct);

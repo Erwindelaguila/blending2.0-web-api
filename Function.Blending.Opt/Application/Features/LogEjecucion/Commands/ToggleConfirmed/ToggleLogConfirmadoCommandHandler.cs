@@ -1,19 +1,17 @@
 ﻿
 using AutoMapper;
+using Function.Blending.Opt.Application.Features.LogEjecucion.Commands.ToggleState;
 using Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Responses;
 using Function.Blending.Opt.Domain.Abstractions.Repositories;
 using Function.Blending.Opt.Domain.Abstractions.Services;
-using Function.Blending.Opt.Shared.Constants;
 using Function.Blending.Opt.Shared.Results;
 using MediatR;
-using Microsoft.Extensions.Configuration;
 
-namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.ToggleState;
+namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.ToggleConfirmed;
 
 public sealed class ToggleLogConfirmadoCommandHandler(
   ILogEjecucionRepository repo,
   IEstadoLogisticaCatalogService estados,
-  IConfiguration cfg,
   IMapper mapper
 ) : IRequestHandler<ToggleLogConfirmadoCommand, Result<LogEjecucionResponse>>
 {
