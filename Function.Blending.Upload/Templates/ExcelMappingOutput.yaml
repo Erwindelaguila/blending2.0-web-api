@@ -168,7 +168,7 @@ detalle:
       
 parametros:
 
-  sheetName: "Detalle Mezcla"
+  sheetName: "Parametros Escogidos"
   startRow: 1
   
   fijos:

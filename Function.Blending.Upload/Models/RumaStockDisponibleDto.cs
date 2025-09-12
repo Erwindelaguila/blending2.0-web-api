@@ -14,6 +14,8 @@ public class RumaValoresFijosDto
     public string Anio { get; set; }
     public string Serie { get; set; }
     public string FechaCorte { get; set; }
+    public string DescripcionCalidad { get; set; }
+    public string NombreCalidad { get; set; }
     public double Cantidad { get; set; }
     public string Um { get; set; }
     public string Codigo { get; set; }

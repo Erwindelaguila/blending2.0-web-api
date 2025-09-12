@@ -7,7 +7,7 @@ namespace Function.Blending.Upload.Helpers;
 
 public static class ParsedRowMapperHelper
 {
-    public static RumaStockDisponibleDto Mapear(ParsedRowDto row, ExcelMappingConfig config)
+    public static RumaStockDisponibleDto Mapear(ParsedRowDto row, ExcelMappingConfig config,  List<CalidadDto> Calidades)
     {
         var result = new RumaStockDisponibleDto();
 
@@ -23,6 +23,16 @@ public static class ParsedRowMapperHelper
         var anioCompleto = ObtenerAnioCompleto(anioCorto);
         var serie = rumaNro.Length >= 7 ? rumaNro.Substring(5, 2) : string.Empty;
 
+        var codigo = ParsedRowValidator.ObtenerTexto(row.Fijos, nameof(config.Fijos.Codigo)) ?? string.Empty;
+        
+        
+        var descripcionCalidad = Calidades
+            .FirstOrDefault(c => c.CodigoMaterial == codigo)?.Descripcion ?? string.Empty;
+        
+        
+        var nombreCalidad = Calidades
+            .FirstOrDefault(c => c.CodigoMaterial == codigo)?.Nombre ?? string.Empty;
+
         var fijos = new RumaValoresFijosDto
         {
             RumaNro = rumaNro,
@@ -32,9 +42,11 @@ public static class ParsedRowMapperHelper
             // Los caracteres 6 y 7 (posición 5 y 6) si hay al menos 7
             Serie = serie,
             FechaCorte = GetFechaCorte(serie,fechaFabricacion, anioCompleto, fechaContabilizacion),
+            DescripcionCalidad = descripcionCalidad,
+            NombreCalidad = nombreCalidad,
             Cantidad = ParsedRowValidator.ObtenerDouble(row.Fijos, nameof(config.Fijos.Cantidad)) ?? 0,
             Um = ParsedRowValidator.ObtenerTexto(row.Fijos, nameof(config.Fijos.Um)) ?? string.Empty,
-            Codigo = ParsedRowValidator.ObtenerTexto(row.Fijos, nameof(config.Fijos.Codigo)) ?? string.Empty,
+            Codigo = codigo,
             DescripcionMaterial = ParsedRowValidator.ObtenerTexto(row.Fijos, nameof(config.Fijos.DescripcionMaterial)) ?? string.Empty,
             CentroUbicacion = ParsedRowValidator.ObtenerTexto(row.Fijos, nameof(config.Fijos.CentroUbicacion)) ?? string.Empty,
             AlmacenUbicacion = ParsedRowValidator.ObtenerTexto(row.Fijos, nameof(config.Fijos.AlmacenUbicacion)) ?? string.Empty,

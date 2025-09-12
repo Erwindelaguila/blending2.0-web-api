@@ -17,25 +17,30 @@ public class GetSapStockFunction
     private readonly XlsmProcessingService<ExcelMappingConfig> _xlsmProcessingServiceExcel;
     private readonly ILogger _logger;
     private readonly BlobStorageService _blobStorageService;
+    private readonly CalidadService _calidadService;
 
     public GetSapStockFunction(
         IHttpClientFactory httpClientFactory,
-        ILoggerFactory loggerFactory,
-        BlobStorageService blobStorageService
-        )
+        ILogger<GetSapStockFunction> logger,
+        BlobStorageService blobStorageService,
+        CalidadService calidadService
+    )
     {
         _sapStockService = new SapStockService(httpClientFactory);
         _sapXmlParser = new SapXmlHelper();
-        _logger = loggerFactory.CreateLogger<GetSapStockFunction>();
-        _xlsmProcessingService = new XlsmProcessingService<ExcelSapMappingOutputConfig>("Templates", "ExcelSapMappingInput.yml");
+        _logger = logger;
+        _xlsmProcessingService =
+            new XlsmProcessingService<ExcelSapMappingOutputConfig>("Templates", "ExcelSapMappingInput.yml");
         _blobStorageService = blobStorageService;
-        _xlsmProcessingServiceExcel = new XlsmProcessingService<ExcelMappingConfig>("Templates" ,"ExcelMappingInput.yaml" );
-
+        _xlsmProcessingServiceExcel =
+            new XlsmProcessingService<ExcelMappingConfig>("Templates", "ExcelMappingInput.yaml");
+        _calidadService = calidadService;
     }
 
     [Function("GetSapStockFunction")]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "upload/get-sap-stock")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "upload/get-sap-stock")]
+        HttpRequestData req)
     {
         try
         {
@@ -52,27 +57,34 @@ public class GetSapStockFunction
             }
 
             var xml = await _sapStockService.GetStockXmlAsync();
-            
+
             var parsedJson = _sapXmlParser.ParseStockXml(xml);
-            
+
             var config = _xlsmProcessingService.ConfiguracionActual;
             var configActualExcel = _xlsmProcessingServiceExcel.ConfiguracionActual;
+
             using var workbook = _xlsmProcessingService.GetXLWorkbookAction("Templates", "template_sap_output.xlsx");
 
             ExcelWriterService.WriteExcelSap(config, parsedJson, workbook);
             var fileBytes = await MultipartFormDataHelper.ToByteArrayAsync(workbook);
             
+            //Refactor 
+
             var filas = await _xlsmProcessingServiceExcel.ProcesarArchivoAsync(fileBytes);
-            
+
+            var listaCalidades = await _calidadService.GetCalidadAsync(req);
+
             var listaFinal = filas
                 .Where(ParsedRowValidator.EsValido)
-                .Select(fila => ParsedRowMapperHelper.Mapear(fila, configActualExcel))
+                .Select(fila => ParsedRowMapperHelper.Mapear(fila, configActualExcel, listaCalidades))
                 .ToList();
             
+            // fin refactor
+
             var blobResult = await _blobStorageService.UploadExcelAndGetLinkAsync(workbook);
-            
+
             blobResult.ExcelDataSap = listaFinal;
-            // Devolver la URL de descarga
+
             return await HttpResponseHelper.WriteBaseResponseAsync(
                 req,
                 BaseResponse<BlobResultDto>.Success(

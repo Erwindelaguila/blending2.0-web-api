@@ -34,6 +34,17 @@ public class GetAllCalidadFunction
             // Log para debug - ver qué parámetros llegan
             _logger.LogInformation("GetAllCalidades called with query: {QueryString}", req.Url.Query);
             
+            
+            var isGlobal = query.Get("isGlobal") ?? "0";
+
+            if (isGlobal != "0" && isGlobal != "1")
+            {
+                throw new ArgumentException("El parámetro 'isHarina' debe ser '0' o '1'.");
+            }
+
+            // Aquí puedes convertirlo a bool si quieres
+            bool isGlobalConfig = isGlobal == "1";
+            
             // Verificar si es solicitud de activos (para combos)
             if (query["activo"] == "true")
             {
@@ -59,9 +70,14 @@ public class GetAllCalidadFunction
             // Solo enviar filtros si al menos uno está activo
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var result = await _mediator.Send(new GetAllCalidadesQuery(page, size, filtersToApply, req));
+            var result = await _mediator.Send(new GetAllCalidadesQuery(page, size, filtersToApply, req , isGlobalConfig));
+
+            if (isGlobalConfig)
+            {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<List<CalidadDTO>>.Success(result.CalidadList, "Calidades obtenidas correctamente"));
+            }
             
-            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<CalidadDTO>>.Success(result, "Calidades obtenidas correctamente"));
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<CalidadDTO>>.Success(result.CalidadPaginate, "Calidades obtenidas correctamente"));
         }
         catch (ArgumentException ex)
         {

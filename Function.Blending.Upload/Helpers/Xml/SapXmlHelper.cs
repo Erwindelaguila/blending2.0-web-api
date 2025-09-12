@@ -3,7 +3,7 @@ namespace Function.Blending.Upload.Helpers;
 
 public class SapXmlHelper
 {
-    public List<Dictionary<string, string>> ParseStockXml(string xml)
+    public List<Dictionary<string, string>?> ParseStockXml(string xml)
     {
         var doc = XDocument.Parse(xml);
 

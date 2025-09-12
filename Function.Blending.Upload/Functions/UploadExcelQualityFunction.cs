@@ -14,12 +14,13 @@ public class UploadExcelQualityFunction
 {
   private readonly ILogger _logger;
   private readonly XlsmProcessingService<ExcelMappingConfig> _xlsmProcessingService;
+  private readonly CalidadService _calidadService;
 
-
-  public UploadExcelQualityFunction(ILoggerFactory loggerFactory)
+  public UploadExcelQualityFunction(ILoggerFactory loggerFactory, CalidadService calidadService)
   {
     _logger = loggerFactory.CreateLogger<UploadExcelQualityFunction>();
     _xlsmProcessingService = new XlsmProcessingService<ExcelMappingConfig>("Templates" ,"ExcelMappingInput.yaml" );
+    _calidadService = calidadService;
   }
 
   [Function("UploadExcelQualityFunction")]
@@ -43,9 +44,11 @@ public class UploadExcelQualityFunction
       // Mapear filas válidas a DTOs
       var config = _xlsmProcessingService.ConfiguracionActual;
       
+      var listaCalidades = await _calidadService.GetCalidadAsync(req);
+      
       var listaFinal = filas
         .Where(ParsedRowValidator.EsValido)
-        .Select(fila => ParsedRowMapperHelper.Mapear(fila, config))
+        .Select(fila => ParsedRowMapperHelper.Mapear(fila, config, listaCalidades))
         .ToList();
       
       return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse< List<RumaStockDisponibleDto>>.Success(listaFinal, "Archivo procesado correctamente."));

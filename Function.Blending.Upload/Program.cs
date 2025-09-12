@@ -1,3 +1,5 @@
+using Function.Blending.Upload.Functions.Process;
+using Function.Blending.Upload.Helpers;
 using Function.Blending.Upload.Services;
 using FunctionBlending.Core.Services;
 using Microsoft.Azure.Functions.Worker;
@@ -16,10 +18,12 @@ builder.Services
 
 // Registrar HttpClientFactory para inyección de IHttpClientFactory
 builder.Services.AddSingleton<BlobStorageService>();
-builder.Services.AddHttpClient();
+builder.Services.AddSingleton<SapStockProcess>();
+builder.Services.AddSingleton<SapXmlHelper>();
+
 builder.Services.AddHttpClient<CadmioService>();
+builder.Services.AddHttpClient<CalidadService>();
 
 // Registrar otros servicios si es necesario
 // builder.Services.AddSingleton<XlsmProcessingService>();
-
 builder.Build().Run();
