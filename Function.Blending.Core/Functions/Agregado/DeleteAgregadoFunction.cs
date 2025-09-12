@@ -15,10 +15,12 @@ namespace Function.Blending.Core.Functions.Agregado;
 public class DeleteAgregadoFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
-    public DeleteAgregadoFunction(IMediator mediator)
+    public DeleteAgregadoFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator;
+        _headerExtractor = headerExtractor;
     }
 
     [Function(FunctionNames.Agregado.Delete)]
@@ -28,6 +30,13 @@ public class DeleteAgregadoFunction
     {
         try
         {
+
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
 
             if (!Guid.TryParse(id, out var agregadoId))
             {
@@ -78,7 +87,8 @@ public class DeleteAgregadoFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

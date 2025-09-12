@@ -4,6 +4,7 @@ using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Parametro.Commands;
 using Function.Blending.Core.Application.Parametro.DTOs;
 using Function.Blending.Core.Infrastructure.Services;
@@ -17,10 +18,13 @@ namespace Function.Blending.Core.Functions.Parametro;
 public class UpdateParametroFunction
 {
     private readonly IMediator _mediator;
-
-    public UpdateParametroFunction(IMediator mediator)
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
+    public UpdateParametroFunction(
+        IMediator mediator,
+        IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator;
+        _headerExtractor = headerExtractor;
     }
 
     [Function(FunctionNames.Parametro.Update)]
@@ -29,6 +33,14 @@ public class UpdateParametroFunction
     {
         try
         {
+          
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             var body = await req.ReadAsStringAsync();
             if (string.IsNullOrEmpty(body))
             {
@@ -118,7 +130,8 @@ public class UpdateParametroFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+        
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

@@ -3,6 +3,7 @@ using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Calidad.Commands;
 using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
@@ -14,10 +15,14 @@ namespace Function.Blending.Core.Functions.Calidad;
 public class DeleteCalidadFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public DeleteCalidadFunction(IMediator mediator)
+    public DeleteCalidadFunction(
+        IMediator mediator,
+        IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator;
+        _headerExtractor = headerExtractor;
     }
 
     [Function(FunctionNames.Calidad.Delete)]
@@ -27,6 +32,13 @@ public class DeleteCalidadFunction
     {
         try
         {
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             if (!Guid.TryParse(id, out var calidadId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
@@ -75,7 +87,7 @@ public class DeleteCalidadFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

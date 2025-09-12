@@ -2,6 +2,7 @@ using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.TipoProduccion.Commands;
 using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
@@ -17,10 +18,14 @@ namespace Function.Blending.Core.Functions.TipoProduccion;
 public class DeleteTipoProduccionFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; // ✅ NUEVO: Inyección para JWT
 
-    public DeleteTipoProduccionFunction(IMediator mediator)
+    public DeleteTipoProduccionFunction(
+        IMediator mediator,
+        IAuthorizationHeaderExtractor headerExtractor) // ✅ NUEVO: Inyección
     {
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _headerExtractor = headerExtractor ?? throw new ArgumentNullException(nameof(headerExtractor)); // ✅ NUEVO: Asignación
     }
 
     [Function(FunctionNames.TipoProduccion.Delete)]
@@ -30,6 +35,14 @@ public class DeleteTipoProduccionFunction
     {
         try
         {
+            // ✅ NUEVO: Establecer contexto JWT al inicio de la función
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             if (!Guid.TryParse(id, out var tipoProduccionId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
@@ -80,7 +93,8 @@ public class DeleteTipoProduccionFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+            // ✅ NUEVO: Limpiar contexto de autenticación
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

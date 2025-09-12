@@ -24,23 +24,17 @@ var host = new HostBuilder()
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
         });
 
-        // ===== SERVICIOS SIMPLIFICADOS PARA APIM =====
-        // Ya no necesitamos validación JWT - APIM lo maneja
-        // services.AddSingleton<ITokenConfigurationService, TokenConfigurationService>(); // ❌ ELIMINADO
-        // services.AddScoped<ITokenClaimExtractor, TokenClaimExtractor>(); // ❌ ELIMINADO
-        // services.AddScoped<ITokenClaimValidator, TokenClaimValidator>(); // ❌ ELIMINADO
-        // services.AddScoped<ITokenSignatureValidator, TokenSignatureValidator>(); // ❌ ELIMINADO
-        // services.AddScoped<ITokenService, SimpleTokenService>(); // ❌ ELIMINADO
-        // services.AddScoped<IAuthorizationHeaderExtractor, AuthorizationHeaderExtractor>(); // ❌ ELIMINADO
-        
-        // ✅ NUEVOS SERVICIOS PARA HEADERS
-        services.AddScoped<IHeaderUserService, HeaderUserService>();
-        
-        // ✅ SERVICIOS DE CONFIGURACIÓN Y NEGOCIO
+        // Registro de servicios de infraestructura
+        services.AddSingleton<ITokenConfigurationService, TokenConfigurationService>();
+        services.AddScoped<ITokenClaimExtractor, TokenClaimExtractor>();
+        services.AddScoped<ITokenClaimValidator, TokenClaimValidator>();
+        services.AddScoped<ITokenSignatureValidator, TokenSignatureValidator>();
+        services.AddScoped<ITokenService, SimpleTokenService>();
         services.AddScoped<IAzureAppConfigService, AzureAppConfigService>();
+        services.AddScoped<IAuthorizationHeaderExtractor, AuthorizationHeaderExtractor>();
         services.AddScoped<IHttpResponseService, HttpResponseService>();
         
-        // ✅ SERVICIOS DE APLICACIÓN PARA CLEAN ARCHITECTURE
+        // Registro de servicios de aplicación para Clean Architecture
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IMenuService, MenuService>();
 

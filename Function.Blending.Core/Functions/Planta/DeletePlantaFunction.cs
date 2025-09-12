@@ -2,6 +2,7 @@ using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Planta.Commands;
 using Function.Blending.Core.Infrastructure.Services;
 using MediatR;
@@ -13,10 +14,14 @@ namespace Function.Blending.Core.Functions.Planta;
 public class DeletePlantaFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public DeletePlantaFunction(IMediator mediator)
+    public DeletePlantaFunction(
+        IMediator mediator,
+        IAuthorizationHeaderExtractor headerExtractor) 
     {
         _mediator = mediator;
+        _headerExtractor = headerExtractor;
     }
 
     [Function(FunctionNames.Planta.Delete)]
@@ -26,6 +31,14 @@ public class DeletePlantaFunction
     {
         try
         {
+        
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             if (!Guid.TryParse(id, out var plantaId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
@@ -74,7 +87,8 @@ public class DeletePlantaFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+      
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

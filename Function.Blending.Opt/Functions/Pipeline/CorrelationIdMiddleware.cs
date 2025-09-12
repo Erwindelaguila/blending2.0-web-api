@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Functions.Worker;
+﻿using Function.Blending.Opt.Functions.Support.Http;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Logging;
@@ -14,12 +15,13 @@ namespace Function.Blending.Opt.Functions.Pipeline;
 /// </summary>
 public sealed class CorrelationIdMiddleware(ILogger<CorrelationIdMiddleware> logger) : IFunctionsWorkerMiddleware
 {
-  private const string CorrelationIdItemKey = "CorrelationId";
+  private const string CorrelationIdItemKey = CorrelationKeys.CorrelationIdItemKey;
+  private const string CorrelationHeaderKey = CorrelationKeys.CorrelationHeaderKey;
 
   // Encabezados candidatos desde los que intentar leer el ID:
   private static readonly string[] HeaderCandidates = new[]
   {
-        "x-correlation-id",
+        CorrelationHeaderKey,
         "X-Correlation-ID",
         "x-request-id",
         "X-Request-ID",
@@ -59,9 +61,9 @@ public sealed class CorrelationIdMiddleware(ILogger<CorrelationIdMiddleware> log
     {
       if (context.GetInvocationResult().Value is HttpResponseData res)
       {
-        if (!res.Headers.TryGetValues("x-correlation-id", out _))
+        if (!res.Headers.TryGetValues(CorrelationHeaderKey, out _))
         {
-          res.Headers.Add("x-correlation-id", correlationId);
+          res.Headers.Add(CorrelationHeaderKey, correlationId);
         }
       }
     }

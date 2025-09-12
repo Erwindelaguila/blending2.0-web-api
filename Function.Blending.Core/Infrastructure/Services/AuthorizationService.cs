@@ -1,37 +1,79 @@
 using Function.Blending.Core.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 
 namespace Function.Blending.Core.Infrastructure.Services;
 
 /// <summary>
-/// Implementación del servicio de autorización que lee headers X-User-*
-/// generados por el APIM Simulator (o APIM real en producción).
+/// Implementación del servicio de autorización que lee y valida tokens JWT
+/// directamente desde el header Authorization.
 /// 
-/// Este servicio replica exactamente el comportamiento de autorización
-/// que tendríamos con Azure APIM en producción.
+/// Este servicio decodifica tokens JWT para extraer información del usuario
+/// como ID, nombre y scopes/permisos sin depender de simuladores externos.
 /// 
 /// NOTA: Para Azure Functions Workers, utilizamos AsyncLocal para mantener
-/// el contexto de headers a través de llamadas async sin depender del thread ID.
+/// el contexto de token a través de llamadas async sin depender del thread ID.
 /// </summary>
 public class AuthorizationService : IAuthorizationService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<AuthorizationService> _logger;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor;
+    private readonly ITokenClaimExtractor _tokenExtractor;
     
-    // Cache thread-safe para headers de Azure Functions usando AsyncLocal para mantener contexto
+    // Cache thread-safe para token JWT usando AsyncLocal para mantener contexto
+    private static readonly AsyncLocal<string?> _currentJwtToken = new();
+    private static readonly AsyncLocal<HttpRequestData?> _currentRequestData = new();
+    
+    // MÉTODOS DE COMPATIBILIDAD TEMPORAL - Para funciones que aún no se han migrado
     private static readonly AsyncLocal<Dictionary<string, string>?> _currentRequestHeaders = new();
 
-    public AuthorizationService(IHttpContextAccessor httpContextAccessor, ILogger<AuthorizationService> logger)
+    public AuthorizationService(
+        IHttpContextAccessor httpContextAccessor, 
+        ILogger<AuthorizationService> logger,
+        IAuthorizationHeaderExtractor headerExtractor,
+        ITokenClaimExtractor tokenExtractor)
     {
         _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _headerExtractor = headerExtractor ?? throw new ArgumentNullException(nameof(headerExtractor));
+        _tokenExtractor = tokenExtractor ?? throw new ArgumentNullException(nameof(tokenExtractor));
     }
 
     /// <summary>
-    /// Establece los headers para el contexto actual (llamado desde las Functions).
+    /// Establece el JWT token para el contexto actual (llamado desde las Functions).
     /// Usa AsyncLocal para mantener el contexto a través de await calls.
+    /// </summary>
+    public static void SetCurrentJwtToken(string jwtToken)
+    {
+        _currentJwtToken.Value = jwtToken;
+    }
+
+    /// <summary>
+    /// Establece el HttpRequestData para el contexto actual (llamado desde las Functions).
+    /// </summary>
+    public static void SetCurrentRequestData(HttpRequestData requestData)
+    {
+        _currentRequestData.Value = requestData;
+    }
+
+    /// <summary>
+    /// Limpia el token del contexto actual.
+    /// </summary>
+    public static void ClearCurrentContext()
+    {
+        _currentJwtToken.Value = null;
+        _currentRequestData.Value = null;
+        _currentRequestHeaders.Value = null; // Compatibilidad
+    }
+
+    // ======= MÉTODOS DE COMPATIBILIDAD TEMPORAL =======
+    // Estos métodos son para funciones que aún no se han migrado al nuevo sistema JWT
+    
+    /// <summary>
+    /// MÉTODO DE COMPATIBILIDAD: Para funciones que aún no se han migrado
     /// </summary>
     public static void SetCurrentRequestHeaders(Dictionary<string, string> headers)
     {
@@ -39,7 +81,7 @@ public class AuthorizationService : IAuthorizationService
     }
 
     /// <summary>
-    /// Limpia los headers del contexto actual.
+    /// MÉTODO DE COMPATIBILIDAD: Para funciones que aún no se han migrado
     /// </summary>
     public static void ClearCurrentRequestHeaders()
     {
@@ -48,7 +90,7 @@ public class AuthorizationService : IAuthorizationService
 
     /// <summary>
     /// Valida si el usuario actual tiene el scope requerido.
-    /// Lee el header X-User-Scopes generado por APIM/APIM Simulator.
+    /// Lee el token JWT y extrae los scopes del claim 'scp', o usa headers de compatibilidad.
     /// </summary>
     public bool HasRequiredScope(string requiredScope)
     {
@@ -72,85 +114,120 @@ public class AuthorizationService : IAuthorizationService
     }
 
     /// <summary>
-    /// Obtiene el User ID desde el header X-User-Id.
+    /// Obtiene el User ID desde el token JWT (claims oid o sub), o headers de compatibilidad.
     /// </summary>
     public string GetCurrentUserId()
     {
-        var headers = GetCurrentHeaders();
-        if (headers == null)
+        // Intentar primero con JWT
+        var jwtToken = GetCurrentJwtToken();
+        if (!string.IsNullOrEmpty(jwtToken))
         {
-            _logger.LogWarning("No se pudieron obtener headers, retornando usuario anónimo");
-            return "anonymous";
+            var userId = _tokenExtractor.GetUserObjectId(jwtToken);
+            if (!string.IsNullOrEmpty(userId)) return userId;
+        }
+        
+        // Fallback a headers de compatibilidad
+        var headers = _currentRequestHeaders.Value;
+        if (headers != null && headers.TryGetValue("X-User-Id", out var userIdHeader) && !string.IsNullOrEmpty(userIdHeader))
+        {
+            return userIdHeader;
         }
 
-        return headers.TryGetValue("X-User-Id", out var userId) && !string.IsNullOrEmpty(userId) 
-            ? userId 
-            : "anonymous";
+        _logger.LogWarning("No se pudo obtener User ID, retornando usuario anónimo");
+        return "anonymous";
     }
 
     /// <summary>
-    /// Obtiene el nombre del usuario desde el header X-User-Name.
+    /// Obtiene el nombre del usuario desde el token JWT o headers de compatibilidad.
     /// </summary>
     public string GetCurrentUserName()
     {
-        var headers = GetCurrentHeaders();
-        if (headers == null) return "Unknown User";
+        // Intentar primero con JWT
+        var jwtToken = GetCurrentJwtToken();
+        if (!string.IsNullOrEmpty(jwtToken))
+        {
+            var userName = _tokenExtractor.GetUserName(jwtToken);
+            if (!string.IsNullOrEmpty(userName)) return userName;
+        }
+        
+        // Fallback a headers de compatibilidad
+        var headers = _currentRequestHeaders.Value;
+        if (headers != null && headers.TryGetValue("X-User-Name", out var userNameHeader) && !string.IsNullOrEmpty(userNameHeader))
+        {
+            return userNameHeader;
+        }
 
-        return headers.TryGetValue("X-User-Name", out var userName) && !string.IsNullOrEmpty(userName) 
-            ? userName 
-            : "Unknown User";
+        return "Unknown User";
     }
 
     /// <summary>
-    /// Obtiene todos los scopes del usuario desde el header X-User-Scopes.
+    /// Obtiene todos los scopes del usuario desde el token JWT o headers de compatibilidad.
     /// </summary>
     public string[] GetCurrentUserScopes()
     {
-        var headers = GetCurrentHeaders();
-        if (headers == null)
+        // Intentar primero con JWT
+        var jwtToken = GetCurrentJwtToken();
+        if (!string.IsNullOrEmpty(jwtToken))
         {
-            _logger.LogWarning("No se pudieron obtener headers, retornando scopes vacíos");
-            return Array.Empty<string>();
+            var scopes = _tokenExtractor.GetUserScopes(jwtToken);
+            if (scopes != null && scopes.Any()) return scopes.ToArray();
+        }
+        
+        // Fallback a headers de compatibilidad
+        var headers = _currentRequestHeaders.Value;
+        if (headers != null && headers.TryGetValue("X-User-Scopes", out var scopesHeader) && !string.IsNullOrEmpty(scopesHeader))
+        {
+            return scopesHeader.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         }
 
-        if (!headers.TryGetValue("X-User-Scopes", out var scopesHeader) || string.IsNullOrEmpty(scopesHeader))
-        {
-            _logger.LogWarning("Header X-User-Scopes no encontrado o vacío");
-            return Array.Empty<string>();
-        }
-
-        // Los scopes vienen separados por espacios (estándar OAuth2)
-        return scopesHeader.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        _logger.LogWarning("No se pudieron obtener scopes, retornando scopes vacíos");
+        return Array.Empty<string>();
     }
 
     /// <summary>
-    /// Obtiene los headers del contexto actual.
-    /// Intenta primero desde AsyncLocal context, luego desde HttpContext.
+    /// Obtiene el token JWT del contexto actual.
+    /// Intenta primero desde AsyncLocal, luego extrae del HttpRequestData o HttpContext.
     /// </summary>
-    private Dictionary<string, string>? GetCurrentHeaders()
+    private string? GetCurrentJwtToken()
     {
         // Intentar primero desde el AsyncLocal context
-        var cachedHeaders = _currentRequestHeaders.Value;
-        if (cachedHeaders != null)
+        var cachedToken = _currentJwtToken.Value;
+        if (!string.IsNullOrEmpty(cachedToken))
         {
-            _logger.LogDebug("Headers obtenidos desde AsyncLocal context");
-            return cachedHeaders;
+            _logger.LogDebug("Token JWT obtenido desde AsyncLocal context");
+            return cachedToken;
+        }
+
+        // Intentar desde HttpRequestData
+        var requestData = _currentRequestData.Value;
+        if (requestData != null)
+        {
+            _logger.LogDebug("Extrayendo token JWT desde HttpRequestData");
+            var token = _headerExtractor.ExtractJwtToken(requestData);
+            if (!string.IsNullOrEmpty(token))
+            {
+                // Cache para siguientes llamadas
+                _currentJwtToken.Value = token;
+                return token;
+            }
         }
 
         // Fallback a HttpContext (para casos donde esté disponible)
         var context = _httpContextAccessor.HttpContext;
         if (context != null)
         {
-            _logger.LogDebug("Headers obtenidos desde HttpContext");
-            var headers = new Dictionary<string, string>();
-            foreach (var header in context.Request.Headers)
+            _logger.LogDebug("Extrayendo token JWT desde HttpContext");
+            var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
             {
-                headers[header.Key] = header.Value.FirstOrDefault() ?? "";
+                var token = authHeader.Substring("Bearer ".Length).Trim();
+                // Cache para siguientes llamadas
+                _currentJwtToken.Value = token;
+                return token;
             }
-            return headers;
         }
 
-        _logger.LogWarning("No se pudo obtener contexto (ni AsyncLocal context ni HttpContext)");
+        _logger.LogWarning("No se pudo obtener token JWT desde ningún contexto");
         return null;
     }
 }

@@ -1,6 +1,7 @@
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.LineaProduccion.DTOs;
 using Function.Blending.Core.Application.LineaProduccion.Queries;
 using Function.Blending.Core.Infrastructure.Services;
@@ -16,11 +17,16 @@ public class GetAllLineasProduccionFunction
 {
     private readonly IMediator _mediator;
     private readonly ILogger<GetAllLineasProduccionFunction> _logger;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
-    public GetAllLineasProduccionFunction(IMediator mediator, ILogger<GetAllLineasProduccionFunction> logger)
+    public GetAllLineasProduccionFunction(
+        IMediator mediator, 
+        ILogger<GetAllLineasProduccionFunction> logger,
+        IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator;
         _logger = logger;
+        _headerExtractor = headerExtractor;
     }
 
     [Function(FunctionNames.LineaProduccion.GetAll)]
@@ -31,6 +37,14 @@ public class GetAllLineasProduccionFunction
         
         try
         {
+         
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             
             _logger.LogInformation("GetAllLineasProduccion called with query: {QueryString}", req.Url.Query);
@@ -95,7 +109,8 @@ public class GetAllLineasProduccionFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

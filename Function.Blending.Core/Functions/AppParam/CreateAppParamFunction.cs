@@ -4,6 +4,7 @@ using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.AppParam.Commands;
 using Function.Blending.Core.Application.AppParam.DTOs;
 using Function.Blending.Core.Infrastructure.Services;
@@ -16,10 +17,12 @@ namespace Function.Blending.Core.Functions.AppParam;
 public class CreateAppParamFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public CreateAppParamFunction(IMediator mediator)
+    public CreateAppParamFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator;
+        _headerExtractor = headerExtractor;
     }
 
     [Function(FunctionNames.AppParam.Create)]
@@ -28,6 +31,14 @@ public class CreateAppParamFunction
     {
         try
         {
+         
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             var body = await req.ReadAsStringAsync();
 
             if (string.IsNullOrEmpty(body))
@@ -113,7 +124,8 @@ public class CreateAppParamFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

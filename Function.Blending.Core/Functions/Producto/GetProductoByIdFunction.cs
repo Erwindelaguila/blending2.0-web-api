@@ -1,6 +1,7 @@
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Producto.DTOs;
 using Function.Blending.Core.Application.Producto.Queries;
 using Function.Blending.Core.Infrastructure.Services;
@@ -11,17 +12,16 @@ using System.Web;
 
 namespace Function.Blending.Core.Functions.Producto;
 
-/// <summary>
-/// Función para obtener producto por ID
-/// Implementa patrón clean code con manejo de errores estandarizado
-/// </summary>
+
 public class GetProductoByIdFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public GetProductoByIdFunction(IMediator mediator)
+    public GetProductoByIdFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _headerExtractor = headerExtractor; 
     }
 
     [Function(FunctionNames.Producto.GetById)]
@@ -30,6 +30,13 @@ public class GetProductoByIdFunction
     {
         try
         {
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             var idString = query["id"];
             
@@ -73,7 +80,7 @@ public class GetProductoByIdFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

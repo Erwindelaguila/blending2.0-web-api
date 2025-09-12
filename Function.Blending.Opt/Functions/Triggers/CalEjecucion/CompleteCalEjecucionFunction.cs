@@ -3,18 +3,15 @@ using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Requests;
 using Function.Blending.Opt.Domain.Abstractions.Services;
 using Function.Blending.Opt.Functions.Support.Authorization;
 using Function.Blending.Opt.Functions.Support.Execution;
-using Function.Blending.Opt.Functions.Support.Extensions;
 using Function.Blending.Opt.Functions.Support.Http;
 using Function.Blending.Opt.Functions.Support.ProblemDetails;
 using Function.Blending.Opt.Functions.Support.Routing;
-using Function.Blending.Opt.Infrastructure.Configuration;
 using Function.Blending.Opt.Shared.Constants;
 using Function.Blending.Opt.Shared.Results; // Para ResultKind
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
 using System.Net;
 
 namespace Function.Blending.Opt.Functions.Triggers.CalEjecucion;
@@ -29,7 +26,7 @@ public sealed class CompleteCalEjecucionFunction(
   [Function(nameof(CompleteCalEjecucionFunction))]
   [AllowAnonymous]
   [Webhook]
-  [ValidateHmac("X-Signature")]
+  [ValidateHmac(HmacKeys.XSignatureHeaderKey)]
   public async Task<HttpResponseData> Run(
     [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = FunctionRoutes.Quality.Webhook)]
     HttpRequestData req,
@@ -49,7 +46,7 @@ public sealed class CompleteCalEjecucionFunction(
     }
 
     // === Usuario del sistema desde SysParam (sin depender de principal/oid) ===
-    var sysParamKey = configuration[ConfigurationKeys.SysParam.SystemUser] ?? "SYS_USUARIO_SISTEMA";
+    var sysParamKey = configuration[ConfigurationKeys.SysParam.SystemUser] ?? SysParamDefaultKeys.SystemUser;
     Guid userId;
     try
     {

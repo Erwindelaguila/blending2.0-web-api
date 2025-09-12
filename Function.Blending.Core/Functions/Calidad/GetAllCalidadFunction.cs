@@ -1,6 +1,7 @@
 ﻿using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Application.Calidad.Queries;
 using Function.Blending.Core.Infrastructure.Services;
@@ -16,11 +17,16 @@ public class GetAllCalidadFunction
 {
     private readonly IMediator _mediator;
     private readonly ILogger<GetAllCalidadFunction> _logger;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
-    public GetAllCalidadFunction(IMediator mediator, ILogger<GetAllCalidadFunction> logger)
+    public GetAllCalidadFunction(
+        IMediator mediator, 
+        ILogger<GetAllCalidadFunction> logger,
+        IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator;
         _logger = logger;
+        _headerExtractor = headerExtractor;
     }
 
     [Function(FunctionNames.Calidad.GetAll)]
@@ -29,6 +35,14 @@ public class GetAllCalidadFunction
     {
         try
         {
+           
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             
             // Log para debug - ver qué parámetros llegan
@@ -107,7 +121,8 @@ public class GetAllCalidadFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+          
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

@@ -3,6 +3,7 @@ using FluentValidation;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Calidad.Commands;
 using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Infrastructure.Services;
@@ -15,10 +16,14 @@ namespace Function.Blending.Core.Functions.Calidad;
 public class UpdateCalidadFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public UpdateCalidadFunction(IMediator mediator)
+    public UpdateCalidadFunction(
+        IMediator mediator,
+        IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator;
+        _headerExtractor = headerExtractor;
     }
     
     [Function(FunctionNames.Calidad.Update)]
@@ -27,6 +32,14 @@ public class UpdateCalidadFunction
     {
         try
         {
+        
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             var body = await req.ReadAsStringAsync();
             
             if (string.IsNullOrEmpty(body))
@@ -109,7 +122,8 @@ public class UpdateCalidadFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+         
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

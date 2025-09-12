@@ -2,6 +2,7 @@ using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.TipoProduccion.Queries;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Infrastructure.Services;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -19,13 +20,16 @@ public class GetAllTipoProduccionFunction
 {
     private readonly ILogger<GetAllTipoProduccionFunction> _logger;
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; // ✅ NUEVO: Inyección para JWT
 
     public GetAllTipoProduccionFunction(
         ILogger<GetAllTipoProduccionFunction> logger,
-        IMediator mediator)
+        IMediator mediator,
+        IAuthorizationHeaderExtractor headerExtractor) // ✅ NUEVO: Inyección
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _headerExtractor = headerExtractor ?? throw new ArgumentNullException(nameof(headerExtractor)); // ✅ NUEVO: Asignación
     }
 
     [Function(FunctionNames.TipoProduccion.GetAll)]
@@ -34,6 +38,14 @@ public class GetAllTipoProduccionFunction
     {
         try
         {
+            // ✅ NUEVO: Establecer contexto JWT al inicio de la función
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             _logger.LogInformation("GetAllTipoProduccionFunction procesando...");
 
             var query = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
@@ -84,7 +96,8 @@ public class GetAllTipoProduccionFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+            // ✅ NUEVO: Limpiar contexto de autenticación
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

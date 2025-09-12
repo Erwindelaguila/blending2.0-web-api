@@ -4,6 +4,7 @@ using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.TipoProduccion.Commands;
 using Function.Blending.Core.Application.TipoProduccion.DTOs;
 using Function.Blending.Core.Infrastructure.Services;
@@ -13,17 +14,17 @@ using Microsoft.Azure.Functions.Worker.Http;
 
 namespace Function.Blending.Core.Functions.TipoProduccion;
 
-/// <summary>
-/// Función para actualizar tipos de producción
-/// Implementa patrón clean code con DTOs y validaciones declarativas
-/// </summary>
 public class UpdateTipoProduccionFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public UpdateTipoProduccionFunction(IMediator mediator)
+    public UpdateTipoProduccionFunction(
+        IMediator mediator,
+        IAuthorizationHeaderExtractor headerExtractor) 
     {
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _headerExtractor = headerExtractor ?? throw new ArgumentNullException(nameof(headerExtractor));
     }
 
     [Function(FunctionNames.TipoProduccion.Update)]
@@ -32,6 +33,13 @@ public class UpdateTipoProduccionFunction
     {
         try
         {
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             var body = await req.ReadAsStringAsync();
             if (string.IsNullOrEmpty(body))
             {
@@ -113,7 +121,7 @@ public class UpdateTipoProduccionFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

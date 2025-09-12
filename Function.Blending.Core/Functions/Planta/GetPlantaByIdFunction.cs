@@ -1,6 +1,7 @@
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Planta.DTOs;
 using Function.Blending.Core.Application.Planta.Queries;
 using Function.Blending.Core.Infrastructure.Services;
@@ -14,10 +15,14 @@ namespace Function.Blending.Core.Functions.Planta;
 public class GetPlantaByIdFunction
 {
     private readonly IMediator _mediator;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public GetPlantaByIdFunction(IMediator mediator)
+    public GetPlantaByIdFunction(
+        IMediator mediator,
+        IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator;
+        _headerExtractor = headerExtractor;
     }
 
     [Function(FunctionNames.Planta.GetById)]
@@ -26,6 +31,13 @@ public class GetPlantaByIdFunction
     {
         try
         {
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             var idString = query["id"];
             
@@ -69,7 +81,7 @@ public class GetPlantaByIdFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }

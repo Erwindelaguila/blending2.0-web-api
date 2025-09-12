@@ -48,7 +48,6 @@
     "Catalog:LogisticExecutionStatus:Prop:ExposeColor": "true",
     "Catalog:LogisticExecutionStatus:Prop:ColorClave": "color",
 
-
     // === Caché de Estados de Calidad ===
     "Catalog:QualityExecutionStatus:Cache:Enabled": "true",
     "Catalog:QualityExecutionStatus:Cache:TtlSeconds": "300",
@@ -114,6 +113,7 @@
     "Security:Hmac:VaultUrl": "https://kvblending2.vault.azure.net/",
     "Security:Hmac:CacheSeconds": "600",
     "Security:Hmac:TenantId": "b7e26f48-2292-4a14-a355-1aeb8489ae3d", // opcional, ayuda en multi-tenant
-    "Security:Hmac:Credential:Mode": "Interactive" // usa CLI si existe; si no, abre login interactivo
+    "Security:Hmac:Credential:Mode": "Interactive", // usa CLI si existe; si no, abre login interactivo -> PROD: ManagedIdentity -> necesario(Security:Hmac:Credential:ClientId)
+    "Security:Hmac:Credential:ClientId": "<clientId-de-la-UAMI>"
   }
 }

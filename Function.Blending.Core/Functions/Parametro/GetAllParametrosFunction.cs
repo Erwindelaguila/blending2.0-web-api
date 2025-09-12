@@ -1,6 +1,7 @@
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Parametro.DTOs;
 using Function.Blending.Core.Application.Parametro.Queries;
 using Function.Blending.Core.Infrastructure.Services;
@@ -16,11 +17,16 @@ public class GetAllParametrosFunction
 {
     private readonly IMediator _mediator;
     private readonly ILogger<GetAllParametrosFunction> _logger;
+    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public GetAllParametrosFunction(IMediator mediator, ILogger<GetAllParametrosFunction> logger)
+    public GetAllParametrosFunction(
+        IMediator mediator, 
+        ILogger<GetAllParametrosFunction> logger,
+        IAuthorizationHeaderExtractor headerExtractor)
     {
         _mediator = mediator;
         _logger = logger;
+        _headerExtractor = headerExtractor;
     }
 
     [Function(FunctionNames.Parametro.GetAll)]
@@ -29,6 +35,14 @@ public class GetAllParametrosFunction
     {
         try
         {
+
+            var jwtToken = _headerExtractor.ExtractJwtToken(req);
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                AuthorizationService.SetCurrentJwtToken(jwtToken);
+                AuthorizationService.SetCurrentRequestData(req);
+            }
+
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             
             // Log para debug - ver qué parámetros llegan
@@ -84,7 +98,8 @@ public class GetAllParametrosFunction
         }
         finally
         {
-            AuthorizationService.ClearCurrentRequestHeaders();
+         
+            AuthorizationService.ClearCurrentContext();
         }
     }
 }
