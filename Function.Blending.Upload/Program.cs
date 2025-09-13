@@ -9,7 +9,7 @@ var builder = FunctionsApplication.CreateBuilder(args);
 
 builder.ConfigureFunctionsWebApplication();
 
-// Registrar Application Insights (opcional)!!
+// Registrar Application Insights (opcional)!!!
 builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
     .ConfigureFunctionsApplicationInsights();
