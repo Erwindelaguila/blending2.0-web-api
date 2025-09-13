@@ -14,6 +14,8 @@ deploy-auth:
     - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - Function.Blending.Auth/**/*
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
     - if: '$CI_PIPELINE_SOURCE == "web"'
   before_script:
     - set -euo pipefail
@@ -24,15 +26,12 @@ deploy-auth:
     - dotnet restore Function.Blending.Auth/Function.Blending.Auth.csproj
     - dotnet build Function.Blending.Auth/Function.Blending.Auth.csproj -c Release --no-restore
     - dotnet publish Function.Blending.Auth/Function.Blending.Auth.csproj -c Release -o ./publish/auth --no-build
-
     - echo "📦 Creating zip for Auth..."
     - cd ./publish/auth && zip -r ../auth.zip . && cd ../..
-
     - echo "🚀 Deploying Auth to func-blending2-auth-prod..."
     - az login --service-principal -u "$AZURE_CLIENT_ID" -p "$AZURE_CLIENT_SECRET" --tenant "$AZURE_TENANT_ID"
     - az account set --subscription "$AZURE_SUBSCRIPTION_ID"
-    - az functionapp config appsettings set -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-auth-prod" --settings WEBSITE_RUN_FROM_PACKAGE=1 SCM_DO_BUILD_DURING_DEPLOYMENT=false
-    - az functionapp deployment source config-zip -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-auth-prod" --src ./publish/auth.zip --timeout 1800
+    - az functionapp deployment source config-zip -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-auth-prod" --src ./publish/auth.zip --timeout 900
     - echo "✅ Auth deployment completed!"
 
 # ==============================
@@ -46,6 +45,8 @@ deploy-core:
     - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - Function.Blending.Core/**/*
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
     - if: '$CI_PIPELINE_SOURCE == "web"'
   before_script:
     - set -euo pipefail
@@ -56,16 +57,26 @@ deploy-core:
     - dotnet restore Function.Blending.Core/Function.Blending.Core.csproj
     - dotnet build Function.Blending.Core/Function.Blending.Core.csproj -c Release --no-restore
     - dotnet publish Function.Blending.Core/Function.Blending.Core.csproj -c Release -o ./publish/core --no-build
-
     - echo "📦 Creating zip for Core..."
     - cd ./publish/core && zip -r ../core.zip . && cd ../..
-
     - echo "🚀 Deploying Core to func-blending2-core-prod..."
     - az login --service-principal -u "$AZURE_CLIENT_ID" -p "$AZURE_CLIENT_SECRET" --tenant "$AZURE_TENANT_ID"
     - az account set --subscription "$AZURE_SUBSCRIPTION_ID"
-    - az functionapp config appsettings set -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-core-prod" --settings WEBSITE_RUN_FROM_PACKAGE=1 SCM_DO_BUILD_DURING_DEPLOYMENT=false
-    - az functionapp deployment source config-zip -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-core-prod" --src ./publish/core.zip --timeout 1800
-    - echo "✅ Core deployment completed!"
+    - |
+      for i in {1..3}; do
+        echo "🔄 Attempt $i/3: Deploying Core..."
+        if az functionapp deployment source config-zip -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-core-prod" --src ./publish/core.zip --timeout 1800; then
+          echo "✅ Core deployment completed!"
+          break
+        else
+          echo "⚠️ Attempt $i failed, retrying in 30 seconds..."
+          sleep 30
+          if [ $i -eq 3 ]; then
+            echo "❌ All attempts failed"
+            exit 1
+          fi
+        fi
+      done
 
 # ==============================
 # Deploy Function Opt
@@ -78,6 +89,8 @@ deploy-opt:
     - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - Function.Blending.Opt/**/*
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
     - if: '$CI_PIPELINE_SOURCE == "web"'
   before_script:
     - set -euo pipefail
@@ -88,16 +101,26 @@ deploy-opt:
     - dotnet restore Function.Blending.Opt/Function.Blending.Opt.csproj
     - dotnet build Function.Blending.Opt/Function.Blending.Opt.csproj -c Release --no-restore
     - dotnet publish Function.Blending.Opt/Function.Blending.Opt.csproj -c Release -o ./publish/opt --no-build
-
     - echo "📦 Creating zip for Opt..."
     - cd ./publish/opt && zip -r ../opt.zip . && cd ../..
-
     - echo "🚀 Deploying Opt to func-blending2-opt-prod..."
     - az login --service-principal -u "$AZURE_CLIENT_ID" -p "$AZURE_CLIENT_SECRET" --tenant "$AZURE_TENANT_ID"
     - az account set --subscription "$AZURE_SUBSCRIPTION_ID"
-    - az functionapp config appsettings set -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-opt-prod" --settings WEBSITE_RUN_FROM_PACKAGE=1 SCM_DO_BUILD_DURING_DEPLOYMENT=false
-    - az functionapp deployment source config-zip -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-opt-prod" --src ./publish/opt.zip --timeout 1800
-    - echo "✅ Opt deployment completed!"
+    - |
+      for i in {1..3}; do
+        echo "🔄 Attempt $i/3: Deploying Opt..."
+        if az functionapp deployment source config-zip -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-opt-prod" --src ./publish/opt.zip --timeout 1800; then
+          echo "✅ Opt deployment completed!"
+          break
+        else
+          echo "⚠️ Attempt $i failed, retrying in 30 seconds..."
+          sleep 30
+          if [ $i -eq 3 ]; then
+            echo "❌ All attempts failed"
+            exit 1
+          fi
+        fi
+      done
 
 # ==============================
 # Deploy Function Data (Upload)
@@ -110,6 +133,8 @@ deploy-data:
     - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - Function.Blending.Upload/**/*
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
     - if: '$CI_PIPELINE_SOURCE == "web"'
   before_script:
     - set -euo pipefail
@@ -120,13 +145,23 @@ deploy-data:
     - dotnet restore Function.Blending.Upload/Function.Blending.Upload.csproj
     - dotnet build Function.Blending.Upload/Function.Blending.Upload.csproj -c Release --no-restore
     - dotnet publish Function.Blending.Upload/Function.Blending.Upload.csproj -c Release -o ./publish/data --no-build
-
     - echo "📦 Creating zip for Data..."
     - cd ./publish/data && zip -r ../data.zip . && cd ../..
-
     - echo "🚀 Deploying Data to func-blending2-data-prod..."
     - az login --service-principal -u "$AZURE_CLIENT_ID" -p "$AZURE_CLIENT_SECRET" --tenant "$AZURE_TENANT_ID"
     - az account set --subscription "$AZURE_SUBSCRIPTION_ID"
-    - az functionapp config appsettings set -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-data-prod" --settings WEBSITE_RUN_FROM_PACKAGE=1 SCM_DO_BUILD_DURING_DEPLOYMENT=false
-    - az functionapp deployment source config-zip -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-data-prod" --src ./publish/data.zip --timeout 1800
-    - echo "✅ Data deployment completed!"
+    - |
+      for i in {1..3}; do
+        echo "🔄 Attempt $i/3: Deploying Data..."
+        if az functionapp deployment source config-zip -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-data-prod" --src ./publish/data.zip --timeout 1800; then
+          echo "✅ Data deployment completed!"
+          break
+        else
+          echo "⚠️ Attempt $i failed, retrying in 30 seconds..."
+          sleep 30
+          if [ $i -eq 3 ]; then
+            echo "❌ All attempts failed"
+            exit 1
+          fi
+        fi
+      done

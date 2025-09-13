@@ -34,7 +34,7 @@ var host = new HostBuilder()
     {
         services.AddDbContext<BlendingDbContext>(options => options.UseSqlServer(Environment.GetEnvironmentVariable("SqlConnectionString")));
         
-        // Memory Cache para optimización de performance!!!!!
+        // Memory Cache para optimización de performance!!!!!!
         services.AddMemoryCache(options =>
         {
             options.SizeLimit = 100; 
