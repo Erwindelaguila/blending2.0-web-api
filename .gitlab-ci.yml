@@ -1,0 +1,125 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  AZURE_RESOURCE_GROUP: "rg_eastus_tasa_blending2"  # Resource group correcto
+
+# ==============================
+# Build & Deploy Function Auth
+# ==============================
+deploy-auth:
+  stage: build
+  tags: [mac-runner-local]
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "blending-core-develop"'
+      changes:
+        - Function.Blending.Auth/**/*
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  before_script:
+    - set -euo pipefail
+    - if ! command -v dotnet &> /dev/null; then brew install dotnet; fi
+    - if ! command -v az &> /dev/null; then brew install azure-cli; fi
+    - dotnet --version
+    - az version
+  script:
+    - echo "🔨 Building Function.Blending.Auth..."
+    - dotnet restore Function.Blending.Auth/Function.Blending.Auth.csproj
+    - dotnet build Function.Blending.Auth/Function.Blending.Auth.csproj -c Release --no-restore
+    - dotnet publish Function.Blending.Auth/Function.Blending.Auth.csproj -c Release -o ./publish/auth --no-build
+    
+    - echo "� Deploying to func-blending2-auth-prod..."
+    - az login --service-principal -u "$AZURE_CLIENT_ID" -p "$AZURE_CLIENT_SECRET" --tenant "$AZURE_TENANT_ID"
+    - az account set --subscription "$AZURE_SUBSCRIPTION_ID"
+    - az functionapp deployment source config-zip -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-auth-prod" --src ./publish/auth --timeout 600
+    - echo "✅ Auth deployment completed!"
+
+# ==============================
+# Build & Deploy Function Core
+# ==============================
+deploy-core:
+  stage: deploy
+  tags: [mac-runner-local]
+  needs: [deploy-auth]
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "blending-core-develop"'
+      changes:
+        - Function.Blending.Core/**/*
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  before_script:
+    - set -euo pipefail
+    - if ! command -v dotnet &> /dev/null; then brew install dotnet; fi
+    - if ! command -v az &> /dev/null; then brew install azure-cli; fi
+    - dotnet --version
+    - az version
+  script:
+    - echo "🔨 Building Function.Blending.Core..."
+    - dotnet restore Function.Blending.Core/Function.Blending.Core.csproj
+    - dotnet build Function.Blending.Core/Function.Blending.Core.csproj -c Release --no-restore
+    - dotnet publish Function.Blending.Core/Function.Blending.Core.csproj -c Release -o ./publish/core --no-build
+    
+    - echo "� Deploying to func-blending2-core-prod..."
+    - az login --service-principal -u "$AZURE_CLIENT_ID" -p "$AZURE_CLIENT_SECRET" --tenant "$AZURE_TENANT_ID"
+    - az account set --subscription "$AZURE_SUBSCRIPTION_ID"
+    - az functionapp deployment source config-zip -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-core-prod" --src ./publish/core --timeout 600
+    - echo "✅ Core deployment completed!"
+
+# ==============================
+# Build & Deploy Function Opt
+# ==============================
+deploy-opt:
+  stage: deploy
+  tags: [mac-runner-local]
+  needs: [deploy-core]
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "blending-core-develop"'
+      changes:
+        - Function.Blending.Opt/**/*
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  before_script:
+    - set -euo pipefail
+    - if ! command -v dotnet &> /dev/null; then brew install dotnet; fi
+    - if ! command -v az &> /dev/null; then brew install azure-cli; fi
+    - dotnet --version
+    - az version
+  script:
+    - echo "🔨 Building Function.Blending.Opt..."
+    - dotnet restore Function.Blending.Opt/Function.Blending.Opt.csproj
+    - dotnet build Function.Blending.Opt/Function.Blending.Opt.csproj -c Release --no-restore
+    - dotnet publish Function.Blending.Opt/Function.Blending.Opt.csproj -c Release -o ./publish/opt --no-build
+    
+    - echo "🚀 Deploying to func-blending2-opt-prod..."
+    - az login --service-principal -u "$AZURE_CLIENT_ID" -p "$AZURE_CLIENT_SECRET" --tenant "$AZURE_TENANT_ID"
+    - az account set --subscription "$AZURE_SUBSCRIPTION_ID"
+    - az functionapp deployment source config-zip -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-opt-prod" --src ./publish/opt --timeout 600
+    - echo "✅ Opt deployment completed!"
+
+# ==============================
+# Build & Deploy Function Data (Upload)
+# ==============================
+deploy-data:
+  stage: deploy
+  tags: [mac-runner-local]
+  needs: [deploy-opt]
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "blending-core-develop"'
+      changes:
+        - Function.Blending.Upload/**/*
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+  before_script:
+    - set -euo pipefail
+    - if ! command -v dotnet &> /dev/null; then brew install dotnet; fi
+    - if ! command -v az &> /dev/null; then brew install azure-cli; fi
+    - dotnet --version
+    - az version
+  script:
+    - echo "� Building Function.Blending.Upload (Data)..."
+    - dotnet restore Function.Blending.Upload/Function.Blending.Upload.csproj
+    - dotnet build Function.Blending.Upload/Function.Blending.Upload.csproj -c Release --no-restore
+    - dotnet publish Function.Blending.Upload/Function.Blending.Upload.csproj -c Release -o ./publish/data --no-build
+    
+    - echo "🚀 Deploying to func-blending2-data-prod..."
+    - az login --service-principal -u "$AZURE_CLIENT_ID" -p "$AZURE_CLIENT_SECRET" --tenant "$AZURE_TENANT_ID"
+    - az account set --subscription "$AZURE_SUBSCRIPTION_ID"
+    - az functionapp deployment source config-zip -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-data-prod" --src ./publish/data --timeout 600
+    - echo "✅ Data deployment completed!"
