@@ -11,19 +11,19 @@ public partial class CalOutResumen
 
     public string? Grupo { get; set; }
 
-    public int? Toneladas { get; set; }
+    public decimal Toneladas { get; set; }
 
-    public DateTime? NuevaFechaFabricacion { get; set; }
+    public string NuevaFechaFabricacion { get; set; } = null!;
 
     public string? CodigoCalidadObjetivo { get; set; }
 
     public string? CodigoCalidadResultante { get; set; }
 
-    public int? ValorInicial { get; set; }
+    public decimal ValorInicial { get; set; }
 
-    public int? ValorFinal { get; set; }
+    public decimal ValorFinal { get; set; }
 
-    public int? ValorAgregado { get; set; }
+    public decimal ValorAgregado { get; set; }
 
     public bool Aceptado { get; set; }
 
