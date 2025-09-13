@@ -54,7 +54,7 @@ builder.Services.AddSingleton<IKeyDecoder, KeyDecoder>();
 builder.Services.AddSingleton<IHmacKeyResolver, HmacKeyVaultKeyResolver>();
 builder.Services.AddSingleton<IWebhookSignatureValidator, HmacWebhookSignatureValidator>();
 
-// ====== Telemetría ======
+// ====== Telemetría ======!
 builder.Services
   .AddApplicationInsightsTelemetryWorkerService()
   .ConfigureFunctionsApplicationInsights();

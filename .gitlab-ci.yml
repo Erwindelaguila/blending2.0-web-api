@@ -11,6 +11,7 @@ variables:
 deploy-auth:
   stage: build
   tags: [mac-runner-local]
+  # Despliegue
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
@@ -41,6 +42,7 @@ deploy-core:
   stage: deploy
   tags: [mac-runner-local]
   needs: [deploy-auth]
+  # Despliegue
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
@@ -71,6 +73,7 @@ deploy-opt:
   stage: deploy
   tags: [mac-runner-local]
   needs: [deploy-core]
+  # Despliegue
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
@@ -101,6 +104,7 @@ deploy-data:
   stage: deploy
   tags: [mac-runner-local]
   needs: [deploy-opt]
+  # Despliegue
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       changes:

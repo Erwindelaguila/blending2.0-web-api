@@ -11,7 +11,7 @@ var host = new HostBuilder()
     .ConfigureFunctionsWebApplication()
     .ConfigureServices(services =>
     {
-        // Configuración de logging
+        // Configuración de logging!
         services.AddLogging(builder =>
         {
             builder.AddConsole();
