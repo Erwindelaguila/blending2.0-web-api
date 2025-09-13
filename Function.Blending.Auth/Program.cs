@@ -24,7 +24,7 @@ var host = new HostBuilder()
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
         });
 
-        // Registro de servicios de infraestructura!
+        // Registro de servicios de infraestructura!!
         services.AddSingleton<ITokenConfigurationService, TokenConfigurationService>();
         services.AddScoped<ITokenClaimExtractor, TokenClaimExtractor>();
         services.AddScoped<ITokenClaimValidator, TokenClaimValidator>();
