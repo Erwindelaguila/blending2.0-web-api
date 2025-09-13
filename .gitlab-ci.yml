@@ -98,8 +98,21 @@ deploy-opt:
     - echo "🚀 Deploying Opt to func-blending2-opt-prod..."
     - az login --service-principal -u "$AZURE_CLIENT_ID" -p "$AZURE_CLIENT_SECRET" --tenant "$AZURE_TENANT_ID"
     - az account set --subscription "$AZURE_SUBSCRIPTION_ID"
-    - az functionapp deployment source config-zip -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-opt-prod" --src ./publish/opt.zip --timeout 900
-    - echo "✅ Opt deployment completed!"
+    - |
+      for i in {1..3}; do
+        echo "🔄 Attempt $i/3: Deploying Opt..."
+        if az functionapp deployment source config-zip -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-opt-prod" --src ./publish/opt.zip --timeout 1800; then
+          echo "✅ Opt deployment completed!"
+          break
+        else
+          echo "⚠️ Attempt $i failed, retrying in 30 seconds..."
+          sleep 30
+          if [ $i -eq 3 ]; then
+            echo "❌ All attempts failed"
+            exit 1
+          fi
+        fi
+      done
 
 # ==============================
 # Deploy Function Data (Upload)
@@ -126,5 +139,18 @@ deploy-data:
     - echo "🚀 Deploying Data to func-blending2-data-prod..."
     - az login --service-principal -u "$AZURE_CLIENT_ID" -p "$AZURE_CLIENT_SECRET" --tenant "$AZURE_TENANT_ID"
     - az account set --subscription "$AZURE_SUBSCRIPTION_ID"
-    - az functionapp deployment source config-zip -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-data-prod" --src ./publish/data.zip --timeout 900
-    - echo "✅ Data deployment completed!"
+    - |
+      for i in {1..3}; do
+        echo "🔄 Attempt $i/3: Deploying Data..."
+        if az functionapp deployment source config-zip -g "$AZURE_RESOURCE_GROUP" -n "func-blending2-data-prod" --src ./publish/data.zip --timeout 1800; then
+          echo "✅ Data deployment completed!"
+          break
+        else
+          echo "⚠️ Attempt $i failed, retrying in 30 seconds..."
+          sleep 30
+          if [ $i -eq 3 ]; then
+            echo "❌ All attempts failed"
+            exit 1
+          fi
+        fi
+      done
