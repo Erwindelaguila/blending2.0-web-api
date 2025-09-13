@@ -59,7 +59,7 @@ builder.Services
   .AddApplicationInsightsTelemetryWorkerService()
   .ConfigureFunctionsApplicationInsights();
 
-// ====== Pipeline del Worker (ORDEN correcto) ======
+// ====== Pipeline del Worker (ORDEN correcto) ======!
 // La extensión UseFunctionsPipeline aplica: ContextAccessor, CorrelationId, ExceptionHandling,
 // RequestLogging, RequestSizeLimit, HMAC, Principal, Authorization (según flags).
 builder.UseFunctionsPipeline(
