@@ -18,7 +18,7 @@ var host = new HostBuilder()
             builder.SetMinimumLevel(LogLevel.Information);
         });
 
-        // Registro de MediatR!
+        // Registro de MediatR!!
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
