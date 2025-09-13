@@ -12,7 +12,7 @@ deploy-auth:
   stage: build
   tags: [mac-runner-local]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "blending-core-develop"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - Function.Blending.Auth/**/*
     - if: '$CI_PIPELINE_SOURCE == "web"'
@@ -42,7 +42,7 @@ deploy-core:
   tags: [mac-runner-local]
   needs: [deploy-auth]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "blending-core-develop"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - Function.Blending.Core/**/*
     - if: '$CI_PIPELINE_SOURCE == "web"'
@@ -72,7 +72,7 @@ deploy-opt:
   tags: [mac-runner-local]
   needs: [deploy-core]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "blending-core-develop"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - Function.Blending.Opt/**/*
     - if: '$CI_PIPELINE_SOURCE == "web"'
@@ -102,7 +102,7 @@ deploy-data:
   tags: [mac-runner-local]
   needs: [deploy-opt]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "blending-core-develop"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - Function.Blending.Upload/**/*
     - if: '$CI_PIPELINE_SOURCE == "web"'
