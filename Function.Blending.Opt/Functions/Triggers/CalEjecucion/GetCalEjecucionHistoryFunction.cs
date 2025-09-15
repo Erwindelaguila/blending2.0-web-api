@@ -26,11 +26,11 @@ public sealed class GetCalEjecucionHistoryFunction(
   {
     var qs = req.GetQuery();
 
-    var page = qs.GetIntOrDefault("page", 1);
-    var pageSize = qs.GetIntOrDefault("pageSize", 50);
+    var page = qs.GetIntOrDefault(CriteriaConstants.Paging.Page, 1);
+    var pageSize = qs.GetIntOrDefault(CriteriaConstants.Paging.PageSize, 50);
 
-    var sortBy = qs.GetStringOrNull("sortBy");
-    var sortDir = qs.GetStringOrNull("sortDir");
+    var sortBy = qs.GetStringOrNull(CriteriaConstants.Sorting.SortBy);
+    var sortDir = qs.GetStringOrNull(CriteriaConstants.Sorting.SortDir);
 
     // Acepta 'creadoDel' o 'creadoDelUtc' (igual para 'creadoAl')
     var creadoDelUtc = qs.GetUtcDateTime("creadoDelUtc", "creadoDel");
@@ -41,8 +41,7 @@ public sealed class GetCalEjecucionHistoryFunction(
 
     var codigo = qs.GetStringOrNull("codigo");
 
-    var result = await mediator.Send(new GetCalEjecucionHistoryQuery(
-      page, pageSize, sortBy, sortDir, creadoDelUtc, creadoAlUtc, estadoId, plantaId, codigo));
+    var result = await mediator.Send(new GetCalEjecucionHistoryQuery(page, pageSize, sortBy, sortDir, creadoDelUtc, creadoAlUtc, estadoId, plantaId, codigo));
 
     // Nota: tu handler siempre devuelve Ok(); mantenemos la rama por consistencia
     if (!result.IsSuccess)
@@ -62,7 +61,7 @@ public sealed class GetCalEjecucionHistoryFunction(
             page,
             pageSize,
             sortBy = sortBy ?? "creadoEl",
-            sortDir = string.Equals(sortDir, "asc", StringComparison.OrdinalIgnoreCase) ? "asc" : "desc",
+            sortDir = string.Equals(sortDir, CriteriaConstants.Sorting.Ascending, StringComparison.OrdinalIgnoreCase) ? CriteriaConstants.Sorting.Ascending : CriteriaConstants.Sorting.Descending,
             creadoDel = creadoDelUtc,
             creadoAl = creadoAlUtc,
             estadoId,
@@ -81,7 +80,7 @@ public sealed class GetCalEjecucionHistoryFunction(
       total = pr.Total,
       totalPages = pr.TotalPages,
       sortBy = (sortBy ?? "creadoEl"),
-      sortDir = string.Equals(sortDir, "asc", StringComparison.OrdinalIgnoreCase) ? "asc" : "desc",
+      sortDir = string.Equals(sortDir, CriteriaConstants.Sorting.Ascending, StringComparison.OrdinalIgnoreCase) ? CriteriaConstants.Sorting.Ascending : CriteriaConstants.Sorting.Descending,
       requestedBy = ctx.Username,
       filters = new
       {

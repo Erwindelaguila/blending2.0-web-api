@@ -77,7 +77,7 @@ public sealed class AuthorizationMiddleware(
       => attrReader.Get<AllowAnonymousAttribute>(ctx) is not null;
 
   private static ClaimsPrincipal? GetPrincipal(FunctionContext ctx)
-      => ctx.Items.TryGetValue(MiscellaneousKeys.Principal, out var p) ? p as ClaimsPrincipal : null;
+      => ctx.Items.TryGetValue(MiscellaneousConstants.Principal, out var p) ? p as ClaimsPrincipal : null;
 
   private static bool IsAuthenticated(ClaimsPrincipal? principal)
       => principal is not null && (principal.Identity?.IsAuthenticated ?? false);

@@ -27,11 +27,11 @@ public sealed class GetLogEjecucionHistoryFunction(
     // === Query parseado con helpers reutilizables ===
     var qs = req.GetQuery();
 
-    var page = qs.GetIntOrDefault("page", 1);
-    var pageSize = qs.GetIntOrDefault("pageSize", 50);
+    var page = qs.GetIntOrDefault(CriteriaConstants.Paging.Page, 1);
+    var pageSize = qs.GetIntOrDefault(CriteriaConstants.Paging.PageSize, 50);
 
-    var sortBy = qs.GetStringOrNull("sortBy");
-    var sortDir = qs.GetStringOrNull("sortDir");
+    var sortBy = qs.GetStringOrNull(CriteriaConstants.Sorting.SortBy);
+    var sortDir = qs.GetStringOrNull(CriteriaConstants.Sorting.SortDir);
 
     // Acepta 'creadoDel' o 'creadoDelUtc' (igual para 'creadoAl')
     var creadoDelUtc = qs.GetUtcDateTime("creadoDelUtc", "creadoDel");
@@ -44,9 +44,7 @@ public sealed class GetLogEjecucionHistoryFunction(
     var codigo = qs.GetStringOrNull("codigo");
 
     var result = await mediator.Send(
-      new GetLogEjecucionHistoryQuery(
-        page, pageSize, sortBy, sortDir, confirmado,
-        creadoDelUtc, creadoAlUtc, estadoId, plantaId, codigo));
+      new GetLogEjecucionHistoryQuery(page, pageSize, sortBy, sortDir, confirmado, creadoDelUtc, creadoAlUtc, estadoId, plantaId, codigo));
 
     if (!result.IsSuccess)
     {
@@ -65,7 +63,7 @@ public sealed class GetLogEjecucionHistoryFunction(
             page,
             pageSize,
             sortBy = sortBy ?? "creadoEl",
-            sortDir = string.Equals(sortDir, "asc", StringComparison.OrdinalIgnoreCase) ? "asc" : "desc",
+            sortDir = string.Equals(sortDir, CriteriaConstants.Sorting.Ascending, StringComparison.OrdinalIgnoreCase) ? CriteriaConstants.Sorting.Ascending : CriteriaConstants.Sorting.Descending,
             confirmado,
             creadoDel = creadoDelUtc,
             creadoAl = creadoAlUtc,
@@ -85,7 +83,7 @@ public sealed class GetLogEjecucionHistoryFunction(
       total = pr.Total,
       totalPages = pr.TotalPages,
       sortBy = sortBy ?? "creadoEl",
-      sortDir = string.Equals(sortDir, "asc", StringComparison.OrdinalIgnoreCase) ? "asc" : "desc",
+      sortDir = string.Equals(sortDir, CriteriaConstants.Sorting.Ascending, StringComparison.OrdinalIgnoreCase) ? CriteriaConstants.Sorting.Ascending : CriteriaConstants.Sorting.Descending,
       requestedBy = ctx.Username,
       filters = new
       {

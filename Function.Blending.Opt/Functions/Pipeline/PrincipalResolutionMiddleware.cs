@@ -21,7 +21,7 @@ public sealed class PrincipalResolutionMiddleware : IFunctionsWorkerMiddleware
 
     // Marcar si es webhook (para que DevBypass lo ignore)
     var isWebhook = _attrReader.Get<WebhookAttribute>(context) is not null;
-    context.Items[MiscellaneousKeys.IsWebhook] = isWebhook;
+    context.Items[MiscellaneousConstants.IsWebhook] = isWebhook;
 
     // AllowAnonymous: salta resolución (no exige auth)
     var allowAnon = _attrReader.Get<AllowAnonymousAttribute>(context) is not null;
@@ -29,7 +29,7 @@ public sealed class PrincipalResolutionMiddleware : IFunctionsWorkerMiddleware
     {
       var principal = await _resolver.ResolveAsync(context, req);
       if (principal is not null)
-        context.Items[MiscellaneousKeys.Principal] = principal;
+        context.Items[MiscellaneousConstants.Principal] = principal;
     }
 
     await next(context);

@@ -7,6 +7,7 @@ using Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Requests;
 using Function.Blending.Opt.Functions.Support.Authorization;
 using Function.Blending.Opt.Functions.Support.Execution;
 using Function.Blending.Opt.Functions.Support.Extensions;
+using Function.Blending.Opt.Functions.Support.Extensions.BindingContext.BindingData;
 using Function.Blending.Opt.Functions.Support.Http;
 using Function.Blending.Opt.Functions.Support.ProblemDetails;
 using Function.Blending.Opt.Functions.Support.Routing;
@@ -28,8 +29,8 @@ public sealed class ChangeAcceptedCalEjecucionFunction(IMediator mediator, IProb
       HttpRequestData req,
       FunctionContext fctx)
   {
-    var idRaw = fctx.BindingContext.BindingData.TryGetValue("id", out var v) ? v?.ToString() : null;
-    if (!Guid.TryParse(idRaw, out var id))
+    var id = fctx.TryGuidBindingData("id");
+    if (id is null)
     {
       return await problem.CreateAsync(
         fctx, req, HttpStatusCode.BadRequest,
@@ -59,7 +60,7 @@ public sealed class ChangeAcceptedCalEjecucionFunction(IMediator mediator, IProb
         detail: "The current principal does not provide a valid object id (oid/sub) to audit.");
     }
 
-    var result = await mediator.Send(new ChangeAcceptedCalEjecucionCommand(id, dto.Grupos, userId));
+    var result = await mediator.Send(new ChangeAcceptedCalEjecucionCommand((Guid)id, dto.Grupos, userId));
 
     if (!result.IsSuccess)
     {
