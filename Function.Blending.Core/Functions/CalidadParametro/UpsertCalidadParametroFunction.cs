@@ -33,7 +33,7 @@ public class UpsertCalidadParametroFunction
 
     [Function(FunctionNames.CalidadParametro.Upsert)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, "post", "put", Route = ApiRoutes.Core.Configuraciones.CalidadParametroUpsert)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", "put", Route = ApiRoutes.Core.Configuraciones.CalidadParametroUpsert)] HttpRequestData req)
     {
         try
         {

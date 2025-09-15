@@ -31,7 +31,7 @@ public class GetAllCalidadFunction
 
     [Function(FunctionNames.Calidad.GetAll)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Production.CalidadBase)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Production.CalidadBase)] HttpRequestData req)
     {
         try
         {

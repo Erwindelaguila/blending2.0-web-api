@@ -32,7 +32,7 @@ public class GetAllAgregadosFunction
 
     [Function(FunctionNames.Agregado.GetAll)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Production.AgregadoBase)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Production.AgregadoBase)] HttpRequestData req)
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         

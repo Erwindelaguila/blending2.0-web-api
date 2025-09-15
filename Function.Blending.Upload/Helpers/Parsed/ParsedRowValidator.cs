@@ -1,16 +1,16 @@
 ﻿using System.Globalization;
 using Function.Blending.Upload.Models;
 
-namespace Function.Blending.Upload.Helpers;
+namespace Function.Blending.Upload.Helpers.Parsed;
 
 public static class ParsedRowValidator
 {
   /// <summary>
   /// Valida si la fila tiene al menos el código de material.
   /// </summary>
-  public static bool EsValido(ParsedRowDto row)
+  public static bool EsValido(ParsedRowQualityDto rowQuality)
   {
-    return row.Fijos.TryGetValue("RumaNro", out var uniqueKey) && uniqueKey != null && !string.IsNullOrEmpty(uniqueKey.Trim());
+    return rowQuality.Fijos.TryGetValue("RumaNro", out var uniqueKey) && uniqueKey != null && !string.IsNullOrEmpty(uniqueKey.Trim());
   }
 
   /// <summary>

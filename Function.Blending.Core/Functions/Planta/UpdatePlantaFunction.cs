@@ -30,7 +30,7 @@ public class UpdatePlantaFunction
 
     [Function(FunctionNames.Planta.Update)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.Planta.GetById)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Put, Route = ApiRoutes.Core.Planta.GetById)] HttpRequestData req)
     {
         try
         {

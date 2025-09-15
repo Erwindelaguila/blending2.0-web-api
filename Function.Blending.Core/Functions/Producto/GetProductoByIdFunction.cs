@@ -26,7 +26,7 @@ public class GetProductoByIdFunction
 
     [Function(FunctionNames.Producto.GetById)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Production.ProductoGetById)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Production.ProductoGetById)] HttpRequestData req)
     {
         try
         {

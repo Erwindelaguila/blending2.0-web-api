@@ -28,7 +28,7 @@ public class CreateProductoFunction
 
     [Function(FunctionNames.Producto.Create)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Post, Route = ApiRoutes.Core.Production.ProductoBase)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Post, Route = ApiRoutes.Core.Production.ProductoBase)] HttpRequestData req)
     {
         try
         {

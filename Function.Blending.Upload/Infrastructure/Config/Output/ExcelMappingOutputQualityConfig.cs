@@ -1,6 +1,6 @@
-﻿namespace Function.Blending.Upload.Infrastructure.Config;
+﻿namespace Function.Blending.Upload.Infrastructure.Config.Output;
 
-public class ExcelMappingOutputConfig
+public class ExcelMappingOutputQualityConfig
 {
     public string Version { get; set; }
     public Resumen Resumen { get; set; }

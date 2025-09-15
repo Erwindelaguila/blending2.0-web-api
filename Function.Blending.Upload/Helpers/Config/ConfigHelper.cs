@@ -1,4 +1,4 @@
-﻿namespace Function.Blending.Upload.Helpers;
+﻿namespace Function.Blending.Upload.Helpers.Config;
 
 public class ConfigHelper
 {

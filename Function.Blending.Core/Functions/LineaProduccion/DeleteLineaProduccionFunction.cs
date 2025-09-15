@@ -24,7 +24,7 @@ public class DeleteLineaProduccionFunction
 
     [Function(FunctionNames.LineaProduccion.Delete)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Production.LineaProduccionBase + "/{id}")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Delete, Route = ApiRoutes.Core.Production.LineaProduccionBase + "/{id}")] HttpRequestData req,
         string id)
     {
         try

@@ -26,7 +26,7 @@ public class DeletePlantaFunction
 
     [Function(FunctionNames.Planta.Delete)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Planta.Base + "/{id}")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Delete, Route = ApiRoutes.Core.Planta.Base + "/{id}")] HttpRequestData req,
         string id)
     {
         try

@@ -32,7 +32,7 @@ public class GetAllProductosFunction
 
     [Function(FunctionNames.Producto.GetAll)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Production.ProductoBase)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Production.ProductoBase)] HttpRequestData req)
     {
         try
         {

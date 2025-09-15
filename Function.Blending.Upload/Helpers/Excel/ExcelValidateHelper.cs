@@ -1,9 +1,9 @@
-﻿using NPOI.HSSF.UserModel;
-using NPOI.XSSF.UserModel;
+﻿using ClosedXML.Excel;
+using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
-using ClosedXML.Excel;
+using NPOI.XSSF.UserModel;
 
-namespace Function.Blending.Upload.Helpers;
+namespace Function.Blending.Upload.Helpers.Excel;
 
     public static class ExcelValidateHelper
     {

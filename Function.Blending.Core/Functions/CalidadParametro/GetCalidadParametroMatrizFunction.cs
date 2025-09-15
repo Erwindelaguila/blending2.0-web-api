@@ -30,7 +30,7 @@ public class GetCalidadParametroMatrizFunction
 
     [Function(FunctionNames.CalidadParametro.GetMatriz)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Configuraciones.CalidadParametroMatriz)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Configuraciones.CalidadParametroMatriz)] HttpRequestData req)
     {
         try
         {

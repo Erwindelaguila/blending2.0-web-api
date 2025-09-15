@@ -1,6 +1,6 @@
 ﻿namespace Function.Blending.Upload.Models;
 
-public class ReporteLogisticDto
+public class ExcelExtractLogisticDto
 {
     public Demanda Demanda { get; set; } = new Demanda();
     public Dictionary<string, Oferta> Oferta { get; set; } = new Dictionary<string, Oferta>();

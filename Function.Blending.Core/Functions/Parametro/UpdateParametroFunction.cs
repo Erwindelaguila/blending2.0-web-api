@@ -29,7 +29,7 @@ public class UpdateParametroFunction
 
     [Function(FunctionNames.Parametro.Update)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.Parametro.GetById)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Put, Route = ApiRoutes.Core.Parametro.GetById)] HttpRequestData req)
     {
         try
         {

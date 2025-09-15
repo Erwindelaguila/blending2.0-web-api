@@ -1,4 +1,4 @@
-﻿namespace Function.Blending.Upload.Infrastructure.Config;
+﻿namespace Function.Blending.Upload.Infrastructure.Config.Output;
 
 public class ExcelMappingOutputLogisticsConfig
 {

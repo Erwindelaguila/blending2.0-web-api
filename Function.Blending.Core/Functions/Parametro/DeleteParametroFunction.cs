@@ -26,7 +26,7 @@ public class DeleteParametroFunction
 
     [Function(FunctionNames.Parametro.Delete)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Parametro.Base + "/{id}")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Delete, Route = ApiRoutes.Core.Parametro.Base + "/{id}")] HttpRequestData req,
         string id)
     {
         try

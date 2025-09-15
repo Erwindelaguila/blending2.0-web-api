@@ -1,6 +1,6 @@
 using ClosedXML.Excel;
 
-namespace Function.Blending.Upload.Helpers;
+namespace Function.Blending.Upload.Helpers.Excel;
 
 public class ExcelXMLHelper
 {

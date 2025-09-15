@@ -1,5 +1,6 @@
 ﻿using ClosedXML.Excel;
 using Function.Blending.Upload.Infrastructure.Config;
+using Function.Blending.Upload.Infrastructure.Config.Input;
 using Function.Blending.Upload.Models;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
@@ -11,39 +12,39 @@ namespace Function.Blending.Upload.Helpers;
 
 public static class ExcelReaderHelper
 {
-    public static ExcelMappingConfig LoadYamlConfig(string yamlPath)
+    public static ExcelMappingInputQualityConfig LoadYamlConfig(string yamlPath)
     {
         var yamlContent = File.ReadAllText(yamlPath);
         var deserializer = new DeserializerBuilder()
             .WithNamingConvention(CamelCaseNamingConvention.Instance)
             .Build();
 
-        return deserializer.Deserialize<ExcelMappingConfig>(yamlContent);
+        return deserializer.Deserialize<ExcelMappingInputQualityConfig>(yamlContent);
     }
 
-    public static List<ParsedRowDto> ParseXlsmFromBytes(byte[] fileBytes, ExcelMappingConfig config)
+    public static List<ParsedRowQualityDto> ParseXlsmFromBytes(byte[] fileBytes, ExcelMappingInputQualityConfig inputQualityConfig)
     {
         using var ms = new MemoryStream(fileBytes);
         using var workbook = new XLWorkbook(ms);
-        var worksheet = workbook.Worksheet(config.SheetName);
-        var result = new List<ParsedRowDto>();
+        var worksheet = workbook.Worksheet(inputQualityConfig.SheetName);
+        var result = new List<ParsedRowQualityDto>();
 
-        for (int row = config.StartRow; ; row++)
+        for (int row = inputQualityConfig.StartRow; ; row++)
         {
             var cellB = worksheet.Cell(row, "B");
             if (cellB.IsEmpty())
                 break; // asumimos fin de datos si columna B (rumaNro) está vacía
 
-            var dto = new ParsedRowDto
+            var dto = new ParsedRowQualityDto
             {
                 Fijos = new Dictionary<string, string>(),
                 ParametrosCalidad = new Dictionary<string, string>(),
                 OtrosValores = new Dictionary<string, string>()
             };
 
-            foreach (var prop in config.Fijos.GetType().GetProperties())
+            foreach (var prop in inputQualityConfig.Fijos.GetType().GetProperties())
             {
-                var colLetter = prop.GetValue(config.Fijos)?.ToString();
+                var colLetter = prop.GetValue(inputQualityConfig.Fijos)?.ToString();
                 if (!string.IsNullOrEmpty(colLetter))
                 {
                     var value = worksheet.Cell(row, colLetter).GetValue<string>().Trim();
@@ -51,13 +52,13 @@ public static class ExcelReaderHelper
                 }
             }
 
-            foreach (var kv in config.ParametrosCalidad)
+            foreach (var kv in inputQualityConfig.ParametrosCalidad)
             {
                 var value = worksheet.Cell(row, kv.Value).GetValue<string>().Trim();
                 dto.ParametrosCalidad[kv.Key] = value;
             }
 
-            foreach (var kv in config.OtrosValores)
+            foreach (var kv in inputQualityConfig.OtrosValores)
             {
                 var value = worksheet.Cell(row, kv.Value).GetValue<string>().Trim();
                 dto.OtrosValores[kv.Key] = value;
@@ -69,29 +70,29 @@ public static class ExcelReaderHelper
         return result;
     }
 
-    public static Task<List<ParsedRowDto>> LeerFilasDesdeExcelAsync(byte[] fileBytes, ExcelMappingConfig config)
+    public static Task<List<ParsedRowQualityDto>> LeerFilasDesdeExcelAsync(byte[] fileBytes, ExcelMappingInputQualityConfig inputQualityConfig)
     {
-        var result = new List<ParsedRowDto>();
+        var result = new List<ParsedRowQualityDto>();
 
         using var stream = new MemoryStream(fileBytes);
         using var workbook = new XLWorkbook(stream);
 
         // Validación segura de la existencia de la hoja
-        if (!workbook.Worksheets.Any(ws => ws.Name.Equals(config.SheetName, StringComparison.OrdinalIgnoreCase)))
+        if (!workbook.Worksheets.Any(ws => ws.Name.Equals(inputQualityConfig.SheetName, StringComparison.OrdinalIgnoreCase)))
         {
-            throw new InvalidOperationException($"No se encontró la hoja '{config.SheetName}' en el archivo Excel.");
+            throw new InvalidOperationException($"No se encontró la hoja '{inputQualityConfig.SheetName}' en el archivo Excel.");
         }
-        var worksheet = workbook.Worksheet(config.SheetName);
+        var worksheet = workbook.Worksheet(inputQualityConfig.SheetName);
 
-        var row = config.StartRow;
+        var row = inputQualityConfig.StartRow;
         while (!worksheet.Row(row).IsEmpty())
         {
-            var rowDto = new ParsedRowDto();
+            var rowDto = new ParsedRowQualityDto();
 
             // Parte fija (fijos)
-            foreach (var prop in config.Fijos.GetType().GetProperties())
+            foreach (var prop in inputQualityConfig.Fijos.GetType().GetProperties())
             {
-                var colLetter = prop.GetValue(config.Fijos)?.ToString();
+                var colLetter = prop.GetValue(inputQualityConfig.Fijos)?.ToString();
                 if (!string.IsNullOrEmpty(colLetter))
                 {
                     var cell = worksheet.Cell($"{colLetter}{row}");
@@ -100,14 +101,14 @@ public static class ExcelReaderHelper
             }
 
             // Parte dinámica: parámetros de calidad
-            foreach (var kvp in config.ParametrosCalidad)
+            foreach (var kvp in inputQualityConfig.ParametrosCalidad)
             {
                 var cell = worksheet.Cell($"{kvp.Value}{row}");
                 rowDto.ParametrosCalidad[kvp.Key] = cell.GetString();
             }
 
             // Parte dinámica: otros valores
-            foreach (var kvp in config.OtrosValores)
+            foreach (var kvp in inputQualityConfig.OtrosValores)
             {
                 var cell = worksheet.Cell($"{kvp.Value}{row}");
                 rowDto.OtrosValores[kvp.Key] = cell.GetString();
@@ -120,7 +121,7 @@ public static class ExcelReaderHelper
         return Task.FromResult(result);
     }
 
-    public static Task<ParsedRowLogisticDto> LeerFilasLoigisticDesdeExcelAsync(byte[] fileBytes, ExcelMappingLogisticsConfig config)
+    public static Task<ParsedRowLogisticDto> LeerFilasLoigisticDesdeExcelAsync(byte[] fileBytes, ExcelMappingInputLogisticsConfig config)
     {
 
         var rowDto = new ParsedRowLogisticDto();
@@ -206,7 +207,7 @@ public static class ExcelReaderHelper
     }
 
 
-    public static string GetValuePesoContenedores( int currentRow,  ExcelMappingLogisticsConfig config, IXLWorksheet worksheet,  byte[] fileBytes)
+    public static string GetValuePesoContenedores( int currentRow,  ExcelMappingInputLogisticsConfig config, IXLWorksheet worksheet,  byte[] fileBytes)
     {
         
         var rowPresoContendores = currentRow + 1;

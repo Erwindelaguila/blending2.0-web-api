@@ -28,7 +28,7 @@ public class CreateCalidadFunction
 
     [Function(FunctionNames.Calidad.Create)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Post, Route = ApiRoutes.Core.Production.CalidadBase)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Post, Route = ApiRoutes.Core.Production.CalidadBase)] HttpRequestData req)
     {
         try
         {

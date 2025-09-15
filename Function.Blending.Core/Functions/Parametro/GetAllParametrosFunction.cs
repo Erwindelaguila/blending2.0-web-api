@@ -31,7 +31,7 @@ public class GetAllParametrosFunction
 
     [Function(FunctionNames.Parametro.GetAll)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Parametro.Base)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Parametro.Base)] HttpRequestData req)
     {
         try
         {

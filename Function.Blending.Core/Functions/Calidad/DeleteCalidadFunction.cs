@@ -27,7 +27,7 @@ public class DeleteCalidadFunction
 
     [Function(FunctionNames.Calidad.Delete)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Production.CalidadBase + "/{id}")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Delete, Route = ApiRoutes.Core.Production.CalidadBase + "/{id}")] HttpRequestData req,
         string id)
     {
         try

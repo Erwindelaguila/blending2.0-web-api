@@ -29,7 +29,7 @@ public class UpdateProductoFunction
 
     [Function(FunctionNames.Producto.Update)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.Production.ProductoGetById)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Put, Route = ApiRoutes.Core.Production.ProductoGetById)] HttpRequestData req)
     {
         try
         {

@@ -1,6 +1,6 @@
-﻿namespace Function.Blending.Upload.Infrastructure.Config;
+﻿namespace Function.Blending.Upload.Infrastructure.Config.Input;
 
-public class  ExcelMappingLogisticsConfig
+public class  ExcelMappingInputLogisticsConfig
 {
     public string Version { get; set; }
     public string SheetName { get; set; }

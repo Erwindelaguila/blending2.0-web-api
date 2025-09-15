@@ -30,7 +30,7 @@ public class GetCalidadParametrosByCodigoFunction
 
     [Function(FunctionNames.CalidadParametro.GetByCodigo)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Configuraciones.CalidadParametro)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Configuraciones.CalidadParametro)] HttpRequestData req)
     {
         // Obtener el parámetro codigoCalidad del query string
         var queryParams = req.Url.Query.TrimStart('?').Split('&')

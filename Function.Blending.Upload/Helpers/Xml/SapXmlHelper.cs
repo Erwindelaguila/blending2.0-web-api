@@ -1,5 +1,6 @@
 ﻿using System.Xml.Linq;
-namespace Function.Blending.Upload.Helpers;
+
+namespace Function.Blending.Upload.Helpers.Xml;
 
 public class SapXmlHelper
 {

@@ -3,7 +3,7 @@ using System.Text.Json;
 using Function.Blending.Upload.Response;
 using Microsoft.Azure.Functions.Worker.Http;
 
-namespace Function.Blending.Upload.Helpers;
+namespace Function.Blending.Upload.Helpers.Http;
 
 public static class HttpResponseHelper
 {

@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Function.Blending.Upload.Helpers;
+namespace Function.Blending.Upload.Helpers.Json;
 
 public class JsonHelper
 {

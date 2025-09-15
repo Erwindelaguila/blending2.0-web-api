@@ -27,7 +27,7 @@ public class UpdateAppParamFunction
 
     [Function(FunctionNames.AppParam.Update)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.AppParam.GetById + "/{key}")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Put, Route = ApiRoutes.Core.AppParam.GetById + "/{key}")] HttpRequestData req,
         string key)
     {
         try

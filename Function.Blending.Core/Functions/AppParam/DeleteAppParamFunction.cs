@@ -47,7 +47,7 @@ public class DeleteAppParamFunction
 
     [Function(FunctionNames.AppParam.Delete)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.AppParam.Base + "/{key}")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Delete, Route = ApiRoutes.Core.AppParam.Base + "/{key}")] HttpRequestData req,
         string key)
     {
         _logger.LogInformation("DeleteAppParam function processed a request.");

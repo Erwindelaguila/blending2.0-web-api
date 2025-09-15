@@ -29,7 +29,7 @@ public class UpdateTipoProduccionFunction
 
     [Function(FunctionNames.TipoProduccion.Update)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.Production.TipoProduccionGetById)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Put, Route = ApiRoutes.Core.Production.TipoProduccionGetById)] HttpRequestData req)
     {
         try
         {

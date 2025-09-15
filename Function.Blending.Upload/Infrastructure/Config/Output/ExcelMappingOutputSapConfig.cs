@@ -1,6 +1,6 @@
 ﻿namespace Function.Blending.Upload.Infrastructure.Config;
 
-public class ExcelSapMappingOutputConfig
+public class ExcelMappingOutputSapConfig
 {
     public string Version { get; set; }
     public Data Data { get; set; }
