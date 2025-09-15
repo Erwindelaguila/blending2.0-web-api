@@ -4,8 +4,6 @@ using Function.Blending.Opt.Domain.Abstractions.Repositories;
 using Function.Blending.Opt.Domain.Abstractions.Services;
 using Function.Blending.Opt.Shared.Results;
 using MediatR;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Function.Blending.Opt.Application.Features.CalEjecucion.Queries.GetById;
 
