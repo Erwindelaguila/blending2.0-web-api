@@ -28,7 +28,7 @@ public class CreateParametroFunction
 
     [Function(FunctionNames.Parametro.Create)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Post, Route = ApiRoutes.Core.Parametro.Base)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Post, Route = ApiRoutes.Core.Parametro.Base)] HttpRequestData req)
     {
         try
         {

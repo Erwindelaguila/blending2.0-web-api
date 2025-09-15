@@ -20,43 +20,44 @@
     <PackageReference Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Templates\" />
-  </ItemGroup>
-  <ItemGroup>
     <None Remove="Templates\data_output.json" />
-    <Content Include="Templates\data_output.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <None Remove="Templates\ExcelMappingInput.yaml" />
-    <Content Include="Templates\ExcelMappingInput.yaml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <None Remove="Templates\ExcelMappingInputLogistic.yaml" />
     <Content Include="Templates\ExcelMappingInputLogistic.yaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Remove="Templates\ExcelMappingOutput.yaml" />
-    <Content Include="Templates\ExcelMappingOutput.yaml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <None Remove="Templates\ExcelMappingOutputLogistic.yml" />
-    <Content Include="Templates\ExcelMappingOutputLogistic.yml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <None Remove="Templates\ExcelSapMappingInput.yml" />
-    <Content Include="Templates\ExcelSapMappingInput.yml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <None Remove="Templates\template_sap_output.xlsx" />
-    <Content Include="Templates\template_sap_output.xlsx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <None Remove="Templates\template_output_logistica.xlsx" />
-    <Content Include="Templates\template_output_logistica.xlsx">
+    <None Remove="Templates\template_output.xlsx" />
+    <None Remove="Templates\ExcelMappingInputQualityv.yaml" />
+    <Content Include="Templates\ExcelMappingInputQuality.yaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Remove="Templates\template_output.xlsx" />
-    <Content Include="Templates\template_output.xlsx">
+    <None Remove="Templates\TemplateSapOutput - copia.xlsx" />
+    <Content Include="Templates\TemplateOutputSap.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Templates\TemplateOutputLogistic - copia.xlsx" />
+    <Content Include="Templates\TemplateOutputLogistic.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Templates\ExcelMappingOutputQuality - copia.yaml" />
+    <Content Include="Templates\ExcelMappingOutputQuality.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Templates\TemplateOutputQuality - copia.xlsx" />
+    <Content Include="Templates\TemplateOutputQuality.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Templates\ExcelSapMappingInput.yaml" />
+    <Content Include="Templates\ExcelMappingInputSap.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="Templates\ExcelMappingOutputLogistic.yaml" />
+    <Content Include="Templates\ExcelMappingOutputLogistic.yaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

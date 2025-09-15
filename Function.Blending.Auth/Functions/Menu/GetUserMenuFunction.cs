@@ -33,7 +33,7 @@ namespace Function.Blending.Auth.Functions.Menu
 
         [Function(FunctionNames.User.GetMenu)]
         public async Task<HttpResponseData> GetUserMenu(
-            [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Auth.User.Menu)] HttpRequestData req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Auth.User.Menu)] HttpRequestData req)
         {
             try
             {

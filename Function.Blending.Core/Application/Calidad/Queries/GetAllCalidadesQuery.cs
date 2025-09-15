@@ -5,16 +5,17 @@ using Microsoft.Azure.Functions.Worker.Http;
 
 namespace Function.Blending.Core.Application.Calidad.Queries;
 
-public class GetAllCalidadesQuery : BaseQuery<PagedResponse<CalidadDTO>>
+public class GetAllCalidadesQuery : BaseQuery<CalidadesResponseDTO>
 {
     public int Page { get; }
     public int Size { get; }
     public CalidadFilterDTO? Filters { get; }
-
-    public GetAllCalidadesQuery(int page, int size, CalidadFilterDTO? filters = null, HttpRequestData? requestContext = null) : base(requestContext!)
+    public bool IsGlobal { get; }
+    public GetAllCalidadesQuery(int page, int size, CalidadFilterDTO? filters = null, HttpRequestData? requestContext = null, bool isGlobal = false) : base(requestContext!)
     {
         Page = page;
         Size = size;
         Filters = filters;
+        IsGlobal = isGlobal;
     }
 }

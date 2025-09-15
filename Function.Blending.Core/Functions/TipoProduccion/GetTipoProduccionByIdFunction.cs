@@ -31,7 +31,7 @@ public class GetTipoProduccionByIdFunction
 
     [Function(FunctionNames.TipoProduccion.GetById)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Production.TipoProduccionGetById)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Production.TipoProduccionGetById)] HttpRequestData req)
     {
         try
         {

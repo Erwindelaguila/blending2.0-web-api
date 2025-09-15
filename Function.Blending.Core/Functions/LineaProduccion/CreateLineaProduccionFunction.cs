@@ -26,7 +26,7 @@ public class CreateLineaProduccionFunction
 
     [Function(FunctionNames.LineaProduccion.Create)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Post, Route = ApiRoutes.Core.Production.LineaProduccionBase)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Post, Route = ApiRoutes.Core.Production.LineaProduccionBase)] HttpRequestData req)
     {
         try
         {

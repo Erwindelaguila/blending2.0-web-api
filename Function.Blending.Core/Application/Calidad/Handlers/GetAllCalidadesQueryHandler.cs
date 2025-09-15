@@ -5,10 +5,11 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Interfaces.Repositories;
 using Function.Blending.Core.Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Function.Blending.Core.Application.Calidad.Handlers;
 
-public class GetAllCalidadesQueryHandler : IRequestHandler<GetAllCalidadesQuery, PagedResponse<CalidadDTO>>
+public class GetAllCalidadesQueryHandler : IRequestHandler<GetAllCalidadesQuery, CalidadesResponseDTO>
 {
     private readonly ICalidadRepository _calidadRepository;
 
@@ -17,12 +18,34 @@ public class GetAllCalidadesQueryHandler : IRequestHandler<GetAllCalidadesQuery,
         _calidadRepository = calidadRepository;
     }
 
-    public async Task<PagedResponse<CalidadDTO>> Handle(GetAllCalidadesQuery request, CancellationToken cancellationToken)
+    public async Task<CalidadesResponseDTO> Handle(GetAllCalidadesQuery request, CancellationToken cancellationToken)
     {
         try
         {
             var calidadesQuery = _calidadRepository.GetQueryable();
 
+            if (request.IsGlobal)
+            {
+                var listCalidades = await calidadesQuery.Select(calidad => new CalidadDTO
+                {
+                    Id = calidad.Id,
+                    Codigo = calidad.Codigo,
+                    Nombre = calidad.Nombre,
+                    CodigoMaterial = calidad.CodigoMaterial,
+                    Descripcion = calidad.Descripcion,
+                    NoConforme = calidad.NoConforme,
+                    Activo = calidad.Activo,
+                    CreadoPorId = calidad.CreadoPorId,
+                    CreadoEl = calidad.CreadoEl,
+                    ModificadoPorId = calidad.ModificadoPorId,
+                    ModificadoEl = calidad.ModificadoEl
+                }).ToListAsync(cancellationToken);
+                
+                return new CalidadesResponseDTO()
+                {
+                    CalidadList = listCalidades,
+                };
+            }
             if (request.Filters != null)
             {
                 calidadesQuery = calidadesQuery.ApplyCodigoFilter(
@@ -67,7 +90,10 @@ public class GetAllCalidadesQueryHandler : IRequestHandler<GetAllCalidadesQuery,
             });
 
             var pagedResult = await calidadesProjected.ToPagedResultAsync(request.Page, request.Size, cancellationToken);
-            return pagedResult.ToPagedResponse();
+            return new CalidadesResponseDTO()
+            {
+                CalidadPaginate = pagedResult.ToPagedResponse(),
+            };
         }
         catch (ArgumentException)
         {

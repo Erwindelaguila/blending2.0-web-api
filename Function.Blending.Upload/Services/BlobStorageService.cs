@@ -32,7 +32,7 @@ namespace Function.Blending.Upload.Services;
             _containerClient.CreateIfNotExists(PublicAccessType.None);
         }
 
-        public async Task<BlobResultDto> UploadExcelAndGetLinkAsync(XLWorkbook workbook, string filePrefix = "sap-stock")
+        public async Task<BlobResultDto> UploadExcelAndGetLinkAsync(XLWorkbook workbook, string filePrefix )
         {
             // Nombre del archivo con timestamp
             var fileName = $"{filePrefix}-{Guid.NewGuid()}-{DateTime.UtcNow:yyyyMMddHHmmss}.xlsx";

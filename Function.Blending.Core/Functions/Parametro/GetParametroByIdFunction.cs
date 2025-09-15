@@ -27,7 +27,7 @@ public class GetParametroByIdFunction
 
     [Function(FunctionNames.Parametro.GetById)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Parametro.GetById)]HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Parametro.GetById)]HttpRequestData req)
     {
         try
         {

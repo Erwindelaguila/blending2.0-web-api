@@ -1,0 +1,218 @@
+version: 1.0
+
+resumen:
+  
+  sheetName: "Resumen Grupos"
+  startRow: 1
+
+  fijos:
+    grupo:
+      header: "grupo"
+      column: "A"
+      dataType: "string"
+    tonTotal:
+      header: "ton_total"
+      column: "B"
+      dataType: "number"
+    calidadObjetivo:
+      header: "calidad_objetivo"
+      column: "C"
+      dataType: "string"
+    calidadResultante:
+      header: "calidad_resultante"
+      column: "D"
+      dataType: "string"
+    valorInicial:
+      header: "valor_inicial"
+      column: "E"
+      dataType: "number"
+    valorFinal:
+      header: "valor_final"
+      column: "F"
+      dataType: "number"
+    valorAgregado:
+      header: "valor_agregado"
+      column: "G"
+      dataType: "number"
+
+  parametrosCalidad:
+    proteina:
+      header : "Proteina     %"
+      column: "H"
+      dataType : "number"
+    tvnMg100g:
+      header: "TVN   mg/100g"
+      column: "I"
+      dataType: "number"
+    histaminaPpm:
+      header: "Histamina ppm"
+      column: "J"
+      dataType: "number"
+    humedad:
+      header: "Humedad     %"
+      column: "K"
+      dataType: "number"
+    grasas:
+      header: "Grasas      %"
+      column: "L"
+      dataType: "number"
+    cenizas:
+      header: "Cenizas     %"
+      column: "M"
+      dataType: "number"
+    cloruros:
+      header: "Cloruros      %"
+      column: "N"
+      dataType: "number"
+    acidez:
+      header: "Acidez      %"
+      column: "O"
+      dataType: "number"
+    
+detalle:
+
+  sheetName: "Detalle Mezcla"
+  startRow: 1
+
+  fijos:
+    grupo:
+      header: "grupo"
+      column: "A"
+      dataType: "string"
+    rumaNro:
+      header: "ruma_nro"
+      column: "B"
+      dataType: "string"
+    kilosUsados:
+      header: "kilos_usados"
+      column: "C"
+      dataType: "number"
+    cantidad:
+      header: "Cantidad"
+      column: "D"
+      dataType: "string"
+    codigo:
+      header: "Código"
+      column: "E"
+      dataType: "string"
+    descripcionMaterial:
+      header: "Descripción del Material"
+      column: "F"
+      dataType: "string"
+    centroUbicación:
+      header: "Centro Ubicación"
+      column: "G"
+      dataType: "string"
+    almacenUbicacion:
+      header: "Almacen Ubicación"
+      column: "H"
+      dataType: "string"
+    fechaContabilizacion:
+      header: "Fecha de Contabilización"
+      column: "I"
+      dataType: "string"
+    precio:
+      header: "precio"
+      column: "V"
+      dataType: "number"
+
+  parametrosCalidad:
+    proteina:
+      header: "Proteina     %"
+      column: "J"
+      dataType: "number"
+    tvnMg100g:
+      header: "TVN    mg/100g"
+      column: "K"
+      dataType: "number"
+    histaminaPpm:
+      header: "Histamina ppm"
+      column: "L"
+      dataType: "number"
+    humedad:
+      header: "Humedad     %"
+      column: "M"
+      dataType: "number"
+    grasas:
+      header: "Grasas      %"
+      column: "N"
+      dataType: "number"
+    cenizas:
+      header: "Cenizas     %"
+      column: "O"
+      dataType: "number"
+    cloruros:
+      header: "Cloruros     %"
+      column: "P"
+      dataType: "number"
+    acidez:
+      header: "Acidez      %"
+      column: "Q"
+      dataType: "number"
+    cadmio:
+      header: "Cadmio"
+      column: "R"
+      dataType: "number"
+    salmonella:
+      header: "Salmonella"
+      column: "S"
+      dataType: "string"
+    shiguella:
+      header: "Shiguella"
+      column: "T"
+      dataType: "string"
+    enterobactUfcG:
+      header: "Enterobact   ufc/g"
+      column: "U"
+      dataType: "string"
+      
+parametros:
+
+  sheetName: "Parametros Escogidos"
+  startRow: 1
+  
+  fijos:
+    fechaHoraCorrida:
+      header: "Fecha Hora Corrida"
+      column: "A"
+      dataType: "string"
+    plantaMezcla:
+      header: "Planta de Mezcla"
+      column: "B"
+      dataType: "string"
+    tipoProduccion:
+      header: "Tipo de Produccion"
+      column: "C"
+      dataType: "string"
+    almacenMezcla:
+      header: "Almacen de Mezcla"
+      column: "D"
+      dataType: 
+    centroUbicación:
+      header: "Centro Ubicación"
+      column: "E"
+      dataType: "string"
+    centroProduccion:
+      header: "Centro Produccion"
+      column: "F"
+      dataType: "string"
+    quitarPh:
+      header: "Quitar PH"
+      column: "G"
+      dataType: "string"
+    seriesPermitidas:
+      header: "Series Permitidas"
+      column: "H"
+      dataType: "string"
+    calidadesEliminadasInput:
+      header: "Calidades Eliminadas Input"
+      column: "I"
+      dataType: "string"
+    tipoMezcla:
+      header: "Tipo de Mezcla"
+      column: "J"
+      dataType: "string"
+    calidadSolicitada:
+      header: "Calidad Solicitada"
+      column: "K"
+      dataType: "string"

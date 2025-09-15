@@ -25,7 +25,7 @@ public class DeleteProductoFunction
 
     [Function(FunctionNames.Producto.Delete)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Production.ProductoBase + "/{id}")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Delete, Route = ApiRoutes.Core.Production.ProductoBase + "/{id}")] HttpRequestData req,
         string id)
     {
         try

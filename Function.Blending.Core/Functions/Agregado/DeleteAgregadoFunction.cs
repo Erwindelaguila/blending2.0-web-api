@@ -25,7 +25,7 @@ public class DeleteAgregadoFunction
 
     [Function(FunctionNames.Agregado.Delete)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Delete, Route = ApiRoutes.Core.Production.AgregadoBase + "/{id}")] HttpRequestData req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Delete, Route = ApiRoutes.Core.Production.AgregadoBase + "/{id}")] HttpRequestData req,
         string id)
     {
         try

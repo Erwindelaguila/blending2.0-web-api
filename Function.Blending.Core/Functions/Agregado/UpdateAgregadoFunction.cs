@@ -28,7 +28,7 @@ public class UpdateAgregadoFunction
 
     [Function(FunctionNames.Agregado.Update)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Put, Route = ApiRoutes.Core.Production.AgregadoGetById)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Put, Route = ApiRoutes.Core.Production.AgregadoGetById)] HttpRequestData req)
     {
         try
         {

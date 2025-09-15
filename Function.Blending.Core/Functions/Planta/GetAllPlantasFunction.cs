@@ -28,7 +28,7 @@ public class GetAllPlantasFunction
 
     [Function(FunctionNames.Planta.GetAll)]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, HttpMethods.Get, Route = ApiRoutes.Core.Planta.Base)] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Planta.Base)] HttpRequestData req)
     {
         try
         {
