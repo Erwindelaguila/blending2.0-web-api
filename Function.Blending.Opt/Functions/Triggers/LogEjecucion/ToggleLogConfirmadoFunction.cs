@@ -1,11 +1,8 @@
-﻿using AutoMapper;
-using Function.Blending.Opt.Application.Features.LogEjecucion.Commands.ToggleState;
-using Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Responses;
-using Function.Blending.Opt.Domain.Abstractions.Repositories;
-using Function.Blending.Opt.Domain.Abstractions.Services;
+﻿using Function.Blending.Opt.Application.Features.LogEjecucion.Commands.ToggleState;
 using Function.Blending.Opt.Functions.Support.Authorization;
 using Function.Blending.Opt.Functions.Support.Execution;
 using Function.Blending.Opt.Functions.Support.Extensions;
+using Function.Blending.Opt.Functions.Support.Extensions.BindingContext.BindingData;
 using Function.Blending.Opt.Functions.Support.Http;
 using Function.Blending.Opt.Functions.Support.ProblemDetails;
 using Function.Blending.Opt.Functions.Support.Routing;
@@ -14,13 +11,7 @@ using Function.Blending.Opt.Shared.Results;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Function.Blending.Opt.Functions.Triggers.LogEjecucion;
 
@@ -36,9 +27,8 @@ public sealed class ToggleLogConfirmadoFunction(
     HttpRequestData req,
     FunctionContext fctx)
   {
-    // Leer {id} desde los route params del contexto
-    var idRaw = fctx.BindingContext.BindingData.TryGetValue("id", out var v) ? v?.ToString() : null;
-    if (!Guid.TryParse(idRaw, out var id))
+    var id = fctx.TryGuidBindingData("id");
+    if (id is null)
     {
       return await problem.CreateAsync(
         fctx, req, HttpStatusCode.BadRequest,
@@ -58,7 +48,7 @@ public sealed class ToggleLogConfirmadoFunction(
         detail: "The current principal does not provide a valid object id (oid/sub) to audit.");
     }
 
-    var result = await mediator.Send(new ToggleLogConfirmadoCommand(id, userId));
+    var result = await mediator.Send(new ToggleLogConfirmadoCommand((Guid)id, userId));
 
     if (!result.IsSuccess)
     {

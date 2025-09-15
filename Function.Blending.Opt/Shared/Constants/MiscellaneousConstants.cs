@@ -1,6 +1,6 @@
 ﻿namespace Function.Blending.Opt.Shared.Constants;
 
-public static class MiscellaneousKeys
+public static class MiscellaneousConstants
 {
   public const string HttpTrigger = "httpTrigger";
   public const string Principal = "Principal";

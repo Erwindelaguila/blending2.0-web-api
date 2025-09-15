@@ -30,7 +30,7 @@ public static class FunctionsWorkerApplicationBuilderExtensions
       builder.UseWhen<RequestLoggingMiddleware>(_ => true);
 
     if (enableRequestSizeLimit)
-      builder.UseWhen<RequestSizeLimitMiddleware>(ctx => ctx.FunctionDefinition.InputBindings.Values.Any(b => b.Type == MiscellaneousKeys.HttpTrigger));
+      builder.UseWhen<RequestSizeLimitMiddleware>(ctx => ctx.FunctionDefinition.InputBindings.Values.Any(b => b.Type == MiscellaneousConstants.HttpTrigger));
 
     // HMAC solo si es HTTP trigger
     builder.UseWhen<HmacValidationMiddleware>(ctx => true);
