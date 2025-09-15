@@ -9,14 +9,15 @@ namespace Function.Blending.Opt.Domain.ValueObjects;
 public sealed record CalOutDetalle(
   string? Grupo,
   string? Ruma,
-  int? KilosUsados,
-  int? Cantidad,
+  decimal? KilosUsados,
+  decimal? Cantidad,
   string? Codigo,
   string? DescripcionMaterial,
   string? CentroUbicacion,
   string? AlmacenUbicacion,
   string? FechaContabilizacion,
-  DateTime? NuevaFechaFabricacionUtc,
+  string? FechaFabricacion,
+  string? NuevaFechaFabricacion,
   bool? Aceptado,
   IReadOnlyList<CalOutDetParametro>? Parametros,
   IReadOnlyList<CalOutDetOtros>? Otros

@@ -1,22 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Requests.Converters;
+using System.Text.Json.Serialization;
 
 namespace Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Requests.Output;
 
 public sealed record CalOutResumenDto
 {
   public string? Grupo { get; init; }
-  public int? Toneladas { get; init; }
 
-  // En FE/BE trabajaremos en UTC; en EF se mapea a NuevaFechaFabricacion
-  public DateTime? NuevaFechaFabricacionUtc { get; init; }
+  [JsonPropertyName("tonTotal")]
+  public decimal? Toneladas { get; init; }
 
+  [JsonPropertyName("fechaFabricacionNueva")]
+  public string? NuevaFechaFabricacion { get; init; }
+
+  [JsonPropertyName("calidadObjetivo")]
   public string? CodigoCalidadObjetivo { get; init; }
-  public string? CodigoCalidadResultante { get; init; }
-  public int? ValorInicial { get; init; }
-  public int? ValorFinal { get; init; }
-  public int? ValorAgregado { get; init; }
-  public bool? Aceptado { get; init; }
 
+  [JsonPropertyName("calidadResultante")]
+  public string? CodigoCalidadResultante { get; init; }
+
+  public decimal? ValorInicial { get; init; }
+
+  public decimal? ValorFinal { get; init; }
+
+  public decimal? ValorAgregado { get; init; }
+
+  public bool? Aceptado { get; init; } = false;
+
+  [JsonPropertyName("parametros")]
+  [JsonConverter(typeof(JsonObjectToResParametrosListConverter))]
   public IReadOnlyList<CalOutResParametroDto>? Parametros { get; init; }
 }

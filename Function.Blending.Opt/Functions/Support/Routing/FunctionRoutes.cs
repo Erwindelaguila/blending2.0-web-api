@@ -16,7 +16,7 @@ public static class FunctionRoutes
     public const string Webhook = $"{ApiBase}quality/homogenization/webhook";
     public const string GetById = $"{ApiBase}quality/executions/{{id:guid}}";
     public const string History = $"{ApiBase}quality/executions/history";
-    public const string ToggleState = $"{ApiBase}quality/executions/{{id:guid}}/state/toggle";
+    public const string ChangeAccepted = $"{ApiBase}quality/executions/{{id:guid}}/accept/change";
   }
 
   public static class Logistics

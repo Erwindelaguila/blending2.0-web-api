@@ -67,7 +67,7 @@ public sealed class ToggleLogConfirmadoFunction(
 
       return await problem.CreateAsync(
         fctx, req, status,
-        type: isNotFound ? "urn:blending:error:logistica:not-found" : "urn:blending:error:logistica:bad-request",
+        type: isNotFound ? "urn:blending:error:logistic:not-found" : "urn:blending:error:logistic:bad-request",
         title: isNotFound ? "Not Found" : "Bad Request",
         detail: result.Error ?? "Invalid request",
         extensions: new Dictionary<string, object?>

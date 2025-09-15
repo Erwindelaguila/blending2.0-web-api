@@ -8,13 +8,13 @@ namespace Function.Blending.Opt.Domain.ValueObjects;
 /// </summary>
 public sealed record CalOutResumen(
   string? Grupo,
-  int? Toneladas,
-  DateTime? NuevaFechaFabricacionUtc,
+  decimal? Toneladas,
+  DateTime? NuevaFechaFabricacion,
   string? CodigoCalidadObjetivo,
   string? CodigoCalidadResultante,
-  int? ValorInicial,
-  int? ValorFinal,
-  int? ValorAgregado,
+  decimal? ValorInicial,
+  decimal? ValorFinal,
+  decimal? ValorAgregado,
   bool? Aceptado,
   IReadOnlyList<CalOutResParametro>? Parametros
 );

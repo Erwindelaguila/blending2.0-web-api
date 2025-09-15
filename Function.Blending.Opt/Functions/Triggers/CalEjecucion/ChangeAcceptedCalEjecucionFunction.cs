@@ -1,4 +1,9 @@
-﻿using Function.Blending.Opt.Application.Features.CalEjecucion.Commands.ToggleState;
+﻿using Function.Blending.Opt.Application.Features.CalEjecucion.Commands.ChangeAccepted;
+using Function.Blending.Opt.Application.Features.CalEjecucion.Commands.Start;
+using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Requests;
+using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Responses;
+using Function.Blending.Opt.Application.Features.LogEjecucion.Commands.ToggleState;
+using Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Requests;
 using Function.Blending.Opt.Functions.Support.Authorization;
 using Function.Blending.Opt.Functions.Support.Execution;
 using Function.Blending.Opt.Functions.Support.Extensions;
@@ -10,24 +15,19 @@ using Function.Blending.Opt.Shared.Results;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using System.Collections.Generic;
 using System.Net;
 
 namespace Function.Blending.Opt.Functions.Triggers.CalEjecucion;
 
-public sealed class ToggleCalEstadoFunction(
-  IMediator mediator,
-  IProblemDetailsWriter problem,
-  IRequestContext ctx)
+public sealed class ChangeAcceptedCalEjecucionFunction(IMediator mediator, IProblemDetailsWriter problem, IRequestContext ctx)
 {
-  [Function(nameof(ToggleCalEstadoFunction))]
-  [RequireScopes(ConfigurationKeys.Auth.Scopes.Quality.ToggleState)]
+  [Function(nameof(ChangeAcceptedCalEjecucionFunction))]
+  [RequireScopes(ConfigurationKeys.Auth.Scopes.Quality.ChangeAccepted)]
   public async Task<HttpResponseData> Run(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = FunctionRoutes.Quality.ToggleState)]
-    HttpRequestData req,
-    FunctionContext fctx)
+      [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = FunctionRoutes.Quality.ChangeAccepted)]
+      HttpRequestData req,
+      FunctionContext fctx)
   {
-    // Leer {id} desde los route params del contexto
     var idRaw = fctx.BindingContext.BindingData.TryGetValue("id", out var v) ? v?.ToString() : null;
     if (!Guid.TryParse(idRaw, out var id))
     {
@@ -37,6 +37,16 @@ public sealed class ToggleCalEstadoFunction(
         title: "Bad Request",
         detail: "Route parameter 'id' is invalid.",
         extensions: new Dictionary<string, object?> { ["requestedBy"] = ctx.Username });
+    }
+
+    var dto = await req.TryReadJsonAsync<ChangeAcceptedCalEjecutionRequest>();
+    if (dto is null)
+    {
+      return await problem.CreateAsync(
+        fctx, req, HttpStatusCode.BadRequest,
+        type: "urn:blending:error:invalid-payload",
+        title: "Bad Request",
+        detail: "Invalid JSON body");
     }
 
     var userIdStr = fctx.GetUserObjectId();
@@ -49,7 +59,7 @@ public sealed class ToggleCalEstadoFunction(
         detail: "The current principal does not provide a valid object id (oid/sub) to audit.");
     }
 
-    var result = await mediator.Send(new ToggleCalEstadoCommand(id, userId));
+    var result = await mediator.Send(new ChangeAcceptedCalEjecucionCommand(id, dto.Grupos, userId));
 
     if (!result.IsSuccess)
     {
@@ -58,7 +68,7 @@ public sealed class ToggleCalEstadoFunction(
 
       return await problem.CreateAsync(
         fctx, req, status,
-        type: isNotFound ? "urn:blending:error:calidad:not-found" : "urn:blending:error:calidad:bad-request",
+        type: isNotFound ? "urn:blending:error:quality:not-found" : "urn:blending:error:quality:bad-request",
         title: isNotFound ? "Not Found" : "Bad Request",
         detail: result.Error ?? "Invalid request",
         extensions: new Dictionary<string, object?>

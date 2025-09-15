@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Function.Blending.Opt.Infrastructure.Configuration;
 
-public sealed class CalExecutionCodeGenerator(IConfiguration cfg) : IExecutionCodeGenerator
+public sealed class CalExecutionCodeGenerator() : IExecutionCodeGenerator
 {
   public string MakeTemp() => "TMP" + Guid.NewGuid().ToString("N")[..17];
 

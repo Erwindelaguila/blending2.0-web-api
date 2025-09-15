@@ -84,20 +84,15 @@ public partial class BlendingDbContext : DbContext
     {
         modelBuilder.Entity<Agregado>(entity =>
         {
-            entity.HasIndex(e => e.Codigo, "UQ_Agregado_Codigo_Activo")
-                .IsUnique()
-                .HasFilter("([Eliminado]=(0))");
+            entity.HasIndex(e => e.Codigo, "UQ_Agregado_Codigo_Activo").IsUnique();
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Codigo)
                 .HasMaxLength(20)
                 .IsUnicode(false);
-            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(150)
                 .IsUnicode(false);
-            entity.Property(e => e.ModificadoPorId).HasDefaultValueSql("(NULL)");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -115,13 +110,8 @@ public partial class BlendingDbContext : DbContext
 
             entity.Property(e => e.Key).HasMaxLength(100);
             entity.Property(e => e.Category).HasMaxLength(50);
-            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Description).HasMaxLength(150);
             entity.Property(e => e.Group).HasMaxLength(50);
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.IsDisableable).HasDefaultValue(true);
-            entity.Property(e => e.IsRemovable).HasDefaultValue(true);
-            entity.Property(e => e.IsVisible).HasDefaultValue(true);
             entity.Property(e => e.Value)
                 .HasMaxLength(250)
                 .IsUnicode(false);
@@ -136,9 +126,7 @@ public partial class BlendingDbContext : DbContext
             entity.HasIndex(e => new { e.TableId, e.Clave }, "UQ_AuxProp_TableId_Clave").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.Activo).HasDefaultValue(true);
             entity.Property(e => e.Clave).HasMaxLength(15);
-            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Descripcion).HasMaxLength(200);
             entity.Property(e => e.Nombre).HasMaxLength(100);
             entity.Property(e => e.TipoDato).HasMaxLength(25);
@@ -160,9 +148,7 @@ public partial class BlendingDbContext : DbContext
             entity.HasIndex(e => new { e.TableId, e.Clave }, "UQ_AuxRow_TableId_Clave").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.Activo).HasDefaultValue(true);
             entity.Property(e => e.Clave).HasMaxLength(15);
-            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Descripcion).HasMaxLength(200);
             entity.Property(e => e.Nombre).HasMaxLength(100);
 
@@ -181,9 +167,7 @@ public partial class BlendingDbContext : DbContext
             entity.HasIndex(e => e.Clave, "UQ_AuxTable_Clave").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.Activo).HasDefaultValue(true);
             entity.Property(e => e.Clave).HasMaxLength(15);
-            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Descripcion).HasMaxLength(200);
             entity.Property(e => e.Nombre).HasMaxLength(100);
 
@@ -201,8 +185,6 @@ public partial class BlendingDbContext : DbContext
             entity.HasIndex(e => new { e.RowId, e.PropId }, "IX_AuxValue_Row_Prop");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
-            entity.Property(e => e.Activo).HasDefaultValue(true);
-            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Valor).HasMaxLength(250);
 
             entity.HasOne(d => d.Prop).WithMany(p => p.AuxValue)
@@ -228,7 +210,6 @@ public partial class BlendingDbContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Codigo).HasMaxLength(20);
-            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Mensaje).HasMaxLength(250);
             entity.Property(e => e.Secuencial).ValueGeneratedOnAdd();
 
@@ -248,7 +229,6 @@ public partial class BlendingDbContext : DbContext
             entity.Property(e => e.BorrarCalidades).HasMaxLength(200);
             entity.Property(e => e.CentroProduccion).HasMaxLength(200);
             entity.Property(e => e.CentroUbicacion).HasMaxLength(200);
-            entity.Property(e => e.QuitarRumasPH).HasDefaultValue(true);
             entity.Property(e => e.TipoProduccion).HasMaxLength(200);
             entity.Property(e => e.UbicacionAlmacen).HasMaxLength(200);
             entity.Property(e => e.ValorCadmioAlto).HasColumnType("decimal(10, 4)");
@@ -292,7 +272,7 @@ public partial class BlendingDbContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Codigo).HasMaxLength(20);
-            entity.Property(e => e.Valor).HasMaxLength(50);
+            entity.Property(e => e.Valor).HasMaxLength(100);
 
             entity.HasOne(d => d.Detalle).WithMany(p => p.CalOutDetOtros)
                 .HasForeignKey(d => d.DetalleId)
@@ -328,12 +308,15 @@ public partial class BlendingDbContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.AlmacenUbicacion).HasMaxLength(200);
+            entity.Property(e => e.Cantidad).HasColumnType("decimal(10, 4)");
             entity.Property(e => e.CentroUbicacion).HasMaxLength(200);
             entity.Property(e => e.Codigo).HasMaxLength(20);
-            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.DescripcionMaterial).HasMaxLength(200);
             entity.Property(e => e.FechaContabilizacion).HasMaxLength(100);
+            entity.Property(e => e.FechaFabricacion).HasMaxLength(100);
             entity.Property(e => e.Grupo).HasMaxLength(20);
+            entity.Property(e => e.KilosUsados).HasColumnType("decimal(10, 4)");
+            entity.Property(e => e.NuevaFechaFabricacion).HasMaxLength(100);
             entity.Property(e => e.Ruma).HasMaxLength(20);
 
             entity.HasOne(d => d.Ejecucion).WithMany(p => p.CalOutDetalle)
@@ -369,8 +352,12 @@ public partial class BlendingDbContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CodigoCalidadObjetivo).HasMaxLength(20);
             entity.Property(e => e.CodigoCalidadResultante).HasMaxLength(20);
-            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Grupo).HasMaxLength(20);
+            entity.Property(e => e.NuevaFechaFabricacion).HasMaxLength(100);
+            entity.Property(e => e.Toneladas).HasColumnType("decimal(10, 4)");
+            entity.Property(e => e.ValorAgregado).HasColumnType("decimal(10, 4)");
+            entity.Property(e => e.ValorFinal).HasColumnType("decimal(10, 4)");
+            entity.Property(e => e.ValorInicial).HasColumnType("decimal(10, 4)");
 
             entity.HasOne(d => d.Ejecucion).WithMany(p => p.CalOutResumen)
                 .HasForeignKey(d => d.EjecucionId)
@@ -380,23 +367,18 @@ public partial class BlendingDbContext : DbContext
 
         modelBuilder.Entity<Calidad>(entity =>
         {
-            entity.HasIndex(e => e.Codigo, "UQ_Calidad_Codigo_Activo")
-                .IsUnique()
-                .HasFilter("([Eliminado]=(0))");
+            entity.HasIndex(e => e.Codigo, "UQ_Calidad_Codigo_Activo").IsUnique();
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Codigo)
                 .HasMaxLength(20)
                 .IsUnicode(false);
             entity.Property(e => e.CodigoMaterial)
                 .HasMaxLength(20)
                 .IsUnicode(false);
-            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(150)
                 .IsUnicode(false);
-            entity.Property(e => e.ModificadoPorId).HasDefaultValueSql("(NULL)");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -404,9 +386,7 @@ public partial class BlendingDbContext : DbContext
 
         modelBuilder.Entity<CalidadParametro>(entity =>
         {
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.Activo).HasDefaultValue(true);
-            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Valor).HasColumnType("decimal(10, 4)");
 
             entity.HasOne(d => d.Calidad).WithMany(p => p.CalidadParametro)
@@ -422,20 +402,15 @@ public partial class BlendingDbContext : DbContext
 
         modelBuilder.Entity<LineaProduccion>(entity =>
         {
-            entity.HasIndex(e => e.Codigo, "UQ_LineaProduccion_Codigo_Activo")
-                .IsUnique()
-                .HasFilter("([Eliminado]=(0))");
+            entity.HasIndex(e => e.Codigo, "UQ_LineaProduccion_Codigo_Activo").IsUnique();
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Codigo)
                 .HasMaxLength(20)
                 .IsUnicode(false);
-            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(150)
                 .IsUnicode(false);
-            entity.Property(e => e.ModificadoPorId).HasDefaultValueSql("(NULL)");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -455,7 +430,6 @@ public partial class BlendingDbContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Codigo).HasMaxLength(20);
-            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Grupo).HasMaxLength(20);
             entity.Property(e => e.Mensaje).HasMaxLength(250);
             entity.Property(e => e.Secuencial).ValueGeneratedOnAdd();
@@ -642,7 +616,6 @@ public partial class BlendingDbContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Contenedor).HasMaxLength(20);
-            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Grupo).HasMaxLength(20);
 
             entity.HasOne(d => d.Ejecucion).WithMany(p => p.LogOutContenedor)
@@ -653,20 +626,15 @@ public partial class BlendingDbContext : DbContext
 
         modelBuilder.Entity<Parametro>(entity =>
         {
-            entity.HasIndex(e => e.Codigo, "UQ_Parametro_Codigo_Activo")
-                .IsUnique()
-                .HasFilter("([Eliminado]=(0))");
+            entity.HasIndex(e => e.Codigo, "UQ_Parametro_Codigo_Activo").IsUnique();
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Codigo)
                 .HasMaxLength(20)
                 .IsUnicode(false);
-            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(150)
                 .IsUnicode(false);
-            entity.Property(e => e.ModificadoPorId).HasDefaultValueSql("(NULL)");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -674,20 +642,15 @@ public partial class BlendingDbContext : DbContext
 
         modelBuilder.Entity<Planta>(entity =>
         {
-            entity.HasIndex(e => e.Codigo, "UQ_Planta_Codigo_Activo")
-                .IsUnique()
-                .HasFilter("([Eliminado]=(0))");
+            entity.HasIndex(e => e.Codigo, "UQ_Planta_Codigo_Activo").IsUnique();
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Codigo)
                 .HasMaxLength(20)
                 .IsUnicode(false);
-            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(150)
                 .IsUnicode(false);
-            entity.Property(e => e.ModificadoPorId).HasDefaultValueSql("(NULL)");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -695,20 +658,15 @@ public partial class BlendingDbContext : DbContext
 
         modelBuilder.Entity<Producto>(entity =>
         {
-            entity.HasIndex(e => e.Codigo, "UQ_Producto_Codigo_Activo")
-                .IsUnique()
-                .HasFilter("([Eliminado]=(0))");
+            entity.HasIndex(e => e.Codigo, "UQ_Producto_Codigo_Activo").IsUnique();
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Codigo)
                 .HasMaxLength(20)
                 .IsUnicode(false);
-            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(150)
                 .IsUnicode(false);
-            entity.Property(e => e.ModificadoPorId).HasDefaultValueSql("(NULL)");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -738,9 +696,7 @@ public partial class BlendingDbContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.ClassName).HasMaxLength(100);
-            entity.Property(e => e.Level)
-                .HasMaxLength(10)
-                .HasDefaultValue("error");
+            entity.Property(e => e.Level).HasMaxLength(10);
             entity.Property(e => e.MethodName).HasMaxLength(100);
             entity.Property(e => e.NameSpace)
                 .HasMaxLength(250)
@@ -762,25 +718,19 @@ public partial class BlendingDbContext : DbContext
             entity.Property(e => e.Category).HasMaxLength(50);
             entity.Property(e => e.Description).HasMaxLength(150);
             entity.Property(e => e.Group).HasMaxLength(50);
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
         });
 
         modelBuilder.Entity<TipoProduccion>(entity =>
         {
-            entity.HasIndex(e => e.Codigo, "UQ_TipoProduccion_Codigo_Activo")
-                .IsUnique()
-                .HasFilter("([Eliminado]=(0))");
+            entity.HasIndex(e => e.Codigo, "UQ_TipoProduccion_Codigo_Activo").IsUnique();
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Codigo)
                 .HasMaxLength(20)
                 .IsUnicode(false);
-            entity.Property(e => e.CreadoEl).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Descripcion)
                 .HasMaxLength(150)
                 .IsUnicode(false);
-            entity.Property(e => e.ModificadoPorId).HasDefaultValueSql("(NULL)");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(50)
                 .IsUnicode(false);
