@@ -1,10 +1,6 @@
 using Function.Blending.Opt.Domain.Entities;
 using Function.Blending.Opt.Domain.ReadModels;
 using Function.Blending.Opt.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Function.Blending.Opt.Domain.Abstractions.Repositories;
 
@@ -37,9 +33,6 @@ public interface ICalEjecucionRepository
     CancellationToken ct = default
   );
 
-  // === Actualización (Estado) ===
-  Task<CalEjecucion?> SetEstadoAsync(Guid id, Guid nuevoEstadoId, Guid modificadoPorId, CancellationToken ct);
-
   // === Actualización (Complete) ===
   Task<CalEjecucion?> CompleteAsync(
     Guid id,
@@ -50,4 +43,8 @@ public interface ICalEjecucionRepository
     IReadOnlyList<CalOutDetalle>? detalles = null,
     CancellationToken ct = default
   );
+
+  // === Actualización (Cambiar Aceptado, en Grupos) ===
+  Task<bool?> SetAceptadoAsync(Guid id, IReadOnlyList<Guid>? Grupos, Guid modificadoPorId, CancellationToken ct);
+
 }
