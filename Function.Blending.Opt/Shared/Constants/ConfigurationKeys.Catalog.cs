@@ -12,7 +12,6 @@ public static partial class ConfigurationKeys
     {
       public const string EnEjecucion = "Catalog:QualityExecutionStatus:EnEjecucion";
       public const string Procesado = "Catalog:QualityExecutionStatus:Procesado";
-      public const string Aceptado = "Catalog:QualityExecutionStatus:Aceptado";
       public const string Cancelado = "Catalog:QualityExecutionStatus:Cancelado";
       public const string Error = "Catalog:QualityExecutionStatus:Error";
     }

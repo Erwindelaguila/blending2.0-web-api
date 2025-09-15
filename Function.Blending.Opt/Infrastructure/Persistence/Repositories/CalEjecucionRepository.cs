@@ -1,14 +1,14 @@
 ﻿using AutoMapper;
 using Function.Blending.Opt.Domain.Abstractions.Repositories;
 using Function.Blending.Opt.Domain.Abstractions.Services;
+using Function.Blending.Opt.Infrastructure.Persistence.Repositories.Internals;                   
 using Microsoft.EntityFrameworkCore;
 
-// ===== Aliases estandarizados =====
-using E = Function.Blending.Opt.Infrastructure.Persistence.Models;  // EF models
+// ===== Alias estandarizados =====
 using D = Function.Blending.Opt.Domain.Entities;                    // Domain entities
+using E = Function.Blending.Opt.Infrastructure.Persistence.Models;  // EF models
 using RM = Function.Blending.Opt.Domain.ReadModels;                 // Read models (CQRS)
 using VO = Function.Blending.Opt.Domain.ValueObjects;               // Value objects
-using Function.Blending.Opt.Infrastructure.Persistence.Repositories.Internals;                   
 
 namespace Function.Blending.Opt.Infrastructure.Persistence.Repositories;
 
@@ -173,20 +173,24 @@ public sealed class CalEjecucionRepository(
   }
 
   // ============================
-  // SetEstado
+  // SetAceptado
   // ============================
-  public async Task<D.CalEjecucion?> SetEstadoAsync(Guid id, Guid nuevoEstadoId, Guid modificadoPorId, CancellationToken ct)
+  public async Task<bool?> SetAceptadoAsync(Guid id, IReadOnlyList<Guid>? grupos, Guid modificadoPorId, CancellationToken ct)
   {
     var set = db.Set<E.CalEjecucion>();
     var model = await set.FindAsync([id], ct);
     if (model is null) return null;
 
-    model.EstadoId = nuevoEstadoId;
-    model.ModificadoPorId = modificadoPorId;
-    model.ModificadoEl = DateTime.UtcNow;
+    if (grupos is null || grupos.Count == 0) return false;
 
-    await db.SaveChangesAsync(ct);
-    return mapper.Map<D.CalEjecucion>(model);
+    using var tx = await db.Database.BeginTransactionAsync(ct);
+
+    (List<E.CalOutResumen> resumenesYaNoAceptados, List<E.CalOutResumen> nuevosResumenesAceptados) = await CalidadOutputUpdater.UpdaterResumenesAsync(db, id, grupos, modificadoPorId, ct);
+    await CalidadOutputUpdater.UpdaterDetallesAsync(db, id, modificadoPorId, resumenesYaNoAceptados, nuevosResumenesAceptados, ct);
+    await CalidadOutputUpdater.SaveChangesAsync(db, modificadoPorId, model, ct);
+
+    await tx.CommitAsync(ct);
+
+    return true;
   }
-
 }

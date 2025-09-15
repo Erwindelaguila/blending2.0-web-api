@@ -14,7 +14,7 @@
 
     // === Flags Tipos de Validación (Producción solo dejar: Auth:EnableBearerTokens = true ) ===
     "Auth:EnableEasyAuth": "false",
-    "Auth:EnableLocalHeaderPrincipal": "true",
+    "Auth:EnableLocalHeaderPrincipal": "false",
     "Auth:EnableHmacPrincipal": "false",
     "Auth:EnableBearerTokens": "true",
     "Auth:Bearer:ValidationMode": "Relaxed", // Relaxed | Strict
@@ -28,7 +28,7 @@
     "Auth:Allow:Quality:ReadById": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
     "Auth:Allow:Quality:ReadHistory": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
     "Auth:Allow:Quality:WriteStart": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
-    "Auth:Allow:Quality:ToggleState": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
+    "Auth:Allow:Quality:ChangeAccepted": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
 
     "Auth:Allow:Logistics:ReadById": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
     "Auth:Allow:Logistics:ReadHistory": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
@@ -39,7 +39,7 @@
     "Limits:WebhookMaxBytes": "2097152",
 
     // === Catálogo AuxTable por Id ===
-    "Catalog:QualityExecutionStatus:Id": "99F7B28F-4CD5-4EC7-81A3-AFF474332949",
+    "Catalog:QualityExecutionStatus:Id": "98066F2C-9B5D-46E4-A29E-C7D97F8F920C",
     "Catalog:LogisticExecutionStatus:Id": "4E38D655-602E-452B-8A06-1A014247342B",
 
     // === Catálogo AuxProp por Clave ===
@@ -57,11 +57,10 @@
     "Catalog:LogisticExecutionStatus:Cache:CacheNulls": "false",
 
     // === Catálogo AuxRow por Id ===
-    "Catalog:QualityExecutionStatus:EnEjecucion": "08AB1FA5-FA0D-4BB8-8A89-453C2D4897BF",
-    "Catalog:QualityExecutionStatus:Procesado": "5124313F-7DCB-47A0-B84B-5833E383231E",
-    "Catalog:QualityExecutionStatus:Aceptado": "D606881A-4262-4AE0-BAF9-397F538DC710",
-    "Catalog:QualityExecutionStatus:Cancelado": "AC41946B-D7FA-44F1-A04A-78432385AB9B",
-    "Catalog:QualityExecutionStatus:Error": "C3BA3FB5-E16B-4485-B4EB-89ADAFFF2771",
+    "Catalog:QualityExecutionStatus:EnEjecucion": "37AFC095-E1FA-41A6-8140-15BB04CEB0EF",
+    "Catalog:QualityExecutionStatus:Procesado": "D86B3EF4-1331-4FA7-97E4-4ADB1518AE6E",
+    "Catalog:QualityExecutionStatus:Cancelado": "2F35D633-39B7-4C7F-9105-1FF25B8CFA72",
+    "Catalog:QualityExecutionStatus:Error": "AFC50EAF-264D-42DA-A203-B9E093ECC625",
 
     "Catalog:LogisticExecutionStatus:EnEjecucion": "96876821-E29B-449B-B034-1BC3DEDC47C1",
     "Catalog:LogisticExecutionStatus:Procesado": "C4C222F9-F83A-4686-9E35-0871282D3CD3",

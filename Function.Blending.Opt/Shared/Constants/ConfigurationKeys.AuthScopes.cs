@@ -11,7 +11,7 @@ public static partial class ConfigurationKeys
         public const string ReadById = "Auth:Allow:Quality:ReadById";
         public const string ReadHistory = "Auth:Allow:Quality:ReadHistory";
         public const string WriteStart = "Auth:Allow:Quality:WriteStart";
-        public const string ToggleState = "Auth:Allow:Quality:ToggleState";
+        public const string ChangeAccepted = "Auth:Allow:Quality:ChangeAccepted";
       }
       public static class Logistics
       {
