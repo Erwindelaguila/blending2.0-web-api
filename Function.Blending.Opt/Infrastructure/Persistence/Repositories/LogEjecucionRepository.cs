@@ -9,10 +9,9 @@ using Microsoft.EntityFrameworkCore;
 
 
 // ===== Aliases estandarizados =====
-using E = Function.Blending.Opt.Infrastructure.Persistence.Models;  // EF models
-using D = Function.Blending.Opt.Domain.Entities;                    // Domain entities
+using EF = Function.Blending.Opt.Infrastructure.Persistence.Models;  // EF models
+using DE = Function.Blending.Opt.Domain.Entities;                    // Domain entities
 using RM = Function.Blending.Opt.Domain.ReadModels;                 // Read models (CQRS)
-using VO = Function.Blending.Opt.Domain.ValueObjects;               // Value objects
 
 namespace Function.Blending.Opt.Infrastructure.Persistence.Repositories;
 
@@ -24,7 +23,7 @@ public sealed class LogEjecucionRepository(
   ICodeFormatProvider codeFormats
 ) : ILogEjecucionRepository
 {
-  public async Task<D.LogEjecucion?> StartAsync(
+  public async Task<DE.LogEjecucion?> StartAsync(
     Guid plantaId,
     Guid estadoInicialId,
     string? mensaje,
@@ -36,7 +35,7 @@ public sealed class LogEjecucionRepository(
   {
     var id = Guid.NewGuid();
 
-    var model = new E.LogEjecucion
+    var model = new EF.LogEjecucion
     {
       Id = id,
       PlantaId = plantaId,
@@ -52,14 +51,14 @@ public sealed class LogEjecucionRepository(
     await using var tx = await db.Database.BeginTransactionAsync(ct);
 
     // 1) Insert ejecución con código temporal
-    db.Set<E.LogEjecucion>().Add(model);
+    db.Set<EF.LogEjecucion>().Add(model);
     await db.SaveChangesAsync(ct); // obtiene Secuencial
 
     // 2) Generar y fijar código final (único)
     var format = await codeFormats.GetLogisticExecutionFormatAsync(ct);
     var finalCode = codeGen.MakeFinal(format, model.Secuencial);
 
-    var exists = await db.Set<E.LogEjecucion>()
+    var exists = await db.Set<EF.LogEjecucion>()
                          .AsNoTracking()
                          .AnyAsync(e => e.Codigo == finalCode && e.Id != id, ct);
     if (exists)
@@ -73,10 +72,10 @@ public sealed class LogEjecucionRepository(
 
     // 4) Commit y map a Dominio
     await tx.CommitAsync(ct);
-    return mapper.Map<D.LogEjecucion>(model);
+    return mapper.Map<DE.LogEjecucion>(model);
   }
 
-  public async Task<D.LogEjecucion?> CompleteAsync(
+  public async Task<DE.LogEjecucion?> CompleteAsync(
     Guid id,
     Guid estadoId,
     Guid modificadoPorId,
@@ -84,7 +83,7 @@ public sealed class LogEjecucionRepository(
     CancellationToken ct = default
   )
   {
-    var model = await db.Set<E.LogEjecucion>()
+    var model = await db.Set<EF.LogEjecucion>()
                         .FirstOrDefaultAsync(x => x.Id == id, ct);
     if (model is null) return null;
 
@@ -94,16 +93,16 @@ public sealed class LogEjecucionRepository(
     model.ModificadoPorId = modificadoPorId;
 
     await db.SaveChangesAsync(ct);
-    return mapper.Map<D.LogEjecucion>(model);
+    return mapper.Map<DE.LogEjecucion>(model);
   }
 
   public async Task<LogEjecucion?> GetByIdAsync(Guid id, CancellationToken ct)
   {
-    var model = await db.Set<E.LogEjecucion>()
+    var model = await db.Set<EF.LogEjecucion>()
                       .AsNoTracking()
                       .FirstOrDefaultAsync(x => x.Id == id, ct);
 
-    return model is null ? null : mapper.Map<D.LogEjecucion>(model);
+    return model is null ? null : mapper.Map<DE.LogEjecucion>(model);
   }
 
   public async Task<(IReadOnlyList<LogEjecucionHistoryItemRm> Items, int Total)> GetHistoryAsync(
@@ -123,7 +122,7 @@ public sealed class LogEjecucionRepository(
     page = page < 1 ? 1 : page;
     pageSize = pageSize < 1 ? 1 : pageSize > 200 ? 200 : pageSize;
 
-    var baseQuery = db.Set<E.LogEjecucion>().AsNoTracking();
+    var baseQuery = db.Set<EF.LogEjecucion>().AsNoTracking();
 
     var filtered = LogEjecucionHistoryQuery.ApplyFilters(baseQuery, confirmado, creadoDelUtc, creadoAlUtc, estadoId, plantaId, codigo);
 
@@ -149,7 +148,7 @@ public sealed class LogEjecucionRepository(
 
   public async Task<LogEjecucion?> SetEstadoAsync(Guid id, Guid nuevoEstadoId, Guid modificadoPorId, CancellationToken ct)
   {
-    var set = db.Set<E.LogEjecucion>();
+    var set = db.Set<EF.LogEjecucion>();
     var model = await set.FindAsync([id], ct);
     if (model is null) return null;
 
@@ -158,12 +157,12 @@ public sealed class LogEjecucionRepository(
     model.ModificadoEl = DateTime.UtcNow;
 
     await db.SaveChangesAsync(ct);
-    return mapper.Map<D.LogEjecucion>(model);
+    return mapper.Map<DE.LogEjecucion>(model);
   }
 
   public async Task<LogEjecucion?> SetConfirmadoAsync(Guid id, bool confirmado, Guid modificadoPorId, CancellationToken ct)
   {
-    var set = db.Set<E.LogEjecucion>();
+    var set = db.Set<EF.LogEjecucion>();
     var model = await set.FindAsync([id], ct);
     if (model is null) return null;
 
@@ -172,6 +171,6 @@ public sealed class LogEjecucionRepository(
     model.ModificadoEl = DateTime.UtcNow;
 
     await db.SaveChangesAsync(ct);
-    return mapper.Map<D.LogEjecucion>(model);
+    return mapper.Map<DE.LogEjecucion>(model);
   }
 }

@@ -14,6 +14,5 @@ public sealed class LogEjecucionResponse
   public bool? Confirmado { get; init; }
   public DateTime CreadoEl { get; init; }
 
-  // <- ESTA propiedad faltaba y causaba CS1061 en los profiles
   public EstadoResponse? Estado { get; init; }
 }

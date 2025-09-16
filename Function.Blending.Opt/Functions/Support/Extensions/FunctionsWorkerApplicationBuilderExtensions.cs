@@ -33,8 +33,7 @@ public static class FunctionsWorkerApplicationBuilderExtensions
       builder.UseWhen<RequestSizeLimitMiddleware>(ctx => ctx.FunctionDefinition.InputBindings.Values.Any(b => b.Type == MiscellaneousConstants.HttpTrigger));
 
     // HMAC solo si es HTTP trigger
-    builder.UseWhen<HmacValidationMiddleware>(ctx => true);
-    //builder.UseWhen<HmacValidationMiddleware>(ctx => ctx.FunctionDefinition.InputBindings.Values.Any(b => b.Type == MiscellaneousKeys.HttpTrigger));
+    builder.UseWhen<HmacValidationMiddleware>(ctx => ctx.FunctionDefinition.InputBindings.Values.Any(b => b.Type == MiscellaneousConstants.HttpTrigger));
 
     if (enableAuthentication)
     {

@@ -1,5 +1,5 @@
 using System;
-using Function.Blending.Opt.Domain.ValueObjects;
+using Function.Blending.Opt.Domain.Abstractions.Models.Catalogs;
 using Function.Blending.Opt.Domain.ValueObjects.Ids;
 
 namespace Function.Blending.Opt.Domain.Entities;
@@ -16,7 +16,7 @@ public sealed class LogEjecucion
   public DateTime CreadoEl { get; set; }   // UTC
 
   public string? EstadoNombre { get; set; }
-  public EstadoLogisticaRef? Estado { get; set; }
+  public EstadoLogisticaSnapshot? Estado { get; set; }
 
   public string? Mensaje { get; set; }
 

@@ -1,6 +1,6 @@
 ﻿using Function.Blending.Opt.Domain.Abstractions.Services;
 using Function.Blending.Opt.Infrastructure.Configuration.Options;
-using Function.Blending.Opt.Infrastructure.Persistence.Catalog;
+using Function.Blending.Opt.Infrastructure.Services.Catalog;
 using Function.Blending.Opt.Shared.Constants;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;

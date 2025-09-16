@@ -19,7 +19,8 @@ public sealed class CalEjecucionProfiles : Profile
       .ForMember(d => d.EstadoNombre, cfg => cfg.Ignore())
       .ForMember(d => d.Id, o => o.MapFrom(s => new V.EjecucionId(s.Id)))
       .ForMember(d => d.PlantaId, o => o.MapFrom(s => new V.PlantaId(s.PlantaId)))
-      .ForMember(d => d.EstadoId, o => o.MapFrom(s => new V.EstadoId(s.EstadoId)));
+      .ForMember(d => d.EstadoId, o => o.MapFrom(s => new V.EstadoId(s.EstadoId)))
+      .ForMember(d => d.Resumenes, o => o.MapFrom(s => s.CalOutResumen));
 
     // EF -> ReadModel (history)
     CreateMap<CalEjecucion, CalEjecucionHistoryItemRm>()

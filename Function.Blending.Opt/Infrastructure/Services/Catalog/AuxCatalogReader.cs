@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Function.Blending.Opt.Domain.Abstractions.Models;
+using Function.Blending.Opt.Domain.Abstractions.Models.Catalogs;
 using Function.Blending.Opt.Domain.Abstractions.Services;
+using Function.Blending.Opt.Infrastructure.Persistence;
 using Function.Blending.Opt.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Function.Blending.Opt.Infrastructure.Persistence.Catalog;
+namespace Function.Blending.Opt.Infrastructure.Services.Catalog;
 
 /// <summary>Implementación EF del lector Aux*.</summary>
 public sealed class AuxCatalogReader(BlendingDbContext db) : IAuxCatalogReader

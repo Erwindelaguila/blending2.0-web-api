@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using VO = Function.Blending.Opt.Domain.ValueObjects;
-using Dto = Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Requests.Output;
+using DtoReq = Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Requests.Output;
+using DtoRes = Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Response.Output;
 
 namespace Function.Blending.Opt.Application.Features.CalEjecucion.Mappings;
 
@@ -9,12 +10,12 @@ public sealed class CalidadOutputDtoToVoProfile : Profile
   public CalidadOutputDtoToVoProfile()
   {
     // Resumen
-    CreateMap<Dto.CalOutResParametroDto, VO.CalOutResParametro>();
-    CreateMap<Dto.CalOutResumenDto, VO.CalOutResumen>();
+    CreateMap<DtoReq.CalOutResParametroDto, VO.CalOutResParametro>();
+    CreateMap<DtoReq.CalOutResumenDto, VO.CalOutResumen>();
 
     // Detalle
-    CreateMap<Dto.CalOutDetParametroDto, VO.CalOutDetParametro>();
-    CreateMap<Dto.CalOutDetOtrosDto, VO.CalOutDetOtros>();
-    CreateMap<Dto.CalOutDetalleDto, VO.CalOutDetalle>();
+    CreateMap<DtoReq.CalOutDetParametroDto, VO.CalOutDetParametro>();
+    CreateMap<DtoReq.CalOutDetOtrosDto, VO.CalOutDetOtros>();
+    CreateMap<DtoReq.CalOutDetalleDto, VO.CalOutDetalle>();
   }
 }

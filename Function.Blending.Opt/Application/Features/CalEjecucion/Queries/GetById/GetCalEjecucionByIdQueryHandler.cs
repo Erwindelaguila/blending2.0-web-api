@@ -4,14 +4,13 @@ using Function.Blending.Opt.Domain.Abstractions.Repositories;
 using Function.Blending.Opt.Domain.Abstractions.Services;
 using Function.Blending.Opt.Shared.Results;
 using MediatR;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Function.Blending.Opt.Application.Features.CalEjecucion.Queries.GetById;
 
 public sealed class GetCalEjecucionByIdQueryHandler(
     ICalEjecucionRepository repo,
-    IEstadoCalidadCatalogService estados,
+    ICalOutResumenService resumenService,
+    IEstadoCalidadCatalogService estadosService,
     IMapper mapper
   ) : IRequestHandler<GetCalEjecucionByIdQuery, Result<CalEjecucionResponse>>
 {
@@ -21,8 +20,10 @@ public sealed class GetCalEjecucionByIdQueryHandler(
     if (entity is null)
       return Result<CalEjecucionResponse>.Fail($"Execution '{request.Id}' not found.");
 
+    entity.Resumenes = [.. (await resumenService.GetAllByExcecutionAsync(entity.Id, ct))];
+
     // Enriquecer Estado si falta (para asegurar objeto anidado consistente)
-    entity.Estado ??= await estados.GetByIdAsync(entity.EstadoId, ct);
+    entity.Estado ??= await estadosService.GetByIdAsync(entity.EstadoId, ct);
 
     var dto = mapper.Map<CalEjecucionResponse>(entity);
     return Result<CalEjecucionResponse>.Ok(dto);
