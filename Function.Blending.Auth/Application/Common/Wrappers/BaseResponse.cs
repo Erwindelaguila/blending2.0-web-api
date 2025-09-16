@@ -4,7 +4,7 @@ public class BaseResponse<T>
 {
     public bool Succeeded { get; set; }
     public string? Message { get; set; }
-    public object Errors { get; set; }
+    public object Errors { get; set; } = new();
     public T? Data { get; set; }
     public int StatusCode { get; set; }
 

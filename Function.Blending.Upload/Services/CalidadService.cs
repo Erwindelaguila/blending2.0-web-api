@@ -14,7 +14,7 @@ public class CalidadService
     public CalidadService(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
-        _baseUrl = configuration["CoreService"] ?? throw new ArgumentNullException("CoreService not configured");
+        _baseUrl = configuration["Service_CoreService"] ?? throw new ArgumentNullException("Service_CoreService not configured");
     }
 
     public async Task<List<CalidadDto>> GetCalidadAsync(HttpRequestData req)

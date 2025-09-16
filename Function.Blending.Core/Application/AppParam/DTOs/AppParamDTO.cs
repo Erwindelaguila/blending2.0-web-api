@@ -23,7 +23,7 @@ public class AppParamDTO
 
 public class AppParamSortDTO
 {
-    public string Key { get; set; }
+    public string Key { get; set; } = string.Empty;
     public string Value { get; set; } = null!;
 }
 

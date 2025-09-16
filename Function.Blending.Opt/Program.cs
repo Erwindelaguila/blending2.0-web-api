@@ -53,12 +53,12 @@ builder.Services.AddSingleton<IKeyDecoder, KeyDecoder>();
 builder.Services.AddSingleton<IHmacKeyResolver, HmacKeyVaultKeyResolver>();
 builder.Services.AddSingleton<IWebhookSignatureValidator, HmacWebhookSignatureValidator>();
 
-// ====== Telemetría ======
+// ====== Telemetría ======!!
 builder.Services
   .AddApplicationInsightsTelemetryWorkerService()
   .ConfigureFunctionsApplicationInsights();
 
-// ====== Pipeline del Worker (ORDEN correcto) ======
+// ====== Pipeline del Worker (ORDEN correcto) ======!
 // La extensión UseFunctionsPipeline aplica: ContextAccessor, CorrelationId, ExceptionHandling,
 // RequestLogging, RequestSizeLimit, HMAC, Principal, Authorization (según flags).
 builder.UseFunctionsPipeline(

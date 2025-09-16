@@ -11,20 +11,20 @@ var host = new HostBuilder()
     .ConfigureFunctionsWebApplication()
     .ConfigureServices(services =>
     {
-        // Configuración de logging
+        // Configuración de logging!!!
         services.AddLogging(builder =>
         {
             builder.AddConsole();
             builder.SetMinimumLevel(LogLevel.Information);
         });
 
-        // Registro de MediatR
+        // Registro de MediatR!!
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
         });
 
-        // Registro de servicios de infraestructura
+        // Registro de servicios de infraestructura!!!
         services.AddSingleton<ITokenConfigurationService, TokenConfigurationService>();
         services.AddScoped<ITokenClaimExtractor, TokenClaimExtractor>();
         services.AddScoped<ITokenClaimValidator, TokenClaimValidator>();

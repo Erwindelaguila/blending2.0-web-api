@@ -20,9 +20,13 @@ namespace Function.Blending.Upload.Services;
 
         public BlobStorageService(IConfiguration configuration)
         {
-            _accountName = configuration["BlobStorage:AccountName"];
-            _accountKey = configuration["BlobStorage:AccountKey"];
-            _containerName = configuration["BlobStorage:ContainerName"];
+            _accountName = configuration["BlobStorage_AccountName"] 
+                           ?? throw new ArgumentNullException("BlobStorage_AccountName no está configurado.");
+            _accountKey = configuration["BlobStorage_AccountKey"] 
+                          ?? throw new ArgumentNullException("BlobStorage_AccountKey no está configurado.");
+            _containerName = configuration["BlobStorage_ContainerName"] 
+                             ?? throw new ArgumentNullException("BlobStorage_ContainerName no está configurado.");
+
 
             var blobUri = $"https://{_accountName}.blob.core.windows.net";
             _credentials = new StorageSharedKeyCredential(_accountName, _accountKey);

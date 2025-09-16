@@ -1,5 +1,4 @@
 using Function.Blending.Upload.Functions.Process;
-using Function.Blending.Upload.Helpers;
 using Function.Blending.Upload.Helpers.Mapper;
 using Function.Blending.Upload.Helpers.Xml;
 using Function.Blending.Upload.Services;
@@ -13,7 +12,7 @@ var builder = FunctionsApplication.CreateBuilder(args);
 
 builder.ConfigureFunctionsWebApplication();
 
-// Registrar Application Insights (opcional)
+// Registrar Application Insights (opcional)!!!
 builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
     .ConfigureFunctionsApplicationInsights();
