@@ -9,9 +9,9 @@ namespace Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Requests.
 /// Convierte el JSON del modelo (execution_id|executionId, status, message, resultado{grupos,rumas})
 /// en tu DTO existente CompleteCalEjecucionRequest (Id, EstadoId, Mensaje, Resumenes, Detalles).
 /// Mapea 'status' -> EstadoId resolviendo GUIDs desde variables/config:
-///   - Catalog:QualityExecutionStatus:Procesado
-///   - Catalog:QualityExecutionStatus:Error
-///   - Catalog:QualityExecutionStatus:Cancelado
+///   - Catalog_QualityExecutionStatus_Procesado
+///   - Catalog_QualityExecutionStatus_Error
+///   - Catalog_QualityExecutionStatus_Cancelado
 /// También soporta variables con "__" (Azure): Catalog__QualityExecutionStatus__Procesado, etc.
 /// </summary>
 public sealed class CompleteCalEjecucionRequestConverter

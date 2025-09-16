@@ -12,7 +12,7 @@ namespace Function.Blending.Opt.Infrastructure;
 
 public static partial class DependencyInjection
 {
-  private static void ConfigureSysParamCaching(IServiceCollection services, IConfiguration cfg)
+  private static void ConfigureSysParamCaching(IServiceCollection services)
   {
     // ===== Binder PLANO para SysParamCacheOptions =====
     services.AddOptions<SysParamCacheOptions>()

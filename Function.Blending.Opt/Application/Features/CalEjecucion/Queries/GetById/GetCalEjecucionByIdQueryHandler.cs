@@ -22,8 +22,7 @@ public sealed class GetCalEjecucionByIdQueryHandler(
       return Result<CalEjecucionResponse>.Fail($"Execution '{request.Id}' not found.");
 
     // Enriquecer Estado si falta (para asegurar objeto anidado consistente)
-    if (entity.Estado is null)
-      entity.Estado = await estados.GetByIdAsync(entity.EstadoId, ct);
+    entity.Estado ??= await estados.GetByIdAsync(entity.EstadoId, ct);
 
     var dto = mapper.Map<CalEjecucionResponse>(entity);
     return Result<CalEjecucionResponse>.Ok(dto);

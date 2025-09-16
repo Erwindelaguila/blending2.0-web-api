@@ -16,7 +16,7 @@ public sealed class CodeFormatProvider(
   public async Task<string> GetQualityExecutionFormatAsync(CancellationToken ct)
   {
     // 1) AppParam (cacheado por tu decorator)
-    var fromDb = await appParams.GetValueAsync(cfg[AppParamKeys.Keys.Quality.ExecutionCodeFormat] ?? AppParamDefaults.Keys.QualityExecutionFormat, ct);
+    var fromDb = await appParams.GetValueAsync(cfg[ConfigurationKeys.AppParam.Keys.Quality.ExecutionCodeFormat] ?? AppParamDefaults.Keys.QualityExecutionFormat, ct);
     if (!string.IsNullOrWhiteSpace(fromDb))
       return fromDb!;
 
@@ -26,7 +26,7 @@ public sealed class CodeFormatProvider(
   public async Task<string> GetLogisticExecutionFormatAsync(CancellationToken ct)
   {
     // 1) AppParam (cacheado por tu decorator)
-    var fromDb = await appParams.GetValueAsync(cfg[AppParamKeys.Keys.Logistics.ExecutionCodeFormat] ?? AppParamDefaults.Keys.LogisticExecutionFormat, ct);
+    var fromDb = await appParams.GetValueAsync(cfg[ConfigurationKeys.AppParam.Keys.Logistics.ExecutionCodeFormat] ?? AppParamDefaults.Keys.LogisticExecutionFormat, ct);
     if (!string.IsNullOrWhiteSpace(fromDb))
       return fromDb!;
 

@@ -6,11 +6,11 @@ public static partial class ConfigurationKeys
   {
     public static class Quality
     {
-      public const string ExecutionFormat= "Defaults:Quality:Execution:Format";
+      public const string ExecutionFormat= "Defaults_Quality_Execution_Format";
     }
     public static class Logistic
     {
-      public const string ExecutionFormat = "Defaults:Logistic:Execution:Format";
+      public const string ExecutionFormat = "Defaults_Logistic_Execution_Format";
     }
   }
 }

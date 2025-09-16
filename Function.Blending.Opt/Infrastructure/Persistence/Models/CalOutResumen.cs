@@ -35,7 +35,7 @@ public partial class CalOutResumen
 
     public DateTime? ModificadoEl { get; set; }
 
-    public virtual ICollection<CalOutResParametro> CalOutResParametro { get; set; } = new List<CalOutResParametro>();
+    public virtual ICollection<CalOutResParametro> CalOutResParametro { get; set; } = [];
 
     public virtual CalEjecucion Ejecucion { get; set; } = null!;
 }

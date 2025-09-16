@@ -25,8 +25,7 @@ builder.Services.AddLogging(lb =>
   lb.AddConfiguration(builder.Configuration.GetSection(ConfigurationKeys.LoggingSection)));
 
 // Helper para flags desde config
-bool on(string key, bool def = true)
-  => bool.TryParse(builder.Configuration[key], out var b) ? b : def;
+bool on(string key, bool def = true) => bool.TryParse(builder.Configuration[key], out var b) ? b : def;
 
 // ====== Services / DI (capas) ======
 builder.Services.AddApplication();                         // capa Application

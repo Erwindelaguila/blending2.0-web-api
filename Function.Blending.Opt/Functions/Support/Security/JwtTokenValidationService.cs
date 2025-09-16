@@ -21,15 +21,15 @@ public sealed class JwtTokenValidationService : ITokenValidationService
   {
     try
     {
-      var tenantId = _cfg["Auth:Bearer:TenantId"];
-      var authority = _cfg["Auth:Bearer:Authority"];
+      var tenantId = _cfg["Auth_Bearer_TenantId"];
+      var authority = _cfg["Auth_Bearer_Authority"];
       if (string.IsNullOrWhiteSpace(authority) && !string.IsNullOrWhiteSpace(tenantId))
         authority = $"https://login.microsoftonline.com/{tenantId}/v2.0";
 
       if (string.IsNullOrWhiteSpace(authority))
         return null;
 
-      var audienceCsv = _cfg["Auth:Bearer:Audience"] ?? string.Empty;
+      var audienceCsv = _cfg["Auth_Bearer_Audience"] ?? string.Empty;
       var audiences = audienceCsv
         .Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
         .ToArray();
@@ -38,7 +38,7 @@ public sealed class JwtTokenValidationService : ITokenValidationService
         return null;
 
       var validIssuerOverride = _cfg["Auth:Bearer:ValidIssuer"];
-      var clockSkewSec = int.TryParse(_cfg["Auth:Bearer:ClockSkewSeconds"], out var cs) ? cs : 300;
+      var clockSkewSec = int.TryParse(_cfg["Auth_Bearer_ClockSkewSeconds"], out var cs) ? cs : 300;
 
       var manager = _oidcManagers.GetOrAdd(authority, auth =>
         new ConfigurationManager<OpenIdConnectConfiguration>(
