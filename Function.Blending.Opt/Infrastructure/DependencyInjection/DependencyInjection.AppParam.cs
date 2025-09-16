@@ -10,21 +10,21 @@ namespace Function.Blending.Opt.Infrastructure;
 
 public static partial class DependencyInjection
 {
-  private static void ConfigureAppParamCaching(IServiceCollection services, IConfiguration cfg)
+  private static void ConfigureAppParamCaching(IServiceCollection services)
   {
     // ===== Binder PLANO para AppParamCacheOptions =====
     services.AddOptions<AppParamCacheOptions>()
       .Configure<IConfiguration>((opts, config) =>
       {
-        opts.Enabled = GetBool(config, AppParamKeys.Cache.Enabled, true);
-        opts.DefaultTtlSeconds = GetInt(config, AppParamKeys.Cache.DefaultTtlSeconds, 300);
-        opts.CacheNulls = GetBool(config, AppParamKeys.Cache.CacheNulls, false);
+        opts.Enabled = GetBool(config, ConfigurationKeys.AppParam.Cache.Enabled, true);
+        opts.DefaultTtlSeconds = GetInt(config, ConfigurationKeys.AppParam.Cache.DefaultTtlSeconds, 300);
+        opts.CacheNulls = GetBool(config, ConfigurationKeys.AppParam.Cache.CacheNulls, false);
 
         opts.PerKeyTtlSeconds.Clear();
         foreach (var kv in config.AsEnumerable(makePathsRelative: false))
         {
           if (string.IsNullOrWhiteSpace(kv.Key)) continue;
-          const string prefix = AppParamKeys.Cache.PrefixPerKeyTtlSeconds;
+          const string prefix = ConfigurationKeys.AppParam.Cache.PrefixPerKeyTtlSeconds;
           if (!kv.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) continue;
 
           var paramKey = kv.Key[prefix.Length..];

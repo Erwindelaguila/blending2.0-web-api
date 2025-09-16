@@ -14,7 +14,7 @@ public sealed class EasyAuthPrincipalBuilder : IPrincipalBuilder
 
   public Task<ClaimsPrincipal?> TryBuildAsync(FunctionContext ctx, HttpRequestData req)
   {
-    if (!bool.TryParse(_cfg["Auth:EnableEasyAuth"], out var enabled) || !enabled)
+    if (!bool.TryParse(_cfg["Auth_EnableEasyAuth"], out var enabled) || !enabled)
       return Task.FromResult<ClaimsPrincipal?>(null);
 
     if (!req.Headers.TryGetValues("X-MS-CLIENT-PRINCIPAL", out var vals))

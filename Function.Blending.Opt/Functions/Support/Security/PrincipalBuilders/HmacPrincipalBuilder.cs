@@ -20,7 +20,7 @@ public sealed class HmacPrincipalBuilder : IPrincipalBuilder
   public Task<ClaimsPrincipal?> TryBuildAsync(FunctionContext ctx, HttpRequestData req)
   {
     // Feature flag (controlas activación sin redeploy)
-    if (!bool.TryParse(_cfg["Auth:EnableHmacPrincipal"], out var enabled) || !enabled)
+    if (!bool.TryParse(_cfg["Auth_EnableHmacPrincipal"], out var enabled) || !enabled)
       return Task.FromResult<ClaimsPrincipal?>(null);
 
     // Requiere HMAC válido (marcado por el middleware)
@@ -34,7 +34,7 @@ public sealed class HmacPrincipalBuilder : IPrincipalBuilder
     if (string.IsNullOrWhiteSpace(firstScope))
       return Task.FromResult<ClaimsPrincipal?>(null);
 
-    var hmacGroupsKey = firstScope.Replace("Auth:Allow:", "Auth:Hmac:Groups:");
+    var hmacGroupsKey = firstScope.Replace("Auth_Allow_", "Auth_Hmac_Groups_");
     var csv = _cfg[hmacGroupsKey] ?? string.Empty;
 
     var groups = csv.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);

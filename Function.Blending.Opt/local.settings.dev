@@ -1,118 +1,121 @@
 {
   "IsEncrypted": false,
   "ConnectionStrings": {
-    "PROTECSO_BlendingDb": "Server=tcp:blending-svr-new.database.windows.net,1433;Initial Catalog=blending-dev;Persist Security Info=False;User ID=blending-usr;Password=bl3nd1ng-pwD!.;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
     "BlendingDb": "Server=tcp:srv-db-eastus-blending2.database.windows.net,1433;Initial Catalog=db_blending2_prd;Persist Security Info=False;User ID=user_blending2;Password=CXaTHvrMFEZECOF8;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
   },
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
 
-    // === Auth (CSV) ===
-    "Auth:DevBypass": "false",
-    "Auth:DevGroups": "000000000000000000000000C48B7FA6,4770b5a4-d693-46b2-9e04-eb434d2a3c1b",
+    // === DDBB ===
+    "SqlConnectionString_BlendingDb": "Server=tcp:srv-db-eastus-blending2.database.windows.net,1433;Initial Catalog=db_blending2_prd;Persist Security Info=False;User ID=user_blending2;Password=CXaTHvrMFEZECOF8;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
 
-    // === Flags Tipos de Validación (Producción solo dejar: Auth:EnableBearerTokens = true ) ===
-    "Auth:EnableEasyAuth": "false",
-    "Auth:EnableLocalHeaderPrincipal": "false",
-    "Auth:EnableHmacPrincipal": "false",
-    "Auth:EnableBearerTokens": "true",
-    "Auth:Bearer:ValidationMode": "Relaxed", // Relaxed | Strict
-    "Auth:Bearer:ValidateLifetime": "false", // en Relaxed puedes poner true|false
-    "Auth:Bearer:TenantId": "fc810a1e-f6b2-40b7-96a1-32abada72fd8",
-    "Auth:Bearer:Authority": "https://login.microsoftonline.com/fc810a1e-f6b2-40b7-96a1-32abada72fd8/v2.0",
-    "Auth:Bearer:Audience": "api://f8d7cce6-0cf4-46cf-a13d-66f1099c05c8",
-    "Auth:Bearer:ClockSkewSeconds": "300",
+    // === Auth (CSV) ===
+    "Auth_DevBypass": "false",
+    "Auth_DevGroups": "000000000000000000000000C48B7FA6,4770b5a4-d693-46b2-9e04-eb434d2a3c1b",
+
+    // === Flags Tipos de Validación (Producción solo dejar: Auth_EnableBearerTokens = true ) ===
+    "Auth_EnableEasyAuth": "false",
+    "Auth_EnableLocalHeaderPrincipal": "false",
+    "Auth_EnableHmacPrincipal": "false",
+    "Auth_EnableBearerTokens": "true",
+    "Auth_Bearer_ValidationMode": "Relaxed", // Relaxed | Strict
+    "Auth_Bearer_ValidateLifetime": "false", // en Relaxed puedes poner true|false
+    "Auth_Bearer_TenantId": "fc810a1e-f6b2-40b7-96a1-32abada72fd8",
+    "Auth_Bearer_Authority": "https://login.microsoftonline.com/fc810a1e-f6b2-40b7-96a1-32abada72fd8/v2.0",
+    "Auth_Bearer_Audience": "api://f8d7cce6-0cf4-46cf-a13d-66f1099c05c8",
+    "Auth_Bearer_ClockSkewSeconds": "300",
 
     // === Scopes dinámicos (CSV) ===
-    "Auth:Allow:Quality:ReadById": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
-    "Auth:Allow:Quality:ReadHistory": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
-    "Auth:Allow:Quality:WriteStart": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
-    "Auth:Allow:Quality:ChangeAccepted": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
+    "Auth_Allow_Quality_ReadById": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
+    "Auth_Allow_Quality_ReadHistory": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
+    "Auth_Allow_Quality_WriteStart": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
+    "Auth_Allow_Quality_ChangeAccepted": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
 
-    "Auth:Allow:Logistics:ReadById": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
-    "Auth:Allow:Logistics:ReadHistory": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
-    "Auth:Allow:Logistics:WriteStart": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
-    "Auth:Allow:Logistics:ToggleConfirmed": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
+    "Auth_Allow_Logistics_ReadById": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
+    "Auth_Allow_Logistics_ReadHistory": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
+    "Auth_Allow_Logistics_WriteStart": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
+    "Auth_Allow_Logistics_ToggleConfirmed": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
 
     // === Límites ===
-    "Limits:WebhookMaxBytes": "2097152",
+    "Limits_WebhookMaxBytes": "2097152",
 
     // === Catálogo AuxTable por Id ===
-    "Catalog:QualityExecutionStatus:Id": "98066F2C-9B5D-46E4-A29E-C7D97F8F920C",
-    "Catalog:LogisticExecutionStatus:Id": "4E38D655-602E-452B-8A06-1A014247342B",
+    "Catalog_QualityExecutionStatus_Id": "98066F2C-9B5D-46E4-A29E-C7D97F8F920C",
+    "Catalog_LogisticExecutionStatus_Id": "4E38D655-602E-452B-8A06-1A014247342B",
 
     // === Catálogo AuxProp por Clave ===
-    "Catalog:QualityExecutionStatus:Prop:ExposeColor": "true",
-    "Catalog:QualityExecutionStatus:Prop:ColorClave": "color",
-    "Catalog:LogisticExecutionStatus:Prop:ExposeColor": "true",
-    "Catalog:LogisticExecutionStatus:Prop:ColorClave": "color",
+    "Catalog_QualityExecutionStatus_Prop_ExposeColor": "true",
+    "Catalog_QualityExecutionStatus_Prop_ColorClave": "color",
+    "Catalog_LogisticExecutionStatus_Prop_ExposeColor": "true",
+    "Catalog_LogisticExecutionStatus_Prop_ColorClave": "color",
 
     // === Caché de Estados de Calidad ===
-    "Catalog:QualityExecutionStatus:Cache:Enabled": "true",
-    "Catalog:QualityExecutionStatus:Cache:TtlSeconds": "300",
-    "Catalog:QualityExecutionStatus:Cache:CacheNulls": "false",
-    "Catalog:LogisticExecutionStatus:Cache:Enabled": "true",
-    "Catalog:LogisticExecutionStatus:Cache:TtlSeconds": "300",
-    "Catalog:LogisticExecutionStatus:Cache:CacheNulls": "false",
+    "Catalog_QualityExecutionStatus_Cache_Enabled": "true",
+    "Catalog_QualityExecutionStatus_Cache_TtlSeconds": "300",
+    "Catalog_QualityExecutionStatus_Cache_CacheNulls": "false",
+    "Catalog_LogisticExecutionStatus_Cache_Enabled": "true",
+    "Catalog_LogisticExecutionStatus_Cache_TtlSeconds": "300",
+    "Catalog_LogisticExecutionStatus_Cache_CacheNulls": "false",
 
     // === Catálogo AuxRow por Id ===
-    "Catalog:QualityExecutionStatus:EnEjecucion": "37AFC095-E1FA-41A6-8140-15BB04CEB0EF",
-    "Catalog:QualityExecutionStatus:Procesado": "D86B3EF4-1331-4FA7-97E4-4ADB1518AE6E",
-    "Catalog:QualityExecutionStatus:Cancelado": "2F35D633-39B7-4C7F-9105-1FF25B8CFA72",
-    "Catalog:QualityExecutionStatus:Error": "AFC50EAF-264D-42DA-A203-B9E093ECC625",
+    "Catalog_QualityExecutionStatus_EnEjecucion": "37AFC095-E1FA-41A6-8140-15BB04CEB0EF",
+    "Catalog_QualityExecutionStatus_Procesado": "D86B3EF4-1331-4FA7-97E4-4ADB1518AE6E",
+    "Catalog_QualityExecutionStatus_Cancelado": "2F35D633-39B7-4C7F-9105-1FF25B8CFA72",
+    "Catalog_QualityExecutionStatus_Error": "AFC50EAF-264D-42DA-A203-B9E093ECC625",
 
-    "Catalog:LogisticExecutionStatus:EnEjecucion": "96876821-E29B-449B-B034-1BC3DEDC47C1",
-    "Catalog:LogisticExecutionStatus:Procesado": "C4C222F9-F83A-4686-9E35-0871282D3CD3",
-    "Catalog:LogisticExecutionStatus:Cancelado": "AAAF66C1-83DC-470B-9CD1-9A7410CA4734",
-    "Catalog:LogisticExecutionStatus:Error": "E36A9812-0D06-4830-8FA5-191375C427F1",
+    "Catalog_LogisticExecutionStatus_EnEjecucion": "96876821-E29B-449B-B034-1BC3DEDC47C1",
+    "Catalog_LogisticExecutionStatus_Procesado": "C4C222F9-F83A-4686-9E35-0871282D3CD3",
+    "Catalog_LogisticExecutionStatus_Cancelado": "AAAF66C1-83DC-470B-9CD1-9A7410CA4734",
+    "Catalog_LogisticExecutionStatus_Error": "E36A9812-0D06-4830-8FA5-191375C427F1",
 
     // === AppParam Keys ===
-    "AppParam:QualityExecutionCodeFormat": "APP_CAL_CODIGO_FORMAT",
-    "AppParam:LogisticExecutionCodeFormat": "APP_LOG_CODIGO_FORMAT",
+    "AppParam_QualityExecutionCodeFormat": "APP_CAL_CODIGO_FORMAT",
+    "AppParam_LogisticExecutionCodeFormat": "APP_LOG_CODIGO_FORMAT",
 
     // === Chaché de AppParam ===
-    "AppParamCache:Enabled": "true",
-    "AppParamCache:DefaultTtlSeconds": "300",
-    "AppParamCache:CacheNulls": "false",
-    "AppParamCache:PerKeyTtlSeconds:APP_CAL_CODIGO_FORMAT": "1800",
-    "AppParamCache:PerKeyTtlSeconds:APP_LOG_CODIGO_FORMAT": "1800",
+    "AppParamCache_Enabled": "true",
+    "AppParamCache_DefaultTtlSeconds": "300",
+    "AppParamCache_CacheNulls": "false",
+    "AppParamCache_PerKeyTtlSeconds_APP_CAL_CODIGO_FORMAT": "1800",
+    "AppParamCache_PerKeyTtlSeconds_APP_LOG_CODIGO_FORMAT": "1800",
 
     // === SysParam Keys ===
-    "SysParam:SystemUser": "SYS_USUARIO_SISTEMA",
+    "SysParam_SystemUser": "SYS_USUARIO_SISTEMA",
 
     // === Caché de SysParam ===
-    "SysParamCache:Enabled": "true",
-    "SysParamCache:DefaultTtlSeconds": "300",
-    "SysParamCache:CacheNulls": "false",
-    "SysParamCache:PerKeyTtlSeconds:SYS_USUARIO_SISTEMA": "3600",
+    "SysParamCache_Enabled": "true",
+    "SysParamCache_DefaultTtlSeconds": "300",
+    "SysParamCache_CacheNulls": "false",
+    "SysParamCache_PerKeyTtlSeconds_SYS_USUARIO_SISTEMA": "3600",
 
     // === Defaults ===
-    "Defaults:Quality:Execution:Format": "CAL{0:D6}",
-    "Defaults:Logistic:Execution:Format": "LOG{0:D6}",
+    "Defaults_Quality_Execution_Format": "CAL{0:D6}",
+    "Defaults_Logistic_Execution_Format": "LOG{0:D6}",
 
     // === Logging ===
-    "Logging:LogLevel:Default": "Debug", // cambia a "Warning" para menos ruido, "Debug"/"Trace" para máximo detalle
-    "Logging:LogLevel:Microsoft": "Warning", // baja ruido de framework
-    "Logging:LogLevel:Microsoft.Azure.Functions.Worker": "Information",
+    "Logging_LogLevel_Default": "Debug", // cambia a "Warning" para menos ruido, "Debug"/"Trace" para máximo detalle
+    "Logging_LogLevel_Microsoft": "Warning", // baja ruido de framework
+    "Logging_LogLevel_Microsoft.Azure.Functions.Worker": "Information",
 
     // === Pipeline flags ===
-    "Pipeline:EnableExceptionHandling": "true",
-    "Pipeline:EnableRequestLogging": "true",
-    "Pipeline:EnableRequestSizeLimit": "true",
-    "Pipeline:EnableAuthentication": "true",
+    "Pipeline_EnableExceptionHandling": "true",
+    "Pipeline_EnableRequestLogging": "true",
+    "Pipeline_EnableRequestSizeLimit": "true",
+    "Pipeline_EnableAuthentication": "true",
 
     // === Time: Zona Horaria ===
-    "Time:TimeZoneId": "America/Lima",
-    "Time:WindowsTimeZoneId": "SA Pacific Standard Time",
-    "Time:IanaTimeZoneId": "America/Lima",
+    "Time_TimeZoneId": "America/Lima",
+    "Time_WindowsTimeZoneId": "SA Pacific Standard Time",
+    "Time_IanaTimeZoneId": "America/Lima",
 
     // === Security ===
-    "Security:Hmac:Resolver": "KeyVault",
-    "Security:Hmac:VaultUrl": "https://kvblending2.vault.azure.net/",
-    "Security:Hmac:CacheSeconds": "600",
-    "Security:Hmac:TenantId": "b7e26f48-2292-4a14-a355-1aeb8489ae3d", // opcional, ayuda en multi-tenant
-    "Security:Hmac:Credential:Mode": "Interactive", // usa CLI si existe; si no, abre login interactivo -> PROD: ManagedIdentity -> necesario(Security:Hmac:Credential:ClientId)
-    "Security:Hmac:Credential:ClientId": "<clientId-de-la-UAMI>"
+    "Security_Hmac_Resolver": "KeyVault",
+    "Security_Hmac_VaultUrl": "https://kvblending2.vault.azure.net/",
+    "Security_Hmac_CacheSeconds": "600",
+    "Security_Hmac_TenantId": "b7e26f48-2292-4a14-a355-1aeb8489ae3d", // opcional, ayuda en multi-tenant
+    "Security_Hmac_Credential_Mode": "Interactive", // usa CLI si existe; si no, abre login interactivo -> PROD: ManagedIdentity -> necesario(Security_Hmac_Credential_ClientId)
+    "Security_Hmac_Credential_ClientId": "<clientId-de-la-UAMI>",
+    "Security_Hmac_Credential_TenantId": "<tenantId-de-la-UAMI>"
   }
 }

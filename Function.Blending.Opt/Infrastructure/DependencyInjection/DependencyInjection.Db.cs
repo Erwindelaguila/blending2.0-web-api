@@ -13,8 +13,7 @@ public static partial class DependencyInjection
   {
     services.AddDbContext<BlendingDbContext>((sp, opt) =>
     {
-      var cs = cfg.GetConnectionString(ConfigurationKeys.ConnectionStrings.BlendingDbName)
-                ?? cfg[ConfigurationKeys.ConnectionStrings.BlendingDb];
+      var cs = cfg.GetConnectionString(ConfigurationKeys.ConnectionStrings.BlendingDbName) ?? cfg[ConfigurationKeys.ConnectionStrings.BlendingDb] ?? cfg[ConfigurationKeys.ConnectionStrings.SqlDb];
 
       if (string.IsNullOrWhiteSpace(cs))
         throw new InvalidOperationException(
