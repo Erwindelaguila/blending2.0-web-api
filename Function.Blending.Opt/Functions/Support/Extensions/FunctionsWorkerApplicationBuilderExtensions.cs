@@ -1,7 +1,9 @@
 ﻿using Function.Blending.Opt.Functions.Pipeline;
 using Function.Blending.Opt.Shared.Constants;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Hosting;
+using System.Linq;
 
 namespace Function.Blending.Opt.Functions.Support.Extensions;
 
@@ -18,27 +20,29 @@ public static class FunctionsWorkerApplicationBuilderExtensions
       bool enableAuthentication = true)
   {
     // 1) ¡Clave! Primero: accessor → así IRequestContext puede leer el FunctionContext actual.
-    builder.UseWhen<FunctionContextAccessorMiddleware>(_ => true);
+    builder.UseMiddleware<FunctionContextAccessorMiddleware>();
 
     // 2) CorrelationId: escribe Items["CorrelationId"] y header de respuesta.
-    builder.UseWhen<CorrelationIdMiddleware>(_ => true);
+    builder.UseMiddleware<CorrelationIdMiddleware>();
 
-    if (enableExceptionHandling)
-      builder.UseWhen<ExceptionHandlingMiddleware>(_ => true);
+    // 3) Middlewares que se prenden/apagan por bandera (gating en composición).
+    builder.UseIf<ExceptionHandlingMiddleware>(enableExceptionHandling);
+    builder.UseIf<RequestLoggingMiddleware>(enableRequestLogging);
 
-    if (enableRequestLogging)
-      builder.UseWhen<RequestLoggingMiddleware>(_ => true);
-
+    // 4) Middlewares que aplican SOLO a HTTP triggers (gating por contexto).
     if (enableRequestSizeLimit)
+    {
       builder.UseWhen<RequestSizeLimitMiddleware>(ctx => ctx.FunctionDefinition.InputBindings.Values.Any(b => b.Type == MiscellaneousConstants.HttpTrigger));
+    }
 
     // HMAC solo si es HTTP trigger
     builder.UseWhen<HmacValidationMiddleware>(ctx => ctx.FunctionDefinition.InputBindings.Values.Any(b => b.Type == MiscellaneousConstants.HttpTrigger));
 
+    // 5) Autenticación/Autorización (si está habilitada)
     if (enableAuthentication)
     {
-      builder.UseWhen<PrincipalResolutionMiddleware>(_ => true);
-      builder.UseWhen<AuthorizationMiddleware>(_ => true);
+      builder.UseMiddleware<PrincipalResolutionMiddleware>();
+      builder.UseMiddleware<AuthorizationMiddleware>();
     }
 
     return builder;
