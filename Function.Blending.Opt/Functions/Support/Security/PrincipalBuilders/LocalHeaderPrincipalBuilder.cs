@@ -12,7 +12,7 @@ public sealed class LocalHeaderPrincipalBuilder : IPrincipalBuilder
 
   public Task<ClaimsPrincipal?> TryBuildAsync(FunctionContext ctx, HttpRequestData req)
   {
-    if (!bool.TryParse(_cfg["Auth:EnableLocalHeaderPrincipal"], out var enabled) || !enabled)
+    if (!bool.TryParse(_cfg["Auth_EnableLocalHeaderPrincipal"], out var enabled) || !enabled)
       return Task.FromResult<ClaimsPrincipal?>(null);
 
     if (!req.Headers.TryGetValues("X-LOCAL-GROUPS", out var localGroupsVals))

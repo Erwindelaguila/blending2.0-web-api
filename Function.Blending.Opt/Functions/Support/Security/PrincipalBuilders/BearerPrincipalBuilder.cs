@@ -20,7 +20,7 @@ public sealed class BearerPrincipalBuilder : IPrincipalBuilder
 
   public async Task<ClaimsPrincipal?> TryBuildAsync(FunctionContext ctx, FwxHttp.HttpRequestData req)
   {
-    if (!bool.TryParse(_cfg["Auth:EnableBearerTokens"], out var enabled) || !enabled)
+    if (!bool.TryParse(_cfg["Auth_EnableBearerTokens"], out var enabled) || !enabled)
       return null;
 
     if (!req.Headers.TryGetValues("Authorization", out var authVals))
@@ -31,7 +31,7 @@ public sealed class BearerPrincipalBuilder : IPrincipalBuilder
       return null;
 
     var jwtRaw = auth["Bearer ".Length..].Trim();
-    var mode = _cfg["Auth:Bearer:ValidationMode"] ?? "Strict";
+    var mode = _cfg["Auth_Bearer_ValidationMode"] ?? "Strict";
 
     if (mode.Equals("Relaxed", StringComparison.OrdinalIgnoreCase))
       return BuildPrincipalRelaxed(jwtRaw);
@@ -51,7 +51,7 @@ public sealed class BearerPrincipalBuilder : IPrincipalBuilder
       {
         AuthType = "Bearer-Relaxed",
         AuthModeTag = "relaxed",
-        ValidateLifetime = bool.TryParse(_cfg["Auth:Bearer:ValidateLifetime"], out var vl) && vl,
+        ValidateLifetime = bool.TryParse(_cfg["Auth_Bearer_ValidateLifetime"], out var vl) && vl,
         IncludeGroups = true,
         IncludeWids = true,
         IncludeRoles = true,

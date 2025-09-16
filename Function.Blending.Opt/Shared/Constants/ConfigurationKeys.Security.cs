@@ -6,16 +6,16 @@ public static partial class ConfigurationKeys
   {
     public static partial class Hmac
     {
-      public const string Resolver = "Security:Hmac:Resolver";
-      public const string VaultUrl = "Security:Hmac:VaultUrl";
-      public const string CacheSeconds = "Security:Hmac:CacheSeconds";
-      public const string TenantId = "Security:Hmac:TenantId";
+      public const string Resolver = "Security_Hmac_Resolver";
+      public const string VaultUrl = "Security_Hmac_VaultUrl";
+      public const string CacheSeconds = "Security_Hmac_CacheSeconds";
+      public const string TenantId = "Security_Hmac_TenantId";
 
       public static class Credential
       {
-        public const string Mode = "Security:Hmac:Credential:Mode";
-        public const string TenantId = "Security:Hmac:Credential:TenantId";
-        public const string ClientId = "Security:Hmac:Credential:ClientId";
+        public const string Mode = "Security_Hmac_Credential_Mode";
+        public const string TenantId = "Security_Hmac_Credential_TenantId";
+        public const string ClientId = "Security_Hmac_Credential_ClientId";
       }
     }
   }

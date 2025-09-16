@@ -4,6 +4,6 @@ public static partial class ConfigurationKeys
 {
   public static class Limits
   {
-    public const string WebhookMaxBytes = "Limits:WebhookMaxBytes";
+    public const string WebhookMaxBytes = "Limits_WebhookMaxBytes";
   }
 }

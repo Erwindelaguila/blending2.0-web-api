@@ -14,8 +14,8 @@ public static partial class DependencyInjection
     RegisterDomainRepositories(services);
 
     RegisterCoreInfra(services);                 // IMemoryCache, Clock
-    ConfigureAppParamCaching(services, cfg);     // AppParam: options + repo cacheado
-    ConfigureSysParamCaching(services, cfg);     // SysParam: options + repo cacheado + servicio high-level
+    ConfigureAppParamCaching(services);     // AppParam: options + repo cacheado
+    ConfigureSysParamCaching(services);     // SysParam: options + repo cacheado + servicio high-level
 
     ConfigureEstadoCalidad(services, cfg);       // Catálogo Estados Calidad (+ caché)
     ConfigureEstadoLogistica(services, cfg);     // Catálogo Estados Logística (+ caché)

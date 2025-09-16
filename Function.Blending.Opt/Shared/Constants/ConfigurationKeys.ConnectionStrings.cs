@@ -13,5 +13,8 @@ public static partial class ConfigurationKeys
 
     // Ruta completa (fallback por si el proveedor no implementa GetConnectionString)
     public const string BlendingDb = "ConnectionStrings:BlendingDb";
+
+    // Ruta completa (fallback desde Values)
+    public const string SqlDb = "SqlConnectionString_BlendingDb";
   }
 }

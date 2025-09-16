@@ -42,7 +42,7 @@ public static class ServiceCollectionExtensions
     services.AddSingleton<Execution.IRequestContext, Execution.RequestContext>();
 
     // ===== Options binding =====
-    // AuthorizationOptions: mezcla de flags + CSV (Auth:Allow:*) desde config
+    // AuthorizationOptions: mezcla de flags + CSV (Auth_Allow:*) desde config
     services.AddOptions<AuthorizationOptions>()
       .Configure<IConfiguration>((opts, config) =>
       {
@@ -65,7 +65,7 @@ public static class ServiceCollectionExtensions
         foreach (var kv in config.AsEnumerable(makePathsRelative: false))
         {
           if (string.IsNullOrWhiteSpace(kv.Key)) continue;
-          if (!kv.Key.StartsWith($"{ConfigurationKeys.Auth.AllowSection}:", StringComparison.OrdinalIgnoreCase)) continue;
+          if (!kv.Key.StartsWith($"{ConfigurationKeys.Auth.AllowSection}_", StringComparison.OrdinalIgnoreCase)) continue;
 
           var groups = SplitCsv(kv.Value);
           if (!opts.Allow.ContainsKey(kv.Key))
