@@ -1,4 +1,4 @@
-﻿using Function.Blending.Opt.Domain.Abstractions.Models;
+﻿using Function.Blending.Opt.Domain.Abstractions.Models.Catalogs;
 
 namespace Function.Blending.Opt.Domain.Abstractions.Services;
 

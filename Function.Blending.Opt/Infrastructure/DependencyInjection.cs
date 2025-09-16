@@ -12,6 +12,7 @@ public static partial class DependencyInjection
   {
     RegisterDbContext(services, cfg);
     RegisterDomainRepositories(services);
+    RegisterDomainServices(services);
 
     RegisterCoreInfra(services);                 // IMemoryCache, Clock
     ConfigureAppParamCaching(services);     // AppParam: options + repo cacheado

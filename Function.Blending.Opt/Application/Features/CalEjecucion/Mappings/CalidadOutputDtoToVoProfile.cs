@@ -9,9 +9,6 @@ public sealed class CalidadOutputDtoToVoProfile : Profile
 {
   public CalidadOutputDtoToVoProfile()
   {
-    // =============================================
-    // Request
-    // =============================================
     // Resumen
     CreateMap<DtoReq.CalOutResParametroDto, VO.CalOutResParametro>();
     CreateMap<DtoReq.CalOutResumenDto, VO.CalOutResumen>();
@@ -20,11 +17,5 @@ public sealed class CalidadOutputDtoToVoProfile : Profile
     CreateMap<DtoReq.CalOutDetParametroDto, VO.CalOutDetParametro>();
     CreateMap<DtoReq.CalOutDetOtrosDto, VO.CalOutDetOtros>();
     CreateMap<DtoReq.CalOutDetalleDto, VO.CalOutDetalle>();
-
-    // =============================================
-    // Response
-    // =============================================
-    CreateMap<DtoRes.CalOutResumenDto, VO.CalOutResumenRef>();
-
   }
 }

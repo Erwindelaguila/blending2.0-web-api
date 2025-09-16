@@ -1,8 +1,8 @@
 ﻿using Function.Blending.Opt.Domain.Abstractions.Repositories;
 using Function.Blending.Opt.Domain.Abstractions.Services;
-using Function.Blending.Opt.Infrastructure.Configuration;
 using Function.Blending.Opt.Infrastructure.Configuration.Options;
 using Function.Blending.Opt.Infrastructure.Persistence.Repositories;
+using Function.Blending.Opt.Infrastructure.Services;
 using Function.Blending.Opt.Shared.Constants;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

@@ -2,11 +2,10 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Function.Blending.Opt.Domain.Abstractions.Services
+namespace Function.Blending.Opt.Domain.Abstractions.Services;
+
+public interface ISysParamService
 {
-  public interface ISysParamService
-  {
-    Task<Guid?> GetIdAsync(string sysParamKey, CancellationToken ct);
-    Task<Guid> GetRequiredIdAsync(string sysParamKey, CancellationToken ct);
-  }
+  Task<Guid?> GetIdAsync(string sysParamKey, CancellationToken ct);
+  Task<Guid> GetRequiredIdAsync(string sysParamKey, CancellationToken ct);
 }

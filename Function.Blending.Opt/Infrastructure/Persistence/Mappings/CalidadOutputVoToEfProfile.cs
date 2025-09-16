@@ -64,6 +64,6 @@ public sealed class CalidadOutputVoToEfProfile : Profile
     // =======================
     // VO → EF (Resumen Response)
     // =======================
-    CreateMap<Ef.CalOutResumen, VO.CalOutResumenRef>();
+    CreateMap<Ef.CalOutResumen, VO.CalOutResumen>();
   }
 }

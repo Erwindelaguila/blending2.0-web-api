@@ -1,3 +1,4 @@
+using Function.Blending.Opt.Domain.Abstractions.Models.Catalogs;
 using Function.Blending.Opt.Domain.ValueObjects;
 using Function.Blending.Opt.Domain.ValueObjects.Ids;
 using System;
@@ -27,9 +28,9 @@ public sealed class CalEjecucion
   /// Referencia compuesta al estado (VO). Se poblará progresivamente en pasos siguientes.
   /// No sustituye aún a EstadoId/EstadoNombre para no romper contratos existentes.
   /// </summary>
-  public EstadoCalidadRef? Estado { get; set; }
+  public EstadoCalidadSnapshot? Estado { get; set; }
 
-  public IReadOnlyList<CalOutResumenRef>? Resumenes { get; set; }
+  public IReadOnlyList<CalOutResumen>? Resumenes { get; set; }
 
   public CalEjecucion() { }
   public CalEjecucion(EjecucionId id) => Id = id;

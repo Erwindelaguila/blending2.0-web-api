@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Function.Blending.Opt.Domain.Abstractions.Models;
+namespace Function.Blending.Opt.Domain.Abstractions.Models.Catalogs;
 
 /// <summary>
 /// Foto de una fila de un catálogo Aux*, con sus valores de propiedades (clave->valor).

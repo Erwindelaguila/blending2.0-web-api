@@ -1,7 +1,6 @@
 ﻿using Function.Blending.Opt.Application.Abstractions;
 using Function.Blending.Opt.Domain.Abstractions.Services;
 using Function.Blending.Opt.Infrastructure.Configuration;
-using Function.Blending.Opt.Infrastructure.Time;
 using Function.Blending.Opt.Shared.Time;
 using Microsoft.Extensions.DependencyInjection;
 

@@ -5,7 +5,7 @@ using Function.Blending.Opt.Shared.Constants;
 using Microsoft.Extensions.Configuration;
 using TimeZoneConverter;
 
-namespace Function.Blending.Opt.Infrastructure.Time;
+namespace Function.Blending.Opt.Infrastructure.Services.Time;
 
 public sealed class TimeZoneService(IConfiguration cfg) : ITimeZoneService
 {

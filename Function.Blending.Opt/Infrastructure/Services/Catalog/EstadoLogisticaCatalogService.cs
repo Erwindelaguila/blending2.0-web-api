@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Function.Blending.Opt.Domain.Abstractions.Models.Catalogs;
 using Function.Blending.Opt.Domain.Abstractions.Services;
-using Function.Blending.Opt.Domain.ValueObjects;
 using Function.Blending.Opt.Infrastructure.Configuration.Options;
 using Microsoft.Extensions.Options;
 
-namespace Function.Blending.Opt.Infrastructure.Persistence.Catalog;
+namespace Function.Blending.Opt.Infrastructure.Services.Catalog;
 
 public sealed class EstadoLogisticaCatalogService(IAuxCatalogReader aux, IOptions<EstadoLogisticaOptions> opt) : IEstadoLogisticaCatalogService
 {
   private readonly EstadoLogisticaOptions _opts = opt.Value;
 
-  public async Task<EstadoLogisticaRef?> GetByIdAsync(Guid id, CancellationToken ct)
+  public async Task<EstadoLogisticaSnapshot?> GetByIdAsync(Guid id, CancellationToken ct)
   {
     var head = await aux.GetRowHeaderAsync(id, ct);
     if (head is null) return null;
@@ -26,21 +26,21 @@ public sealed class EstadoLogisticaCatalogService(IAuxCatalogReader aux, IOption
     if (_opts.ExposeColor && !string.IsNullOrWhiteSpace(_opts.ColorPropClave))
       color = await aux.GetRowPropValueAsync(id, _opts.ColorPropClave!, ct);
 
-    return new EstadoLogisticaRef(head.Id) { Nombre = head.Nombre, Color = color };
+    return new EstadoLogisticaSnapshot(head.Id) { Nombre = head.Nombre, Color = color };
   }
 
-  public async Task<IDictionary<Guid, EstadoLogisticaRef>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct)
+  public async Task<IDictionary<Guid, EstadoLogisticaSnapshot>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct)
   {
     var unique = ids.Distinct().ToArray();
-    if (unique.Length == 0) return new Dictionary<Guid, EstadoLogisticaRef>();
+    if (unique.Length == 0) return new Dictionary<Guid, EstadoLogisticaSnapshot>();
 
     var names = await aux.GetRowNamesAsync(unique, ct);
-    var dict = new Dictionary<Guid, EstadoLogisticaRef>(names.Count);
+    var dict = new Dictionary<Guid, EstadoLogisticaSnapshot>(names.Count);
 
     if (!_opts.EstadoTableId.HasValue)
     {
       foreach (var kv in names)
-        dict[kv.Key] = new EstadoLogisticaRef(kv.Key) { Nombre = kv.Value };
+        dict[kv.Key] = new EstadoLogisticaSnapshot(kv.Key) { Nombre = kv.Value };
       return dict;
     }
 
@@ -50,7 +50,7 @@ public sealed class EstadoLogisticaCatalogService(IAuxCatalogReader aux, IOption
       if (head is null) continue;
       if (head.TableId != _opts.EstadoTableId.Value) continue;
 
-      dict[kv.Key] = new EstadoLogisticaRef(kv.Key) { Nombre = kv.Value };
+      dict[kv.Key] = new EstadoLogisticaSnapshot(kv.Key) { Nombre = kv.Value };
     }
     return dict;
   }

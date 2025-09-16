@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Function.Blending.Opt.Domain.ValueObjects;
+using Function.Blending.Opt.Domain.Abstractions.Models.Catalogs;
 
 namespace Function.Blending.Opt.Domain.Abstractions.Services;
 
@@ -12,8 +12,8 @@ namespace Function.Blending.Opt.Domain.Abstractions.Services;
 public interface IEstadoLogisticaCatalogService
 {
   /// <summary>Obtiene una referencia de estado por Id (valida TableId si está configurado).</summary>
-  Task<EstadoLogisticaRef?> GetByIdAsync(Guid id, CancellationToken ct);
+  Task<EstadoLogisticaSnapshot?> GetByIdAsync(Guid id, CancellationToken ct);
 
   /// <summary>Obtiene referencias de estado para varios Ids (valida TableId si está configurado).</summary>
-  Task<IDictionary<Guid, EstadoLogisticaRef>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct);
+  Task<IDictionary<Guid, EstadoLogisticaSnapshot>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct);
 }
