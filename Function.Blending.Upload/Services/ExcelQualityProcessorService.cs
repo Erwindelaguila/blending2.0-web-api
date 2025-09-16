@@ -17,8 +17,8 @@ public class ExcelQualityProcessorService
         CalidadService calidadService, IConfiguration configuration)
     {
         _xlsmProcessingServiceExcel =
-            new XlsmProcessingService<ExcelMappingInputQualityConfig>(configuration["Template:Directory"],
-                configuration["Template:ExcelMappingInputQuality"]);
+            new XlsmProcessingService<ExcelMappingInputQualityConfig>(configuration["Template_Directory"] ?? throw new ArgumentNullException("Template_Directory no esta configurado."),
+                configuration["Template_ExcelMappingInputQuality"] ?? throw new ArgumentNullException("Template_ExcelMappingInputQuality no esta configurado."));
         _calidadService = calidadService;
     }
 

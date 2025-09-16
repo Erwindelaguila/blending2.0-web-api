@@ -35,8 +35,11 @@ public class SapStockProcess
         _logger = logger;
         _configuration = configuration;
         _xlsmProcessingService =
-            new XlsmProcessingService<ExcelMappingOutputSapConfig>(configuration["Template:Directory"],
-                configuration["Template:ExcelMappingInputSap"]);
+            new XlsmProcessingService<ExcelMappingOutputSapConfig>(
+                configuration["Template_Directory"] ??
+                throw new ArgumentNullException("Template_Directory no está configurado."),
+                configuration["Template_ExcelMappingInputSap"] ??
+                throw new ArgumentException("Template_ExcelMappingInputSap no esta onfigurado"));
         _excelQualityProcessorService = excelQualityProcessorService;
     }
 
@@ -58,16 +61,20 @@ public class SapStockProcess
         var parsedJson = _sapXmlParser.ParseStockXml(xmlProcess);
         var config = _xlsmProcessingService.ConfiguracionActual;
         using var workbook =
-            ExcelXMLHelper.GetWorkbook(_configuration["Template:Directory"], _configuration["Template:SapOutput"]);
+            ExcelXMLHelper.GetWorkbook(
+                _configuration["Template_Directory"] ??
+                throw new ArgumentNullException("Template_Directory no está configurado."),
+                _configuration["Template_SapOutput"] ??
+                throw new ArgumentNullException("Template_SapOutput no está configurado."));
         ExcelWriteSapService.Execute(config, parsedJson, workbook);
         var fileBytes = await MultipartFormDataHelper.ToByteArrayAsync(workbook);
-        
+
         var resultList = await _excelQualityProcessorService.ExecuteAsync(fileBytes, req);
-        
+
         var blobResult = await _blobStorageService.UploadExcelAndGetLinkAsync(workbook, "sap-stock");
 
         blobResult.DataExcel = resultList;
-        
+
         return blobResult;
     }
 }

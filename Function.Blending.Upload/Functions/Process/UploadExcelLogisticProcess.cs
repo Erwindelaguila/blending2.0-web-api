@@ -16,21 +16,26 @@ public class UploadExcelLogisticProcess
 {
     private readonly XlsmProcessingService<ExcelMappingInputLogisticsConfig> _xlsmProcessingService;
     private readonly ILogger<GetSapStockFunction> _logger;
+
     public UploadExcelLogisticProcess(IConfiguration configuration, ILogger<GetSapStockFunction> logger)
     {
         _logger = logger;
         _xlsmProcessingService =
-            new XlsmProcessingService<ExcelMappingInputLogisticsConfig>(configuration["Template:Directory"], configuration["Template:ExcelMappingInputLogistic"]);
+            new XlsmProcessingService<ExcelMappingInputLogisticsConfig>(
+                configuration["Template_Directory"] ??
+                throw new ArgumentNullException("Template_Directory no está configurado."),
+                configuration["Template_ExcelMappingInputLogistic"] ??
+                throw new ArgumentNullException("Template_ExcelMappingInputLogistic no está configurado."));
     }
-    
-    public async Task< ExcelExtractLogisticDto> ExecuteAsync(HttpRequestData req)
+
+    public async Task<ExcelExtractLogisticDto> ExecuteAsync(HttpRequestData req)
     {
         if (!MultipartRequestValidator.IsMultipartFormData(req))
         {
             _logger.LogError("El tipo de contenido debe ser multipart/form-data.");
             throw new InvalidOperationException($"El tipo de contenido debe ser multipart/form-data.");
         }
-        
+
         var fileBytes = await MultipartFormDataHelper.ExtractFileAsync(req);
 
         var dataLogistic = await _xlsmProcessingService.ProcesarArchivoLogistcAsync(fileBytes);

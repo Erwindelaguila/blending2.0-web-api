@@ -20,12 +20,16 @@ public class WriteExcelLogisticsProcess
     private readonly BlobStorageService _blobStorageService;
     private readonly IConfiguration _configuration;
 
-    public WriteExcelLogisticsProcess(ILogger<WriteExcelLogisticsProcess> logger,IConfiguration configuration, BlobStorageService blobStorageService)
+    public WriteExcelLogisticsProcess(ILogger<WriteExcelLogisticsProcess> logger, IConfiguration configuration,
+        BlobStorageService blobStorageService)
     {
         _logger = logger;
         _blobStorageService = blobStorageService;
         _xlsmProcessingService =
-            new XlsmProcessingService<ExcelMappingOutputLogisticsConfig>(configuration["Template:Directory"], configuration["Template:ExcelMappingOutputLogistic"]);
+            new XlsmProcessingService<ExcelMappingOutputLogisticsConfig>(
+                configuration["Template_Directory"] ??
+                throw new ArgumentNullException("Template_Directory no está configurado."),
+                configuration["Template_ExcelMappingOutputLogistic"] ?? throw new ArgumentNullException("Template_ExcelMappingOutputLogistic no está configurado."));
         _configuration = configuration;
     }
 
@@ -38,18 +42,22 @@ public class WriteExcelLogisticsProcess
             _logger.LogInformation("Body is empty");
             throw new ArgumentException("Request body cannot be null or empty.");
         }
-        
+
         var json = JsonHelper.Deserialize<WriteLogisticObjectDto>(body);
         var config = _xlsmProcessingService.ConfiguracionActual;
-        
+
         var dataContHomogenizacion = json.Data;
-        using var workbook = ExcelXMLHelper.GetWorkbook(_configuration["Template:Directory"] ,_configuration["Template:LogisticOutput"]);
-        
+        using var workbook = ExcelXMLHelper.GetWorkbook(
+            _configuration["Template_Directory"] ??
+            throw new ArgumentNullException("Template_Directory no está configurado."),
+            _configuration["Template_LogisticOutput"] ?? throw new ArgumentNullException("Template_LogisticOutput no está configurado."));
+
         ExcelWriteContainersLogisticService.Execute(config, dataContHomogenizacion, workbook);
         ExcelWriteSapLogisticService.Execute(config, dataContHomogenizacion, workbook);
         var blobResult = await _blobStorageService.UploadExcelAndGetLinkAsync(workbook, "logistic-report");
         blobResult.DataExcel = null;
-        _logger.LogInformation($"Reporte de Excel de logistica guardado con exito con el nombre: {blobResult.FileName}");
-        return blobResult; 
+        _logger.LogInformation(
+            $"Reporte de Excel de logistica guardado con exito con el nombre: {blobResult.FileName}");
+        return blobResult;
     }
 }
