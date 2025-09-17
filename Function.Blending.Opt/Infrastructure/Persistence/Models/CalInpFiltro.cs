@@ -23,7 +23,7 @@ public partial class CalInpFiltro
 
     public bool QuitarRumasPH { get; set; }
 
-    public bool AgruparRumas { get; set; }
+    public string? AgregarRumasSerie { get; set; }
 
     public bool ConsiderarCadmio { get; set; }
 
