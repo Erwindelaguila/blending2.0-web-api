@@ -226,6 +226,7 @@ public partial class BlendingDbContext : DbContext
             entity.HasIndex(e => e.EjecucionId, "UQ_CalInpFiltro_EjecucionId").IsUnique();
 
             entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.AgregarRumasSerie).HasMaxLength(100);
             entity.Property(e => e.BorrarCalidades).HasMaxLength(200);
             entity.Property(e => e.CentroProduccion).HasMaxLength(200);
             entity.Property(e => e.CentroUbicacion).HasMaxLength(200);
