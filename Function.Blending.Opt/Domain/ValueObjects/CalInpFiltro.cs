@@ -11,7 +11,7 @@ public sealed record CalInpFiltro(
   string TipoProduccion,
   string? BorrarCalidades,
   bool QuitarRumasPH,
-  bool AgruparRumas,
+  string? AgregarRumasSerie,
   bool ConsiderarCadmio,
   DateTime? FechaCorteUtc,
   int? NumeroRuma,
