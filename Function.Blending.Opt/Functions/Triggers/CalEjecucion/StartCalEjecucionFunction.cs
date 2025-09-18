@@ -45,10 +45,11 @@ public sealed class StartCalEjecucionFunction(IMediator mediator, IProblemDetail
     }
 
     // 3) Ejecutar comando con auditoría
-    var cmd = new StartCalEjecucionCommand(dto.PlantaId, dto.Mensaje, creadoPorId)
+    var cmd = new StartCalEjecucionCommand
     {
-      Filtro = dto.Filtro,                // NUEVO
-      Parametros = dto.Parametros         // NUEVO
+      CreadoPorId = creadoPorId,
+      Start = dto.Start,
+      Model = dto.Model
     };
     var result = await mediator.Send(cmd);
 

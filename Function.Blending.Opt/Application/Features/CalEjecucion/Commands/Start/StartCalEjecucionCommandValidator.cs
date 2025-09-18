@@ -8,17 +8,20 @@ public sealed class StartCalEjecucionCommandValidator : AbstractValidator<StartC
 {
   public StartCalEjecucionCommandValidator()
   {
-    RuleFor(x => x.PlantaId).NotEmpty();
+    RuleFor(x => x.Start).NotEmpty();
+    RuleFor(x => x.Model).NotEmpty();
     RuleFor(x => x.CreadoPorId).NotEmpty();
 
-    When(x => x.Filtro is not null, () =>
+    RuleFor(x => x.Start.PlantaId).NotEmpty();
+
+    When(x => x.Start.Filtro is not null, () =>
     {
-      RuleFor(x => x.Filtro!).SetValidator(new CalInpFiltroDtoValidator());
+      RuleFor(x => x.Start.Filtro!).SetValidator(new CalInpFiltroDtoValidator());
     });
 
-    When(x => x.Parametros is not null, () =>
+    When(x => x.Start.Parametros is not null, () =>
     {
-      RuleFor(x => x.Parametros!).SetValidator(new CalInpParametrosListValidator());
+      RuleFor(x => x.Start.Parametros!).SetValidator(new CalInpParametrosListValidator());
     });
   }
 }

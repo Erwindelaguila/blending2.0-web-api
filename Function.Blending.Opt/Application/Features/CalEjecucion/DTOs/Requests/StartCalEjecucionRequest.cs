@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Requests.Input;
+﻿using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Requests.Payload;
+using System.Text.Json.Serialization;
 
 namespace Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Requests;
 
-public sealed record StartCalEjecucionRequest(
-  Guid PlantaId,
-  string? Mensaje
-)
+public sealed record StartCalEjecucionRequest
 {
-  public CalInpFiltroDto? Filtro { get; init; }
-  public IReadOnlyList<CalInpParametroDto>? Parametros { get; init; }
+
+  [JsonPropertyName("start")]
+  public CalidadStartPayload Start { get; init; } = null!;
+
+
+  [JsonPropertyName("model")]
+  public CalidadModelPayload Model { get; init; } = null!;
 }
