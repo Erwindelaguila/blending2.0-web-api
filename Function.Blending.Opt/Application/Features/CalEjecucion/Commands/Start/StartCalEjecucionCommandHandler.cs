@@ -1,4 +1,8 @@
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using AutoMapper;
+using Function.Blending.Opt.Application.Abstractions.External;
 using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Responses;
 using Function.Blending.Opt.Domain.Abstractions.Repositories;
 using Function.Blending.Opt.Domain.Abstractions.Services;
@@ -12,19 +16,18 @@ namespace Function.Blending.Opt.Application.Features.CalEjecucion.Commands.Start
 
 public sealed class StartCalEjecucionCommandHandler(
     ICalEjecucionRepository repo,
-    IEstadoCalidadCatalogService estados,
+    IEstadoCalidadCatalogService estadosService,
     IConfiguration cfg,
-    IMapper mapper
+    IMapper mapper,
+    ICalidadModelStarter modelStarter
   ) : IRequestHandler<StartCalEjecucionCommand, Result<StartCalEjecucionResponse>>
 {
   public async Task<Result<StartCalEjecucionResponse>> Handle(StartCalEjecucionCommand request, CancellationToken ct)
   {
-    // Estado inicial: EnEjecucion (desde config)
-    var raw = cfg[ConfigurationKeys.Catalog.QualityExecutionStatus.EnEjecucion];
-    if (!Guid.TryParse(raw, out var estadoInicialId))
+    var rawEstado = cfg[ConfigurationKeys.Catalog.QualityExecutionStatus.EnEjecucion];
+    if (!Guid.TryParse(rawEstado, out var estadoInicialId))
       return Result<StartCalEjecucionResponse>.Fail("Estado inicial (EnEjecucion) no configurado correctamente.");
 
-    // DTO -> VO (opcional)
     CalInpFiltro? filtroVo = null;
     if (request.Start.Filtro is not null)
       filtroVo = mapper.Map<CalInpFiltro>(request.Start.Filtro);
@@ -32,7 +35,6 @@ public sealed class StartCalEjecucionCommandHandler(
     IReadOnlyList<CalInpParametro>? parametrosVo = null;
     if (request.Start.Parametros is { Count: > 0 })
     {
-      // Dedupe por (CalidadId, ParametroId): último gana
       var normalizedDtos = request.Start.Parametros
         .GroupBy(p => new { p.CalidadId, p.ParametroId })
         .Select(g => g.Last())
@@ -41,7 +43,6 @@ public sealed class StartCalEjecucionCommandHandler(
       parametrosVo = mapper.Map<IReadOnlyList<CalInpParametro>>(normalizedDtos);
     }
 
-    // Crear ejecución (una transacción; StartAsync acepta VO opcionales; ct al final)
     var entity = await repo.StartAsync(
       request.Start.PlantaId,
       estadoInicialId,
@@ -55,12 +56,12 @@ public sealed class StartCalEjecucionCommandHandler(
     if (entity is null)
       return Result<StartCalEjecucionResponse>.Fail("No se pudo crear la ejecución.");
 
-    // TODO: Aquí consumir el servicio externo API de Calidad
+    entity.Estado = await estadosService.GetByIdAsync(entity.EstadoId.Value, ct);
+
+    // ===== DISPARO SIN ESPERAR (fire-and-forget) =====
     var model = request.Model;
     model.EjecucionId = entity.Id;
-
-    // Enriquecer Estado (objeto anidado en la respuesta)
-    entity.Estado = await estados.GetByIdAsync(entity.EstadoId.Value, ct);
+    _ = modelStarter.StartAsync(model, CancellationToken.None); // NO await
 
     var dto = mapper.Map<StartCalEjecucionResponse>(entity);
     return Result<StartCalEjecucionResponse>.Ok(dto);

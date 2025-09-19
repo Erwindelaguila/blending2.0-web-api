@@ -14,14 +14,16 @@ public static partial class DependencyInjection
     RegisterDomainRepositories(services);
     RegisterDomainServices(services);
 
-    RegisterCoreInfra(services);                 // IMemoryCache, Clock
-    ConfigureAppParamCaching(services);     // AppParam: options + repo cacheado
-    ConfigureSysParamCaching(services);     // SysParam: options + repo cacheado + servicio high-level
+    RegisterCoreInfra(services);                  // IMemoryCache, Clock
+    ConfigureAppParamCaching(services);           // AppParam: options + repo cacheado
+    ConfigureSysParamCaching(services);           // SysParam: options + repo cacheado + servicio high-level
 
-    ConfigureEstadoCalidad(services, cfg);       // Catálogo Estados Calidad (+ caché)
-    ConfigureEstadoLogistica(services, cfg);     // Catálogo Estados Logística (+ caché)
+    ConfigureEstadoCalidad(services, cfg);        // Catálogo Estados Calidad (+ caché)
+    ConfigureEstadoLogistica(services, cfg);      // Catálogo Estados Logística (+ caché)
 
-    RegisterTimeAndCodes(services);              // Zona horaria y generadores de código
+    RegisterTimeAndCodes(services);               // Zona horaria y generadores de código
+
+    ConfigureExternalClients(services, cfg);      // Clientes externos (HTTP)
 
     return services;
   }

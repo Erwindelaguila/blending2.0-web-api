@@ -27,7 +27,7 @@
     "Auth_Bearer_ClockSkewSeconds": "300",
 
     // === Scopes dinámicos (CSV) ===
-    "Auth_Allow_Quality_ReadById": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
+    "Auth_Allow_Quality_ReadById": "000000000000000000000000C48B7FA6",
     "Auth_Allow_Quality_ReadHistory": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
     "Auth_Allow_Quality_WriteStart": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
     "Auth_Allow_Quality_ChangeAccepted": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
@@ -116,6 +116,13 @@
     "Security_Hmac_TenantId": "b7e26f48-2292-4a14-a355-1aeb8489ae3d", // opcional, ayuda en multi-tenant
     "Security_Hmac_Credential_Mode": "Interactive", // usa CLI si existe; si no, abre login interactivo -> PROD: ManagedIdentity -> necesario(Security_Hmac_Credential_ClientId)
     "Security_Hmac_Credential_ClientId": "<clientId-de-la-UAMI>",
-    "Security_Hmac_Credential_TenantId": "<tenantId-de-la-UAMI>"
+    "Security_Hmac_Credential_TenantId": "b7e26f48-2292-4a14-a355-1aeb8489ae3d",
+
+    // ===== External - Calidad Model =====
+    //"External_CalidadModel_BaseUrl": "https://app-blending2-modelo-calidad-prod.azurewebsites.net",
+    "External_CalidadModel_BaseUrl": "http://localhost:5000",
+    "External_CalidadModel_StartPath": "/blending_harina",
+    "External_CalidadModel_TimeoutSeconds": "600",
+    "External_CalidadModel_ApiKey": null
   }
 }
