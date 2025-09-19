@@ -123,6 +123,12 @@
     "External_CalidadModel_BaseUrl": "http://localhost:5000",
     "External_CalidadModel_StartPath": "/blending_harina",
     "External_CalidadModel_TimeoutSeconds": "600",
-    "External_CalidadModel_ApiKey": null
+    "External_CalidadModel_ApiKey": null,
+
+    // ===== Logging DB =====
+    "Logging_Db_Enabled": "true",
+    "Logging_Db_MinLevel": "error", // reservado (no usado ahora)
+    "Logging_Db_SaveInfo": "false", // <= por defecto apagado (tu pedido)
+    "Logging_Db_Problem4xxAs": "warning" // nivel para ProblemDetails 4xx
   }
 }

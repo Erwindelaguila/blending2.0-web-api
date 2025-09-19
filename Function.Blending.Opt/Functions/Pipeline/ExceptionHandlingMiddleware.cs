@@ -1,5 +1,10 @@
 using System.Net;
+using Function.Blending.Opt.Domain.Abstractions.Services;
+using Function.Blending.Opt.Domain.Logging;
+using Function.Blending.Opt.Functions.Support.Execution;
 using Function.Blending.Opt.Functions.Support.ProblemDetails;
+using Function.Blending.Opt.Infrastructure.Configuration.Options.Logging;
+using Function.Blending.Opt.Shared.Extensions; // GetUserId()
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Functions.Worker.Middleware;
@@ -11,9 +16,23 @@ public sealed class ExceptionHandlingMiddleware : IFunctionsWorkerMiddleware
 {
   private readonly ILogger<ExceptionHandlingMiddleware> _logger;
   private readonly ProblemDetailsFactory _pdf;
+  private readonly ISysLogService _syslog;
+  private readonly IRequestContext _req;
+  private readonly SysLogOptions _opt;
 
-  public ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddleware> logger, ProblemDetailsFactory pdf)
-    => (_logger, _pdf) = (logger, pdf);
+  public ExceptionHandlingMiddleware(
+    ILogger<ExceptionHandlingMiddleware> logger,
+    ProblemDetailsFactory pdf,
+    ISysLogService syslog,
+    IRequestContext requestContext,
+    SysLogOptions opt)
+  {
+    _logger = logger;
+    _pdf = pdf;
+    _syslog = syslog;
+    _req = requestContext;
+    _opt = opt;
+  }
 
   public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
   {
@@ -23,23 +42,98 @@ public sealed class ExceptionHandlingMiddleware : IFunctionsWorkerMiddleware
     }
     catch (Exception ex)
     {
-      _logger.LogError(ex, "Unhandled exception in pipeline.");
+      _logger.LogError(ex, "Unhandled exception in function {Function}", context.FunctionDefinition?.Name);
 
+      // Persistir a SysLog si está habilitado
+      if (_opt.Enabled)
+      {
+        try
+        {
+          // Parsear Namespace / Class / Method desde EntryPoint: Namespace.Class.Method
+          var entryPoint = context.FunctionDefinition?.EntryPoint;
+          string? ns = null, cls = null, method = null;
+          if (!string.IsNullOrWhiteSpace(entryPoint))
+          {
+            var parts = entryPoint.Split('.');
+            if (parts.Length >= 2)
+            {
+              method = parts[^1];
+              cls = parts[^2];
+              if (parts.Length > 2) ns = string.Join('.', parts, 0, parts.Length - 2);
+            }
+          }
+
+          // CorrelationId -> RequestInvocationId (si es GUID)
+          Guid? requestId = null;
+          var corr = _req.CorrelationId ?? (context.Items.TryGetValue("CorrelationId", out var c) ? c?.ToString() : null);
+          if (!string.IsNullOrWhiteSpace(corr) && Guid.TryParse(corr, out var corrGuid))
+            requestId = corrGuid;
+
+          // FunctionInvocationId (si es GUID)
+          Guid? functionId = null;
+          var inv = context.InvocationId;
+          if (!string.IsNullOrWhiteSpace(inv) && Guid.TryParse(inv, out var invGuid))
+            functionId = invGuid;
+
+          // ExceptionGroupId: reusar si existe; si no, crear y guardar para la request
+          Guid? groupId = null;
+          if (context.Items.TryGetValue("ExceptionGroupId", out var egObj) && Guid.TryParse(egObj?.ToString(), out var egGuid))
+          {
+            groupId = egGuid;
+          }
+          else
+          {
+            groupId = Guid.NewGuid();
+            context.Items["ExceptionGroupId"] = groupId;
+          }
+
+          // Username / UserId
+          var username = _req.Username;
+          Guid? userId = null;
+          var uidStr = _req.User?.GetUserId();
+          if (!string.IsNullOrWhiteSpace(uidStr) && Guid.TryParse(uidStr, out var uidGuid))
+            userId = uidGuid;
+
+          var record = new SysLogRecord(
+            Id: Guid.NewGuid(),
+            NameSpace: ns ?? (context.FunctionDefinition?.Name ?? "Function.Blending.Opt"),
+            ClassName: cls,
+            MethodName: method,
+            Username: username,
+            UserId: userId,
+            Message: ex.Message,
+            StackTrace: ex.ToString(),
+            ExtraInfo: null,
+            RequestInvocationId: requestId,
+            FunctionInvocationId: functionId,
+            ExceptionGroupId: groupId,
+            Level: SysLogLevel.Error
+          );
+
+          await _syslog.WriteAsync(record, CancellationToken.None);
+        }
+        catch (Exception logEx)
+        {
+          _logger.LogWarning(logEx, "Non-critical: failed to write SysLog for unhandled exception.");
+        }
+      }
+
+      // ProblemDetails al cliente (si es HTTP)
       var req = await context.GetHttpRequestDataAsync();
-      if (req is null) throw;
-
-      var res = req.CreateResponse(HttpStatusCode.InternalServerError);
-      await _pdf.WriteAsync(
-        res,
-        status: 500,
-        title: "Unexpected error",
-        type: "urn:blending:error:unexpected",
-        detail: "An unexpected error occurred.",
-        traceId: context.Items.TryGetValue("CorrelationId", out var v) ? v?.ToString() : null,
-        instance: req.Url.PathAndQuery
-      );
-
-      context.GetInvocationResult().Value = res;
+      if (req is not null)
+      {
+        var res = req.CreateResponse(HttpStatusCode.InternalServerError);
+        await _pdf.WriteAsync(
+          res,
+          status: 500,
+          title: "Unexpected error",
+          type: "urn:blending:error:unexpected",
+          detail: "An unexpected error occurred.",
+          traceId: _req.CorrelationId ?? (context.Items.TryGetValue("CorrelationId", out var v) ? v?.ToString() : null),
+          instance: req.Url.PathAndQuery
+        );
+        context.GetInvocationResult().Value = res;
+      }
     }
   }
 }

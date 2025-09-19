@@ -4,7 +4,6 @@ using Function.Blending.Opt.Functions.Support.Authorization;
 using Function.Blending.Opt.Functions.Support.ProblemDetails;
 using Function.Blending.Opt.Shared.Constants;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.Logging;
 
@@ -96,6 +95,10 @@ public sealed class AuthorizationMiddleware(
       var groupsTxt = groups.Length == 0 ? "<none>" : string.Join(",", groups);
       logger.LogInformation("Auth: required=[{Scopes}] | groups=[{Groups}]", string.Join(",", requiredScopes), groupsTxt);
     }
-    catch { /* logging nunca rompe el pipeline */ }
+    catch (Exception ex) when (ex is not OperationCanceledException)
+    {
+      // logging nunca debe romper el pipeline, pero lo visibilizamos
+      logger.LogWarning(ex, "Non-critical: failed to log scopes/groups.");
+    }
   }
 }
