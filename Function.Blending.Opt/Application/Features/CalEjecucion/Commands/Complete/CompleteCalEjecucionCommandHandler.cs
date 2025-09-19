@@ -23,11 +23,9 @@ public sealed class CompleteCalEjecucionCommandHandler(
       return Result<CalEjecucionResponse>.Fail("Estado destino inválido para Calidad.");
 
     // 2) Mapear DTO → VO (pueden venir null)
-    IReadOnlyList<CalOutResumen>? voResumenes =
-      request.Resumenes is { Count: > 0 } ? mapper.Map<List<CalOutResumen>>(request.Resumenes) : null;
+    IReadOnlyList<CalOutResumen>? voResumenes = request.Resumenes is { Count: > 0 } ? mapper.Map<List<CalOutResumen>>(request.Resumenes) : null;
 
-    IReadOnlyList<CalOutDetalle>? voDetalles =
-      request.Detalles is { Count: > 0 } ? mapper.Map<List<CalOutDetalle>>(request.Detalles) : null;
+    IReadOnlyList<CalOutDetalle>? voDetalles = request.Detalles is { Count: > 0 } ? mapper.Map<List<CalOutDetalle>>(request.Detalles) : null;
 
     // 3) Persistir (transacción única; inserta outputs una vez y cambia estado)
     var entity = await repo.CompleteAsync(
