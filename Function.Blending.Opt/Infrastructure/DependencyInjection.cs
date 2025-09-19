@@ -24,6 +24,7 @@ public static partial class DependencyInjection
     RegisterTimeAndCodes(services);               // Zona horaria y generadores de código
 
     ConfigureExternalClients(services, cfg);      // Clientes externos (HTTP)
+    ConfigureSysLog(services, cfg);               // Logging a DDBB
 
     return services;
   }

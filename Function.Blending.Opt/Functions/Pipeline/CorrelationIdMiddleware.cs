@@ -7,26 +7,26 @@ using Microsoft.Extensions.Logging;
 namespace Function.Blending.Opt.Functions.Pipeline;
 
 /// <summary>
-/// Middleware que asegura la presencia de un CorrelationId por invocación:
-/// - Lo intenta leer de headers comunes (x-correlation-id, x-request-id, traceparent).
+/// Asegura un CorrelationId por invocación:
+/// - Intenta leerlo de headers (x-correlation-id, x-request-id, traceparent).
 /// - Si no existe, genera uno (Guid "N").
-/// - Lo coloca en FunctionContext.Items["CorrelationId"] para que lo consuman el resto de componentes.
-/// - Opcionalmente, si la respuesta es HTTP, adjunta el header "x-correlation-id".
+/// - Lo coloca en FunctionContext.Items[CorrelationKeys.CorrelationIdItemKey].
+/// - Si la respuesta es HTTP, adjunta el header CorrelationKeys.CorrelationHeaderKey.
 /// </summary>
 public sealed class CorrelationIdMiddleware(ILogger<CorrelationIdMiddleware> logger) : IFunctionsWorkerMiddleware
 {
   private const string CorrelationIdItemKey = CorrelationKeys.CorrelationIdItemKey;
   private const string CorrelationHeaderKey = CorrelationKeys.CorrelationHeaderKey;
 
-  // Encabezados candidatos desde los que intentar leer el ID:
+  // Encabezados candidatos desde los que intentar leer el ID (respetando tus constantes/estilo)
   private static readonly string[] HeaderCandidates = new[]
   {
-        CorrelationHeaderKey,
-        "X-Correlation-ID",
-        "x-request-id",
-        "X-Request-ID",
-        "traceparent" // si viene W3C traceparent, lo usamos tal cual
-    };
+    CorrelationHeaderKey,
+    "X-Correlation-ID",
+    "x-request-id",
+    "X-Request-ID",
+    "traceparent"
+  };
 
   public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
   {
@@ -36,40 +36,35 @@ public sealed class CorrelationIdMiddleware(ILogger<CorrelationIdMiddleware> log
     // 2) Resolver o crear un CorrelationId
     var correlationId = ResolveCorrelationId(req);
     if (string.IsNullOrWhiteSpace(correlationId))
-    {
       correlationId = Guid.NewGuid().ToString("N");
-    }
 
-    // 3) Guardarlo en FunctionContext.Items para que otros middlewares/Functions lo consuman
+    // 3) Publicar en Items para el resto del pipeline
     context.Items[CorrelationIdItemKey] = correlationId;
 
-    // 4) Log (no debe romper el pipeline si falla)
+    // 4) Log no-crítico (si falla, no debe romper el pipeline)
     try
     {
       logger.LogDebug("CorrelationId assigned: {CorrelationId}", correlationId);
     }
-    catch
+    catch (Exception ex) when (ex is not OperationCanceledException)
     {
-      // nunca interrumpir el pipeline por logging
+      logger.LogWarning(ex, "Non-critical: failed to log correlation id. corr={CorrelationId}", correlationId);
     }
 
     // 5) Continuar la ejecución
     await next(context);
 
-    // 6) Si hay respuesta HTTP, adjunta el header x-correlation-id (con seguridad)
+    // 6) Adjuntar header a la respuesta HTTP (no crítico)
     try
     {
-      if (context.GetInvocationResult().Value is HttpResponseData res)
+      if (context.GetInvocationResult().Value is HttpResponseData res && !res.Headers.TryGetValues(CorrelationHeaderKey, out _))
       {
-        if (!res.Headers.TryGetValues(CorrelationHeaderKey, out _))
-        {
-          res.Headers.Add(CorrelationHeaderKey, correlationId);
-        }
+        res.Headers.Add(CorrelationHeaderKey, correlationId);
       }
     }
-    catch
+    catch (Exception ex) when (ex is not OperationCanceledException)
     {
-      // nunca interrumpir el pipeline por adjuntar un header
+      logger.LogWarning(ex, "Non-critical: failed to append correlation header. corr={CorrelationId}", correlationId);
     }
   }
 
