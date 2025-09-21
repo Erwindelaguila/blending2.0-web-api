@@ -3,8 +3,8 @@
 public class ExcelExtractQualityDto
 {
     public ValoresFijosDto Fijos { get; set; } = new(); // Usamos directamente la clase POCO
-    public Dictionary<string, string> ParametrosCalidad { get; set; } = new();
-    public Dictionary<string, string> OtrosValores { get; set; } = new();
+    public Dictionary<string, decimal?> ParametrosCalidad { get; set; } = new();
+    public Dictionary<string, object> OtrosValores { get; set; } = new();
 }
 
 public class ValoresFijosDto

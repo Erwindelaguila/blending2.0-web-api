@@ -1,4 +1,5 @@
-﻿using ClosedXML.Excel;
+﻿using System.Globalization;
+using ClosedXML.Excel;
 using Function.Blending.Upload.Infrastructure.Config;
 using Function.Blending.Upload.Infrastructure.Config.Input;
 using Function.Blending.Upload.Models;
@@ -39,7 +40,7 @@ public static class ExcelReaderHelper
             {
                 Fijos = new Dictionary<string, string>(),
                 ParametrosCalidad = new Dictionary<string, string>(),
-                OtrosValores = new Dictionary<string, string>()
+                OtrosValores = new Dictionary<string, object>()
             };
 
             foreach (var prop in inputQualityConfig.Fijos.GetType().GetProperties())
@@ -60,7 +61,7 @@ public static class ExcelReaderHelper
 
             foreach (var kv in inputQualityConfig.OtrosValores)
             {
-                var value = worksheet.Cell(row, kv.Value).GetValue<string>().Trim();
+                var value = worksheet.Cell(row, kv.Value).GetValue<object>();
                 dto.OtrosValores[kv.Key] = value;
             }
 
@@ -108,10 +109,10 @@ public static class ExcelReaderHelper
             }
 
             // Parte dinámica: otros valores
-            foreach (var kvp in inputQualityConfig.OtrosValores)
+            foreach (var kv in inputQualityConfig.OtrosValores)
             {
-                var cell = worksheet.Cell($"{kvp.Value}{row}");
-                rowDto.OtrosValores[kvp.Key] = cell.GetString();
+                var cell = worksheet.Cell(row, kv.Value);
+                rowDto.OtrosValores[kv.Key] = GetSmartCellValue(cell);
             }
 
             result.Add(rowDto);
@@ -246,4 +247,46 @@ public static class ExcelReaderHelper
         
         return pesoContenedores;
     }
+    
+    private static object? GetSmartCellValue(IXLCell cell)
+    {
+        if (cell.IsEmpty())
+            return null;
+
+        // Si ClosedXML ya reconoce el tipo
+        switch (cell.DataType)
+        {
+            case XLDataType.Number:
+                return cell.GetDouble();
+
+            case XLDataType.DateTime:
+                return cell.GetDateTime();
+
+            case XLDataType.Boolean:
+                return cell.GetBoolean();
+
+            case XLDataType.Text:
+            default:
+                var raw = cell.GetString().Trim();
+                if (string.IsNullOrWhiteSpace(raw))
+                    return null;
+
+                // Intento parsear manualmente
+                if (double.TryParse(raw, NumberStyles.Any, CultureInfo.InvariantCulture, out var num))
+                    return num;
+
+                if (DateTime.TryParse(raw, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt))
+                    return dt;
+
+                if (bool.TryParse(raw, out var boolean))
+                    return boolean;
+
+                if (raw == "1" || raw == "0")
+                    return raw == "1";
+
+                // Si no se pudo, lo dejo como string
+                return raw;
+        }
+    }
+    
 }

@@ -95,8 +95,22 @@ public class MapperQualityHepler
         result.Fijos = fijos;
 
         // Copiar directamente los valores dinámicos
-        result.ParametrosCalidad = rowQuality.ParametrosCalidad ?? new Dictionary<string, string>();
-        result.OtrosValores = rowQuality.OtrosValores ?? new Dictionary<string, string>();
+        result.ParametrosCalidad = rowQuality.ParametrosCalidad?
+            .ToDictionary(
+                kvp => kvp.Key,
+                kvp =>
+                {
+                    if (string.IsNullOrWhiteSpace(kvp.Value))
+                        return (decimal?)null;
+
+                    if (decimal.TryParse(kvp.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed))
+                        return parsed;
+
+                    return (decimal?)null; // o lanzar excepción si quieres validar
+                }
+            ) ?? new Dictionary<string, decimal?>();
+        
+        result.OtrosValores = rowQuality.OtrosValores ?? new Dictionary<string, object>();
 
         return result;
     }

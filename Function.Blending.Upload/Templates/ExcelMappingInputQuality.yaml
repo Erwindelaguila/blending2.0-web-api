@@ -35,7 +35,7 @@ parametrosCalidad:
   humedad: "AB"
   grasas: "AC"
   cenizas: "AD"
-  cloruros: "AE"
+  cloruro: "AE"
   arena: "AF"
   acidez: "AG"
   ao: "AH"

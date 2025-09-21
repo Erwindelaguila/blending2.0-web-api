@@ -66,7 +66,9 @@ public class SapStockProcess
                 throw new ArgumentNullException("Template_Directory no está configurado."),
                 _configuration["Template_SapOutput"] ??
                 throw new ArgumentNullException("Template_SapOutput no está configurado."));
+        
         ExcelWriteSapService.Execute(config, parsedJson, workbook);
+        
         var fileBytes = await MultipartFormDataHelper.ToByteArrayAsync(workbook);
 
         var resultList = await _excelQualityProcessorService.ExecuteAsync(fileBytes, req);

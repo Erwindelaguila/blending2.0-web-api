@@ -90,4 +90,22 @@ var host = new HostBuilder()
     })
     .Build();
 
+//Segurity Victor
+/*
+bool on(string key, bool def = true) => bool.TryParse(builder.Configuration[key], out var b) ? b : def;
+builder.Services.AddFunctionsSupport(builder.Configuration);
+
+builder.Services.AddSingleton<IKeyDecoder, KeyDecoder>();
+
+builder.UseFunctionsPipeline(
+    enableExceptionHandling: on(ConfigurationKeys.Pipeline.EnableExceptionHandling),
+    enableRequestLogging: on(ConfigurationKeys.Pipeline.EnableRequestLogging),
+    enableRequestSizeLimit: on(ConfigurationKeys.Pipeline.EnableRequestSizeLimit),
+    enableAuthentication: on(ConfigurationKeys.Pipeline.EnableAuthentication)
+);
+*/
+
+
+
+
 host.Run();

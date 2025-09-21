@@ -1,6 +1,6 @@
 using System.Net;
+using Function.Blending.Upload.Functions.Support.Authorization;
 using Function.Blending.Upload.Functions.Support.Routing;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 

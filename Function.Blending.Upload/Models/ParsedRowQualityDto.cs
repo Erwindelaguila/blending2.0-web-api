@@ -15,7 +15,7 @@ public class ParsedRowQualityDto
     /// <summary>
     /// Contiene los otros valores dinámicos.
     /// </summary>
-    public Dictionary<string, string> OtrosValores { get; set; } = new();
+    public Dictionary<string, object> OtrosValores { get; set; } = new();
   
 }
 

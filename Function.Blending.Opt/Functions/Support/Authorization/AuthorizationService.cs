@@ -15,7 +15,7 @@ public sealed class AuthorizationService : IAuthorizationService
     if (!_opts.Allow.TryGetValue(scope, out var allowed) || allowed is null || allowed.Length == 0)
       return false;
 
-    // Si no hay principal, solo pasa si DevBypass est· activo
+    // Si no hay principal, solo pasa si DevBypass est√° activo
     if (user is null || !(user.Identity?.IsAuthenticated ?? false))
       return _opts.DevBypass;
 
