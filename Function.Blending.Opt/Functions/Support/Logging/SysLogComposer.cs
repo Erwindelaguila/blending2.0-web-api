@@ -1,8 +1,5 @@
-﻿using System;
-using System.Text;
-using Function.Blending.Opt.Functions.Support.Execution;
+﻿using Function.Blending.Opt.Functions.Support.Execution;
 using Function.Blending.Opt.Shared.Extensions; // GetUserId() de Claims
-using Microsoft.Extensions.Logging;
 
 // Alias EF model
 using Ef = Function.Blending.Opt.Infrastructure.Persistence.Models;

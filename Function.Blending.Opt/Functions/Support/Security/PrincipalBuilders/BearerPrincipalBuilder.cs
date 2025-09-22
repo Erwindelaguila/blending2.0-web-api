@@ -1,43 +1,35 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using FwxHttp = Microsoft.Azure.Functions.Worker.Http;
+﻿using Function.Blending.Opt.Shared.Constants;
+using Function.Blending.Opt.Shared.Security;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
-using Function.Blending.Opt.Shared.Security;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using FwxHttp = Microsoft.Azure.Functions.Worker.Http;
 
 namespace Function.Blending.Opt.Functions.Support.Security.PrincipalBuilders;
 
-public sealed class BearerPrincipalBuilder : IPrincipalBuilder
+public sealed class BearerPrincipalBuilder(IConfiguration cfg, ITokenValidationService tokenValidator) : IPrincipalBuilder
 {
-  private readonly IConfiguration _cfg;
-  private readonly ITokenValidationService _tokenValidator;
-
-  public BearerPrincipalBuilder(IConfiguration cfg, ITokenValidationService tokenValidator)
-  {
-    _cfg = cfg;
-    _tokenValidator = tokenValidator;
-  }
-
   public async Task<ClaimsPrincipal?> TryBuildAsync(FunctionContext ctx, FwxHttp.HttpRequestData req)
   {
-    if (!bool.TryParse(_cfg["Auth_EnableBearerTokens"], out var enabled) || !enabled)
+    if (!bool.TryParse(cfg[ConfigurationKeys.Auth.EnableBearer], out var enabled) || !enabled)
       return null;
 
-    if (!req.Headers.TryGetValues("Authorization", out var authVals))
+    if (!req.Headers.TryGetValues(AuthConstants.Authorization, out var authVals))
       return null;
 
     var auth = authVals.FirstOrDefault();
-    if (string.IsNullOrWhiteSpace(auth) || !auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+    if (string.IsNullOrWhiteSpace(auth) || !auth.StartsWith($"{AuthConstants.BearerAuth.Name} ", StringComparison.OrdinalIgnoreCase))
       return null;
 
-    var jwtRaw = auth["Bearer ".Length..].Trim();
-    var mode = _cfg["Auth_Bearer_ValidationMode"] ?? "Strict";
+    var jwtRaw = auth[$"{AuthConstants.BearerAuth.Name} ".Length..].Trim();
+    var mode = cfg[ConfigurationKeys.Auth.Bearer.ValidationMode] ?? AuthConstants.BearerAuth.Modes.Strict;
 
-    if (mode.Equals("Relaxed", StringComparison.OrdinalIgnoreCase))
+    if (mode.Equals(AuthConstants.BearerAuth.Modes.Relaxed, StringComparison.OrdinalIgnoreCase))
       return BuildPrincipalRelaxed(jwtRaw);
 
     // Strict → servicio
-    return await _tokenValidator.ValidateAndNormalizeAsync(jwtRaw);
+    return await tokenValidator.ValidateAndNormalizeAsync(jwtRaw);
   }
 
   private ClaimsPrincipal? BuildPrincipalRelaxed(string jwtRaw)
@@ -49,9 +41,9 @@ public sealed class BearerPrincipalBuilder : IPrincipalBuilder
 
       var opts = new JwtClaimsFactory.Options
       {
-        AuthType = "Bearer-Relaxed",
-        AuthModeTag = "relaxed",
-        ValidateLifetime = bool.TryParse(_cfg["Auth_Bearer_ValidateLifetime"], out var vl) && vl,
+        AuthType = AuthConstants.BearerAuth.Types.Relaxed,
+        AuthModeTag = AuthConstants.BearerAuth.Tags.Relaxed,
+        ValidateLifetime = bool.TryParse(cfg[ConfigurationKeys.Auth.Bearer.ValidateLifetime], out var vl) && vl,
         IncludeGroups = true,
         IncludeWids = true,
         IncludeRoles = true,

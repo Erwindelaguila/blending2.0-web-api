@@ -12,28 +12,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Function.Blending.Opt.Functions.Pipeline;
 
-public sealed class ExceptionHandlingMiddleware : IFunctionsWorkerMiddleware
+public sealed class ExceptionHandlingMiddleware(
+  ILogger<ExceptionHandlingMiddleware> logger,
+  ProblemDetailsFactory pdf,
+  ISysLogService syslog,
+  IRequestContext requestContext,
+  SysLogOptions opt) : IFunctionsWorkerMiddleware
 {
-  private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-  private readonly ProblemDetailsFactory _pdf;
-  private readonly ISysLogService _syslog;
-  private readonly IRequestContext _req;
-  private readonly SysLogOptions _opt;
-
-  public ExceptionHandlingMiddleware(
-    ILogger<ExceptionHandlingMiddleware> logger,
-    ProblemDetailsFactory pdf,
-    ISysLogService syslog,
-    IRequestContext requestContext,
-    SysLogOptions opt)
-  {
-    _logger = logger;
-    _pdf = pdf;
-    _syslog = syslog;
-    _req = requestContext;
-    _opt = opt;
-  }
-
   public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
   {
     try
@@ -42,10 +27,10 @@ public sealed class ExceptionHandlingMiddleware : IFunctionsWorkerMiddleware
     }
     catch (Exception ex)
     {
-      _logger.LogError(ex, "Unhandled exception in function {Function}", context.FunctionDefinition?.Name);
+      logger.LogError(ex, "Unhandled exception in function {Function}", context.FunctionDefinition?.Name);
 
       // Persistir a SysLog si está habilitado
-      if (_opt.Enabled)
+      if (opt.Enabled)
       {
         try
         {
@@ -65,7 +50,7 @@ public sealed class ExceptionHandlingMiddleware : IFunctionsWorkerMiddleware
 
           // CorrelationId -> RequestInvocationId (si es GUID)
           Guid? requestId = null;
-          var corr = _req.CorrelationId ?? (context.Items.TryGetValue("CorrelationId", out var c) ? c?.ToString() : null);
+          var corr = requestContext.CorrelationId ?? (context.Items.TryGetValue("CorrelationId", out var c) ? c?.ToString() : null);
           if (!string.IsNullOrWhiteSpace(corr) && Guid.TryParse(corr, out var corrGuid))
             requestId = corrGuid;
 
@@ -88,9 +73,9 @@ public sealed class ExceptionHandlingMiddleware : IFunctionsWorkerMiddleware
           }
 
           // Username / UserId
-          var username = _req.Username;
+          var username = requestContext.Username;
           Guid? userId = null;
-          var uidStr = _req.User?.GetUserId();
+          var uidStr = requestContext.User?.GetUserId();
           if (!string.IsNullOrWhiteSpace(uidStr) && Guid.TryParse(uidStr, out var uidGuid))
             userId = uidGuid;
 
@@ -110,11 +95,11 @@ public sealed class ExceptionHandlingMiddleware : IFunctionsWorkerMiddleware
             Level: SysLogLevel.Error
           );
 
-          await _syslog.WriteAsync(record, CancellationToken.None);
+          await syslog.WriteAsync(record, CancellationToken.None);
         }
         catch (Exception logEx)
         {
-          _logger.LogWarning(logEx, "Non-critical: failed to write SysLog for unhandled exception.");
+          logger.LogWarning(logEx, "Non-critical: failed to write SysLog for unhandled exception.");
         }
       }
 
@@ -123,13 +108,13 @@ public sealed class ExceptionHandlingMiddleware : IFunctionsWorkerMiddleware
       if (req is not null)
       {
         var res = req.CreateResponse(HttpStatusCode.InternalServerError);
-        await _pdf.WriteAsync(
+        await pdf.WriteAsync(
           res,
           status: 500,
           title: "Unexpected error",
           type: "urn:blending:error:unexpected",
           detail: "An unexpected error occurred.",
-          traceId: _req.CorrelationId ?? (context.Items.TryGetValue("CorrelationId", out var v) ? v?.ToString() : null),
+          traceId: requestContext.CorrelationId ?? (context.Items.TryGetValue("CorrelationId", out var v) ? v?.ToString() : null),
           instance: req.Url.PathAndQuery
         );
         context.GetInvocationResult().Value = res;

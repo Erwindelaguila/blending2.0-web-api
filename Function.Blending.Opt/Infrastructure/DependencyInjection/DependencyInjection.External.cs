@@ -1,6 +1,7 @@
 ﻿using Function.Blending.Opt.Application.Abstractions.External;
 using Function.Blending.Opt.Infrastructure.Configuration.Options.External;
 using Function.Blending.Opt.Infrastructure.Services.External;
+using Function.Blending.Opt.Shared.Constants;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -12,10 +13,10 @@ public static partial class DependencyInjection
 {
   private static void ConfigureExternalClients(IServiceCollection services, IConfiguration cfg)
   {
-    var baseUrl = cfg["External_CalidadModel_BaseUrl"] ?? string.Empty;
-    var startPath = cfg["External_CalidadModel_StartPath"] ?? "/api/quality/start";
-    var timeoutSeconds = int.TryParse(cfg["External_CalidadModel_TimeoutSeconds"], out var t) ? Math.Max(1, t) : 30;
-    var apiKey = cfg["External_CalidadModel_ApiKey"];
+    var baseUrl = cfg[ConfigurationKeys.ExternalApi.QualityModel.BaseUrl] ?? string.Empty;
+    var startPath = cfg[ConfigurationKeys.ExternalApi.QualityModel.StartPath] ?? "/api/quality/start";
+    var timeoutSeconds = int.TryParse(cfg[ConfigurationKeys.ExternalApi.QualityModel.TimeoutSeconds], out var t) ? Math.Max(1, t) : 30;
+    var apiKey = cfg[ConfigurationKeys.ExternalApi.QualityModel.ApiKey];
 
     var options = new CalidadModelOptions
     {

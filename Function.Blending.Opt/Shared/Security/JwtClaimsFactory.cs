@@ -13,7 +13,7 @@ public static class JwtClaimsFactory
   public sealed class Options
   {
     /// <summary>AuthType a usar en la ClaimsIdentity resultante.</summary>
-    public string AuthType { get; init; } = MiscellaneousConstants.Bearer;
+    public string AuthType { get; init; } = AuthConstants.BearerAuth.Name;
 
     /// <summary>Si no es null/empty, agrega un claim ("auth_mode", value).</summary>
     public string? AuthModeTag { get; init; }

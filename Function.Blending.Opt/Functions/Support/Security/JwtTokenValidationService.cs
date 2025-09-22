@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Function.Blending.Opt.Shared.Constants;
 using Function.Blending.Opt.Shared.Security;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Protocols;
@@ -9,36 +10,32 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Function.Blending.Opt.Functions.Support.Security;
 
-public sealed class JwtTokenValidationService : ITokenValidationService
+public sealed class JwtTokenValidationService(IConfiguration cfg) : ITokenValidationService
 {
-  private readonly IConfiguration _cfg;
-
   private static readonly ConcurrentDictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> _oidcManagers = new();
-
-  public JwtTokenValidationService(IConfiguration cfg) => _cfg = cfg;
 
   public async Task<ClaimsPrincipal?> ValidateAndNormalizeAsync(string jwtRaw)
   {
     try
     {
-      var tenantId = _cfg["Auth_Bearer_TenantId"];
-      var authority = _cfg["Auth_Bearer_Authority"];
+      var tenantId = cfg[ConfigurationKeys.Auth.Bearer.TenantId];
+      var authority = cfg[ConfigurationKeys.Auth.Bearer.Authority];
       if (string.IsNullOrWhiteSpace(authority) && !string.IsNullOrWhiteSpace(tenantId))
         authority = $"https://login.microsoftonline.com/{tenantId}/v2.0";
 
       if (string.IsNullOrWhiteSpace(authority))
         return null;
 
-      var audienceCsv = _cfg["Auth_Bearer_Audience"] ?? string.Empty;
+      var audienceCsv = cfg[ConfigurationKeys.Auth.Bearer.Audience] ?? string.Empty;
       var audiences = audienceCsv
-        .Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
         .ToArray();
 
       if (audiences.Length == 0)
         return null;
 
-      var validIssuerOverride = _cfg["Auth:Bearer:ValidIssuer"];
-      var clockSkewSec = int.TryParse(_cfg["Auth_Bearer_ClockSkewSeconds"], out var cs) ? cs : 300;
+      var validIssuerOverride = cfg[ConfigurationKeys.Auth.Bearer.ValidIssuer];
+      var clockSkewSec = int.TryParse(cfg[ConfigurationKeys.Auth.Bearer.ClockSkewSeconds], out var cs) ? cs : 300;
 
       var manager = _oidcManagers.GetOrAdd(authority, auth =>
         new ConfigurationManager<OpenIdConnectConfiguration>(
@@ -74,8 +71,8 @@ public sealed class JwtTokenValidationService : ITokenValidationService
       var jwt = validatedToken as JwtSecurityToken ?? new JwtSecurityToken(jwtRaw);
       var opts = new JwtClaimsFactory.Options
       {
-        AuthType = "Bearer-Strict",
-        AuthModeTag = "strict",
+        AuthType = AuthConstants.BearerAuth.Types.Strict,
+        AuthModeTag = AuthConstants.BearerAuth.Tags.Strict,
         ValidateLifetime = false, // ya se validó arriba
         IncludeGroups = true,
         IncludeWids = true,
