@@ -12,12 +12,9 @@ public interface IRequestContext
   string? Username { get; }
 }
 
-public sealed class RequestContext : IRequestContext
+public sealed class RequestContext(IFunctionContextAccessor accessor) : IRequestContext
 {
-  private readonly IFunctionContextAccessor _accessor;
-  public RequestContext(IFunctionContextAccessor accessor) => _accessor = accessor;
-
-  private FunctionContext? Ctx => _accessor.Current;
+  private FunctionContext? Ctx => accessor.Current;
 
   public string? CorrelationId => Ctx?.GetCorrelationId();
   public ClaimsPrincipal? User => Ctx?.GetUser();

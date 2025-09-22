@@ -56,7 +56,7 @@ public static class ServiceCollectionExtensions
         static string[] SplitCsv(string? csv) =>
           string.IsNullOrWhiteSpace(csv)
             ? Array.Empty<string>()
-            : csv.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            : csv.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         opts.DevGroups = SplitCsv(config[ConfigurationKeys.Auth.DevGroups]);
 

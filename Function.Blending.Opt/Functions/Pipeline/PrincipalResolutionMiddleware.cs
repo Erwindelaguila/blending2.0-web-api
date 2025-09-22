@@ -11,8 +11,7 @@ public sealed class PrincipalResolutionMiddleware : IFunctionsWorkerMiddleware
   private readonly IFunctionAttributeReader _attrReader;
   private readonly IPrincipalResolver _resolver;
 
-  public PrincipalResolutionMiddleware(IFunctionAttributeReader attrReader, IPrincipalResolver resolver)
-      => (_attrReader, _resolver) = (attrReader, resolver);
+  public PrincipalResolutionMiddleware(IFunctionAttributeReader attrReader, IPrincipalResolver resolver) => (_attrReader, _resolver) = (attrReader, resolver);
 
   public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
   {

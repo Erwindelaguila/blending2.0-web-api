@@ -1,7 +1,8 @@
-﻿using System.Security.Claims;
+﻿using Function.Blending.Opt.Shared.Constants;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
+using System.Security.Claims;
 
 namespace Function.Blending.Opt.Functions.Support.Security.PrincipalBuilders;
 
@@ -12,19 +13,19 @@ public sealed class LocalHeaderPrincipalBuilder : IPrincipalBuilder
 
   public Task<ClaimsPrincipal?> TryBuildAsync(FunctionContext ctx, HttpRequestData req)
   {
-    if (!bool.TryParse(_cfg["Auth_EnableLocalHeaderPrincipal"], out var enabled) || !enabled)
+    if (!bool.TryParse(_cfg[ConfigurationKeys.Auth.EnableLocalHeaderPrincipal], out var enabled) || !enabled)
       return Task.FromResult<ClaimsPrincipal?>(null);
 
-    if (!req.Headers.TryGetValues("X-LOCAL-GROUPS", out var localGroupsVals))
+    if (!req.Headers.TryGetValues(AuthConstants.LocalHeaderAuth.HeaderKey, out var localGroupsVals))
       return Task.FromResult<ClaimsPrincipal?>(null);
 
     var csv = localGroupsVals.FirstOrDefault() ?? string.Empty;
-    var groups = csv.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    var groups = csv.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     if (groups.Length == 0)
       return Task.FromResult<ClaimsPrincipal?>(null);
 
-    var claims = groups.Select(g => new Claim("groups", g)).ToList();
-    var identity = new ClaimsIdentity(claims, "LocalHeader");
+    var claims = groups.Select(g => new Claim(AuthConstants.Groups, g)).ToList();
+    var identity = new ClaimsIdentity(claims, AuthConstants.LocalHeaderAuth.Name);
     return Task.FromResult<ClaimsPrincipal?>(new ClaimsPrincipal(identity));
   }
 }

@@ -5,10 +5,9 @@ using System.Security.Claims;
 
 namespace Function.Blending.Opt.Functions.Support.Authorization;
 
-public sealed class AuthorizationService : IAuthorizationService
+public sealed class AuthorizationService(IOptions<AuthorizationOptions> opts) : IAuthorizationService
 {
-  private readonly AuthorizationOptions _opts;
-  public AuthorizationService(IOptions<AuthorizationOptions> opts) => _opts = opts.Value;
+  private readonly AuthorizationOptions _opts = opts.Value;
 
   public bool IsAuthorized(ClaimsPrincipal? user, string scope)
   {

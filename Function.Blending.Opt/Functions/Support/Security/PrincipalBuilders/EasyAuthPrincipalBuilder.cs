@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using Function.Blending.Opt.Shared.Constants;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
@@ -14,10 +15,10 @@ public sealed class EasyAuthPrincipalBuilder : IPrincipalBuilder
 
   public Task<ClaimsPrincipal?> TryBuildAsync(FunctionContext ctx, HttpRequestData req)
   {
-    if (!bool.TryParse(_cfg["Auth_EnableEasyAuth"], out var enabled) || !enabled)
+    if (!bool.TryParse(_cfg[ConfigurationKeys.Auth.EnableEasyAuth], out var enabled) || !enabled)
       return Task.FromResult<ClaimsPrincipal?>(null);
 
-    if (!req.Headers.TryGetValues("X-MS-CLIENT-PRINCIPAL", out var vals))
+    if (!req.Headers.TryGetValues(AuthConstants.EasyAuth.HeaderKey, out var vals))
       return Task.FromResult<ClaimsPrincipal?>(null);
 
     try
@@ -32,8 +33,8 @@ public sealed class EasyAuthPrincipalBuilder : IPrincipalBuilder
         PropertyNameCaseInsensitive = true
       });
 
-      var claims = dto?.Claims?.Select(c => new Claim(c.Type, c.Value)).ToList() ?? new List<Claim>();
-      var identity = new ClaimsIdentity(claims, "EasyAuth");
+      var claims = dto?.Claims?.Select(c => new Claim(c.Type, c.Value)).ToList() ?? [];
+      var identity = new ClaimsIdentity(claims, AuthConstants.EasyAuth.Name);
       return Task.FromResult<ClaimsPrincipal?>(new ClaimsPrincipal(identity));
     }
     catch
