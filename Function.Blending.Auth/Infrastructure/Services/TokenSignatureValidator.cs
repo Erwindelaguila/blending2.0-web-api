@@ -37,7 +37,18 @@ namespace Function.Blending.Auth.Infrastructure.Services
         {
             try
             {
+                _logger.LogInformation("Iniciando validación de firma JWT. Tenant: {TenantId}, ClientId: {ClientId}", 
+                    _config.TenantId, _config.ExpectedClientId);
+                
                 var config = await _configurationManager.GetConfigurationAsync(CancellationToken.None);
+                
+                var validAudiences = new[] { 
+                    $"api://{_config.ExpectedClientId}",  // Formato API
+                    _config.ExpectedClientId             // Solo Client ID
+                };
+                
+                _logger.LogInformation("Audiencias válidas configuradas: {ValidAudiences}", 
+                    string.Join(", ", validAudiences));
                 
                 var validationParameters = new TokenValidationParameters
                 {
@@ -45,7 +56,7 @@ namespace Function.Blending.Auth.Infrastructure.Services
                     ValidIssuer = $"https://login.microsoftonline.com/{_config.TenantId}/v2.0",
                     
                     ValidateAudience = true,
-                    ValidAudiences = new[] { $"api://{_config.ExpectedClientId}" },
+                    ValidAudiences = validAudiences,
                     
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKeys = config.SigningKeys,
