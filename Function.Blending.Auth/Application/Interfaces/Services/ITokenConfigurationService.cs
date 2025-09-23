@@ -6,6 +6,7 @@ namespace Function.Blending.Auth.Application.Interfaces.Services
         string TenantId { get; }
         string ExpectedClientId { get; }
         List<string> AllowedClientIds { get; }
+        List<string> RequiredScopes { get; }
         string Authority { get; }
     }
 }

@@ -11,10 +11,12 @@ namespace Function.Blending.Auth.Infrastructure.Services
     public class TokenClaimValidator : ITokenClaimValidator
     {
         private readonly ILogger<TokenClaimValidator> _logger;
+        private readonly ITokenConfigurationService _config;
 
-        public TokenClaimValidator(ILogger<TokenClaimValidator> logger)
+        public TokenClaimValidator(ILogger<TokenClaimValidator> logger, ITokenConfigurationService config)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
         public bool IsValidTokenType(JwtSecurityToken jwt)
@@ -53,20 +55,6 @@ namespace Function.Blending.Auth.Infrastructure.Services
             return true;
         }
 
-        public bool HasValidAudience(JwtSecurityToken jwt, string expectedClientId)
-        {
-            var audienceClaim = jwt.Claims.FirstOrDefault(c => c.Type == JwtClaimTypes.Audience)?.Value;
-            var expectedApiAudience = $"api://{expectedClientId}";
-            
-            if (audienceClaim != expectedApiAudience)
-            {
-                _logger.LogWarning("Audiencia del token inválida. Esperada: {ExpectedAudience}, Recibida: {Audience}", 
-                    expectedApiAudience, audienceClaim);
-                return false;
-            }
-            return true;
-        }
-
         public bool HasValidAudience(JwtSecurityToken jwt, List<string> allowedClientIds)
         {
             var audienceClaim = jwt.Claims.FirstOrDefault(c => c.Type == JwtClaimTypes.Audience)?.Value;
@@ -81,14 +69,27 @@ namespace Function.Blending.Auth.Infrastructure.Services
             foreach (var clientId in allowedClientIds)
             {
                 var expectedApiAudience = $"api://{clientId}";
-                if (audienceClaim == expectedApiAudience)
+                
+                // Validación configurable: permitir formato específico según configuración
+                var audienceFormat = Environment.GetEnvironmentVariable("AzureAD_ExpectedAudienceFormat") ?? "Both";
+                
+                bool isValidAudience = audienceFormat.ToLower() switch
+                {
+                    "apionly" => audienceClaim == expectedApiAudience,
+                    "clientidonly" => audienceClaim == clientId,
+                    "both" => audienceClaim == expectedApiAudience || audienceClaim == clientId,
+                    _ => audienceClaim == expectedApiAudience || audienceClaim == clientId
+                };
+                
+                if (isValidAudience)
                 {
                     return true;
                 }
             }
 
+            var allowedFormats = allowedClientIds.SelectMany(id => new[] { $"api://{id}", id }).ToList();
             _logger.LogWarning("Audiencia del token inválida. Recibida: {Audience}, Permitidas: {AllowedAudiences}", 
-                audienceClaim, string.Join(", ", allowedClientIds.Select(id => $"api://{id}")));
+                audienceClaim, string.Join(", ", allowedFormats));
             return false;
         }
 
@@ -114,10 +115,15 @@ namespace Function.Blending.Auth.Infrastructure.Services
                 .SelectMany(c => c.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
                 .ToList();
             
-            if (!scopes.Contains("access_as_user"))
+            // Usar scopes configurables desde la configuración
+            var hasValidScope = _config.RequiredScopes.Any(requiredScope => 
+                scopes.Contains(requiredScope) || 
+                scopes.Any(s => s.EndsWith(requiredScope)));
+            
+            if (!hasValidScope)
             {
-                _logger.LogWarning("El token no contiene el scope requerido 'access_as_user'. Scopes: {Scopes}", 
-                    string.Join(", ", scopes));
+                _logger.LogWarning("El token no contiene ninguno de los scopes requeridos. Esperados: {RequiredScopes}, Recibidos: {Scopes}", 
+                    string.Join(", ", _config.RequiredScopes), string.Join(", ", scopes));
                 return false;
             }
             return true;
