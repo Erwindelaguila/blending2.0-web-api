@@ -24,15 +24,13 @@ var host = new HostBuilder()
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
         });
 
-        // Registro de servicios de infraestructura!!!
+        // Registro de servicios de infraestructura
         services.AddSingleton<ITokenConfigurationService, TokenConfigurationService>();
         services.AddScoped<ITokenClaimExtractor, TokenClaimExtractor>();
-        services.AddScoped<ITokenClaimValidator, TokenClaimValidator>();
-        services.AddScoped<ITokenSignatureValidator, TokenSignatureValidator>();
-        services.AddScoped<ITokenService, SimpleTokenService>();
-        services.AddScoped<IAzureAppConfigService, AzureAppConfigService>();
         services.AddScoped<IAuthorizationHeaderExtractor, AuthorizationHeaderExtractor>();
         services.AddScoped<IHttpResponseService, HttpResponseService>();
+        services.AddScoped<ITokenService, BasicTokenService>();
+        services.AddScoped<IAzureAppConfigService, AzureAppConfigService>();
         
         // Registro de servicios de aplicación para Clean Architecture
         services.AddScoped<IRoleService, RoleService>();

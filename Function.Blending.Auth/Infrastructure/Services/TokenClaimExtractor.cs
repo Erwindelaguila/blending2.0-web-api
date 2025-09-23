@@ -90,5 +90,19 @@ namespace Function.Blending.Auth.Infrastructure.Services
 
             return userName;
         }
+
+        public List<string>? GetUserScopes(string jwtToken)
+        {
+            var jwt = ReadJwt(jwtToken);
+            if (jwt == null) return null;
+
+            // Buscar scopes en el claim 'scp'
+            var scopeClaim = jwt.Claims.FirstOrDefault(c => c.Type == JwtClaimTypes.Scope)?.Value;
+            if (string.IsNullOrEmpty(scopeClaim))
+                return new List<string>();
+
+            // Los scopes vienen separados por espacios
+            return scopeClaim.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+        }
     }
 }
