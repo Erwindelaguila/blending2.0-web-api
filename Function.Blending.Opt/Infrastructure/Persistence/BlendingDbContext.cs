@@ -685,6 +685,8 @@ public partial class BlendingDbContext : DbContext
 
         modelBuilder.Entity<SysLog>(entity =>
         {
+            entity.HasIndex(e => e.DateTime, "IX_SysLog_DateTime");
+
             entity.HasIndex(e => e.FunctionInvocationId, "IX_SysLog_FunctionInvocationId");
 
             entity.HasIndex(e => e.Level, "IX_SysLog_Level");

@@ -17,6 +17,8 @@ public partial class SysLog
 
     public Guid? UserId { get; set; }
 
+    public DateTime DateTime { get; set; }
+
     public string? Message { get; set; }
 
     public string? StackTrace { get; set; }
