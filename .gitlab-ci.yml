@@ -6,11 +6,7 @@ stages:
 variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
   DOTNET_NOLOGO: "true"
-  # Nombres de Function Apps (por defecto producción). Puedes sobreescribirlos en CI/CD Variables.
-  FUNCTION_APP_AUTH_NAME: "func-blending2-auth-prod"
-  FUNCTION_APP_CORE_NAME: "func-blending2-core-prod"
-  FUNCTION_APP_OPT_NAME: "func-blending2-opt-prod"
-  FUNCTION_APP_DATA_NAME: "func-blending2-data-prod"
+  # Los nombres de Function Apps se toman desde CI/CD Variables
 
 cache:
   key: "nuget-${CI_COMMIT_REF_SLUG}"
