@@ -62,6 +62,9 @@ cache:
     - set -euo pipefail
     - if ! command -v az &> /dev/null; then echo "Instalando Azure CLI..."; brew update && brew install azure-cli || true; fi
     - az version
+    - echo "Debug - Variables:"
+    - echo "AZURE_RESOURCE_GROUP=${AZURE_RESOURCE_GROUP:-'NOT_SET'}"
+    - echo "FUNCTION_APP_NAME=${FUNCTION_APP_NAME:-'NOT_SET'}"
     - az login --service-principal -u "$AZURE_CLIENT_ID" -p "$AZURE_CLIENT_SECRET" --tenant "$AZURE_TENANT_ID"
     - az account set --subscription "$AZURE_SUBSCRIPTION_ID"
   script:
@@ -95,7 +98,7 @@ build-auth:
     SERVICE_SLUG: "auth"
     PROJECT_PATH: "Function.Blending.Auth/Function.Blending.Auth.csproj"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
       changes:
         - Function.Blending.Auth/**/*
 
@@ -105,7 +108,7 @@ build-core:
     SERVICE_SLUG: "core"
     PROJECT_PATH: "Function.Blending.Core/Function.Blending.Core.csproj"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
       changes:
         - Function.Blending.Core/**/*
 
@@ -115,7 +118,7 @@ build-opt:
     SERVICE_SLUG: "opt"
     PROJECT_PATH: "Function.Blending.Opt/Function.Blending.Opt.csproj"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
       changes:
         - Function.Blending.Opt/**/*
 
@@ -125,7 +128,7 @@ build-data:
     SERVICE_SLUG: "data"
     PROJECT_PATH: "Function.Blending.Upload/Function.Blending.Upload.csproj"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
       changes:
         - Function.Blending.Upload/**/*
 
@@ -135,7 +138,7 @@ build-data:
 test-solution:
   <<: *test_template
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
       changes:
         - Function.Blending.Auth/**/*
         - Function.Blending.Core/**/*
@@ -153,7 +156,7 @@ deploy-auth:
   resource_group: "deploy-${SERVICE_SLUG}"
   needs: ["build-auth"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
       changes:
         - Function.Blending.Auth/**/*
 
@@ -165,7 +168,7 @@ deploy-core:
   resource_group: "deploy-${SERVICE_SLUG}"
   needs: ["build-core"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
       changes:
         - Function.Blending.Core/**/*
 
@@ -177,7 +180,7 @@ deploy-opt:
   resource_group: "deploy-${SERVICE_SLUG}"
   needs: ["build-opt"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
       changes:
         - Function.Blending.Opt/**/*
 
@@ -189,7 +192,7 @@ deploy-data:
   resource_group: "deploy-${SERVICE_SLUG}"
   needs: ["build-data"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
       changes:
         - Function.Blending.Upload/**/*
  
