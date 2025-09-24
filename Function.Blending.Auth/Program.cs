@@ -38,7 +38,7 @@ var host = new HostBuilder()
         services.AddScoped<IHttpResponseService, HttpResponseService>();
         services.AddScoped<ITokenService, BasicTokenService>();
         services.AddScoped<IAzureAppConfigService, AzureAppConfigService>();
-        
+
         // Registro de servicios de aplicación
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IMenuService, MenuService>();
@@ -49,6 +49,8 @@ var host = new HostBuilder()
         // Agregar configuración de aplicación
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
+        
+        //Deploy v1.0.0
     })
     .Build();
 
