@@ -6,7 +6,6 @@ stages:
 variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
   DOTNET_NOLOGO: "true"
-  # Los nombres de Function Apps se toman desde CI/CD Variables
 
 cache:
   key: "nuget-${CI_COMMIT_REF_SLUG}"
@@ -17,6 +16,7 @@ cache:
 # ==============================
 # Plantillas (DRY)
 # ==============================
+
 .build_template: &build_template
   stage: build
   tags: [mac-runner-local]
@@ -95,7 +95,7 @@ build-auth:
     SERVICE_SLUG: "auth"
     PROJECT_PATH: "Function.Blending.Auth/Function.Blending.Auth.csproj"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - Function.Blending.Auth/**/*
 
@@ -105,7 +105,7 @@ build-core:
     SERVICE_SLUG: "core"
     PROJECT_PATH: "Function.Blending.Core/Function.Blending.Core.csproj"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - Function.Blending.Core/**/*
 
@@ -115,7 +115,7 @@ build-opt:
     SERVICE_SLUG: "opt"
     PROJECT_PATH: "Function.Blending.Opt/Function.Blending.Opt.csproj"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - Function.Blending.Opt/**/*
 
@@ -125,7 +125,7 @@ build-data:
     SERVICE_SLUG: "data"
     PROJECT_PATH: "Function.Blending.Upload/Function.Blending.Upload.csproj"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - Function.Blending.Upload/**/*
 
@@ -135,7 +135,7 @@ build-data:
 test-solution:
   <<: *test_template
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - Function.Blending.Auth/**/*
         - Function.Blending.Core/**/*
@@ -153,7 +153,7 @@ deploy-auth:
   resource_group: "deploy-${SERVICE_SLUG}"
   needs: ["build-auth"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - Function.Blending.Auth/**/*
 
@@ -165,7 +165,7 @@ deploy-core:
   resource_group: "deploy-${SERVICE_SLUG}"
   needs: ["build-core"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - Function.Blending.Core/**/*
 
@@ -177,7 +177,7 @@ deploy-opt:
   resource_group: "deploy-${SERVICE_SLUG}"
   needs: ["build-opt"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - Function.Blending.Opt/**/*
 
@@ -189,7 +189,7 @@ deploy-data:
   resource_group: "deploy-${SERVICE_SLUG}"
   needs: ["build-data"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - Function.Blending.Upload/**/*
  

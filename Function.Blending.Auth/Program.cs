@@ -50,7 +50,7 @@ var host = new HostBuilder()
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
         
-        //Deploy v3.0.0
+        //Deploy v4.0.0
     })
     .Build();
 
