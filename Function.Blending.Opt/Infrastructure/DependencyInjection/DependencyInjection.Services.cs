@@ -10,5 +10,6 @@ public static partial class DependencyInjection
   private static void RegisterDomainServices(IServiceCollection services)
   {
     services.AddScoped<ICalOutResumenService, CalOutResumenService>();
+    services.AddScoped<ICalInpParameterService, CalInpParameterService> ();
   }
 }

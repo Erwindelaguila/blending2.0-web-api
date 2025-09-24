@@ -31,6 +31,7 @@
     "Auth_Allow_Quality_ReadHistory": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
     "Auth_Allow_Quality_WriteStart": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
     "Auth_Allow_Quality_ChangeAccepted": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
+    "Auth_Allow_Quality_ReadParameters": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
 
     "Auth_Allow_Logistics_ReadById": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
     "Auth_Allow_Logistics_ReadHistory": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
