@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Function.Blending.Auth.Application.Interfaces.Services;
+using Function.Blending.Auth.Application.Constants;
 
 namespace Function.Blending.Auth.Infrastructure.Services
 {
@@ -21,14 +22,14 @@ namespace Function.Blending.Auth.Infrastructure.Services
         {
             if (!request.Headers.TryGetValues(AuthorizationHeader, out var authHeaders))
             {
-                _logger.LogWarning("Header Authorization no encontrado");
+                _logger.LogWarning(ErrorMessages.AuthorizationHeaderNotFound);
                 return null;
             }
 
             var authHeader = authHeaders.FirstOrDefault();
             if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith(BearerPrefix))
             {
-                _logger.LogWarning("Formato de Authorization header inválido");
+                _logger.LogWarning(ErrorMessages.InvalidAuthorizationHeaderFormat);
                 return null;
             }
 

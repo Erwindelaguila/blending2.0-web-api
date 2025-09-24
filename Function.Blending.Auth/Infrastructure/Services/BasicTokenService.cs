@@ -29,9 +29,9 @@ namespace Function.Blending.Auth.Infrastructure.Services
                     return Task.FromResult(false);
                 }
 
-                _logger.LogDebug("Iniciando validación básica del token JWT (solo deserialización)");
+                _logger.LogDebug("Iniciando validación básica del token JWT (deserialización + expiración)");
 
-                // Solo validación básica: el token se puede deserializar
+                // Validación básica: el token se puede deserializar
                 var jwt = _claimExtractor.ReadJwt(jwtToken);
                 if (jwt == null)
                 {
@@ -39,7 +39,23 @@ namespace Function.Blending.Auth.Infrastructure.Services
                     return Task.FromResult(false);
                 }
 
-                _logger.LogDebug("Token JWT deserializado exitosamente");
+                // Validar expiración del token
+                if (jwt.ValidTo < DateTime.UtcNow)
+                {
+                    _logger.LogWarning("El token JWT ha expirado. ValidTo: {ValidTo}, Now: {Now}", 
+                        jwt.ValidTo, DateTime.UtcNow);
+                    return Task.FromResult(false);
+                }
+
+                // Validar not-before si está presente
+                if (jwt.ValidFrom > DateTime.UtcNow)
+                {
+                    _logger.LogWarning("El token JWT aún no es válido. ValidFrom: {ValidFrom}, Now: {Now}", 
+                        jwt.ValidFrom, DateTime.UtcNow);
+                    return Task.FromResult(false);
+                }
+
+                _logger.LogDebug("Token JWT validado exitosamente (deserializado + vigente)");
                 return Task.FromResult(true);
             }
             catch (Exception ex)

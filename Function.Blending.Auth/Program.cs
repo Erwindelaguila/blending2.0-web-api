@@ -6,19 +6,26 @@ using MediatR;
 using System.Reflection;
 using Function.Blending.Auth.Application.Interfaces.Services;
 using Function.Blending.Auth.Infrastructure.Services;
+using Function.Blending.Auth.Infrastructure.Middleware;
 
 var host = new HostBuilder()
-    .ConfigureFunctionsWebApplication()
+    .ConfigureFunctionsWebApplication(builder =>
+    {
+        // Middleware de autenticación JWT
+        builder.UseMiddleware<JwtAuthenticationMiddleware>();
+        // Middleware de manejo de errores global
+        builder.UseMiddleware<GlobalErrorHandlingMiddleware>();
+    })
     .ConfigureServices(services =>
     {
-        // Configuración de logging!!!
+        // Configuración de logging
         services.AddLogging(builder =>
         {
             builder.AddConsole();
             builder.SetMinimumLevel(LogLevel.Information);
         });
 
-        // Registro de MediatR!!
+
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
@@ -32,11 +39,11 @@ var host = new HostBuilder()
         services.AddScoped<ITokenService, BasicTokenService>();
         services.AddScoped<IAzureAppConfigService, AzureAppConfigService>();
         
-        // Registro de servicios de aplicación para Clean Architecture
+        // Registro de servicios de aplicación
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IMenuService, MenuService>();
 
-        // Configuración de HttpClient para llamadas externas si es necesario
+
         services.AddHttpClient();
 
         // Agregar configuración de aplicación
