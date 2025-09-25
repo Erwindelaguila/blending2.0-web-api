@@ -18,6 +18,8 @@ public static class FunctionRoutes
     public const string History = $"{ApiBase}quality/executions/history";
     public const string ChangeAccepted = $"{ApiBase}quality/executions/{{id:guid}}/accept/change";
     public const string GetParameters = $"{ApiBase}quality/executions/{{id:guid}}/parameters";
+    public const string GetInputById = $"{ApiBase}quality/executions/{{id:guid}}/input";
+    public const string GetOutputById = $"{ApiBase}quality/executions/{{id:guid}}/output";
   }
 
   public static class Logistics

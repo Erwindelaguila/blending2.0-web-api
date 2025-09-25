@@ -32,6 +32,8 @@
     "Auth_Allow_Quality_WriteStart": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
     "Auth_Allow_Quality_ChangeAccepted": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
     "Auth_Allow_Quality_ReadParameters": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
+    "Auth_Allow_Quality_ReadInputById": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
+    "Auth_Allow_Quality_ReadOutputById": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
 
     "Auth_Allow_Logistics_ReadById": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
     "Auth_Allow_Logistics_ReadHistory": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
@@ -129,7 +131,7 @@
     // ===== Logging DB =====
     "Logging_Db_Enabled": "true",
     "Logging_Db_MinLevel": "error", // reservado (no usado ahora)
-    "Logging_Db_SaveInfo": "false", // <= por defecto apagado (tu pedido)
+    "Logging_Db_SaveInfo": "false", // <= por defecto apagado
     "Logging_Db_Problem4xxAs": "warning" // nivel para ProblemDetails 4xx
   }
 }

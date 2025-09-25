@@ -1,5 +1,5 @@
-using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Response.Output;
-using System;
+using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Responses.Input;
+using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Responses.Output;
 using System.Text.Json.Serialization;
 
 namespace Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Responses;
@@ -14,6 +14,12 @@ public sealed class CalEjecucionResponse
 
   public EstadoResponse? Estado { get; init; }
 
+  public CalInpFiltroDto? Filtro { get; init; }
+
+  public IReadOnlyList<CalInpParametroDto>? Parametros { get; init; }
+
   [JsonPropertyName("grupos")]
   public IReadOnlyList<CalOutResumenDto>? Resumenes { get; init; }
+
+  public IReadOnlyList<CalOutDetalleDto>? Detalles { get; init; }
 }

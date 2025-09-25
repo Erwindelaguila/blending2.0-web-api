@@ -3,8 +3,7 @@
 namespace Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Requests.Input;
 
 // Record con *primary constructor* y nombres 1:1 con tu DDL
-public sealed record CalInpFiltroDto(
-  string CentroUbicacion,
+public sealed record CalInpFiltroDto(string CentroUbicacion,
   string CentroProduccion,
   string UbicacionAlmacen,
   bool MezclarTipoProduccion,
@@ -16,5 +15,6 @@ public sealed record CalInpFiltroDto(
   DateTimeOffset? FechaCorte, // DDL: datetime2
   int? NumeroRuma,
   int? DivisionRuma,
-  decimal ValorCadmioAlto      // DDL: decimal(10,4)
+  decimal ValorCadmioAlto      
+  // DDL: decimal(10,4)
 );
