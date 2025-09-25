@@ -16,7 +16,6 @@ public sealed class CalidadOutputVoToEfProfile : Profile
     CreateMap<VO.CalOutResumen, Ef.CalOutResumen>()
       .ForMember(d => d.Id, o => o.MapFrom(_ => Guid.NewGuid()))
       .ForMember(d => d.EjecucionId, o => o.MapFrom((_, __, ___, ctx) => ctx.GetExecutionId()))
-      //.ForMember(d => d.NuevaFechaFabricacion, o => o.MapFrom(s => s.NuevaFechaFabricacion))
       .ForMember(d => d.Aceptado, o => o.MapFrom(s => s.Aceptado ?? false))
       .ForMember(d => d.CreadoPorId, o => o.MapFrom((_, __, ___, ctx) => ctx.GetUserId()))
       .ForMember(d => d.CreadoEl, o => o.MapFrom(_ => DateTime.UtcNow))
@@ -59,11 +58,5 @@ public sealed class CalidadOutputVoToEfProfile : Profile
       .ForMember(d => d.Id, o => o.MapFrom(_ => Guid.NewGuid()))
       .ForMember(d => d.DetalleId, o => o.MapFrom((_, __, ___, ctx) => ctx.GetParentId()))
       .ForMember(d => d.Detalle, o => o.Ignore());
-
-
-    // =======================
-    // VO → EF (Resumen Response)
-    // =======================
-    CreateMap<Ef.CalOutResumen, VO.CalOutResumen>();
   }
 }

@@ -9,7 +9,7 @@ namespace Function.Blending.Opt.Application.Features.CalEjecucion.Queries.GetPar
 
 public sealed class GetCalEjecucionParametersQueryHandler(
     ICalEjecucionRepository repo,
-    ICalInpParameterService parameterService,
+    ICalEjecucionInputService parameterService,
     IMapper mapper
   ) : IRequestHandler<GetCalEjecucionParametersQuery, Result<IReadOnlyList<CalInpParametroDto>>>
 {
@@ -19,7 +19,7 @@ public sealed class GetCalEjecucionParametersQueryHandler(
     if (entity is null)
       return Result<IReadOnlyList<CalInpParametroDto>>.Fail($"Execution '{request.Id}' not found.");
 
-    var rmList = await parameterService.GetParametersByExecutionIdAsync(entity.Id, ct);
+    var rmList = await parameterService.GetParametersItemRmByExecutionIdAsync(entity.Id, ct);
 
     var parametros = mapper.Map<IReadOnlyList<CalInpParametroDto>>(rmList);
 

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using VO = Function.Blending.Opt.Domain.ValueObjects;
-using DtoRes = Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Response.Output;
+using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Responses.Output;
 
 namespace Function.Blending.Opt.Application.Features.CalEjecucion.Mappings;
 
@@ -11,7 +11,11 @@ public sealed class CalidadOutputVoToResponseProfile : Profile
 {
   public CalidadOutputVoToResponseProfile()
   {
-    // Mapea por nombre. No incluye Parametros (no lo necesitas en GetById).
-    CreateMap<VO.CalOutResumen, DtoRes.CalOutResumenDto>();
+    CreateMap<VO.CalOutResumen, CalOutResumenDto>();
+    CreateMap<VO.CalOutResParametro, CalOutResParametroDto>();
+
+    CreateMap<VO.CalOutDetalle, CalOutDetalleDto>();
+    CreateMap<VO.CalOutDetParametro, CalOutDetParametroDto>();
+    CreateMap<VO.CalOutDetOtros, CalOutDetOtrosDto>();
   }
 }

@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Function.Blending.Opt.Domain.Abstractions.Models.Catalogs;
+﻿using Function.Blending.Opt.Domain.Abstractions.Models.Catalogs;
 using Function.Blending.Opt.Domain.Abstractions.Services;
 using Function.Blending.Opt.Infrastructure.Persistence;
 using Function.Blending.Opt.Infrastructure.Persistence.Models;
+using Function.Blending.Opt.Infrastructure.Persistence.Support;
 using Microsoft.EntityFrameworkCore;
 
 namespace Function.Blending.Opt.Infrastructure.Services.Catalog;
 
 /// <summary>Implementación EF del lector Aux*.</summary>
-public sealed class AuxCatalogReader(BlendingDbContext db) : IAuxCatalogReader
+public sealed class AuxCatalogReader(IDbContextFactory<BlendingDbContext> dbFactory) : PooledQueryRepository<BlendingDbContext>(dbFactory), IAuxCatalogReader
 {
-  public async Task<AuxRowSnapshot?> GetRowHeaderAsync(Guid rowId, CancellationToken ct)
+  public Task<AuxRowSnapshot?> GetRowHeaderAsync(Guid rowId, CancellationToken ct) => WithDbAsync(async db =>
   {
     var row = await db.Set<AuxRow>()
                       .AsNoTracking()
@@ -31,9 +27,9 @@ public sealed class AuxCatalogReader(BlendingDbContext db) : IAuxCatalogReader
       TableId = row.TableId,
       Nombre = row.Nombre
     };
-  }
+  }, ct);
 
-  public async Task<Dictionary<Guid, string>> GetRowNamesAsync(IEnumerable<Guid> rowIds, CancellationToken ct)
+  public Task<Dictionary<Guid, string>> GetRowNamesAsync(IEnumerable<Guid> rowIds, CancellationToken ct) => WithDbAsync(async db =>
   {
     var ids = rowIds.Distinct().ToArray();
     if (ids.Length == 0) return new();
@@ -43,9 +39,9 @@ public sealed class AuxCatalogReader(BlendingDbContext db) : IAuxCatalogReader
                    .Where(r => ids.Contains(r.Id))
                    .Select(r => new { r.Id, r.Nombre })
                    .ToDictionaryAsync(x => x.Id, x => x.Nombre, ct);
-  }
+  }, ct);
 
-  public async Task<string?> GetRowPropValueAsync(Guid rowId, string propClave, CancellationToken ct)
+  public Task<string?> GetRowPropValueAsync(Guid rowId, string propClave, CancellationToken ct) => WithDbAsync(async db =>
   {
     var valor = await (
       from v in db.Set<AuxValue>().AsNoTracking()
@@ -55,9 +51,9 @@ public sealed class AuxCatalogReader(BlendingDbContext db) : IAuxCatalogReader
     ).FirstOrDefaultAsync(ct);
 
     return valor;
-  }
+  }, ct);
 
-  public async Task<Dictionary<Guid, string>> GetRowPropValuesAsync(IEnumerable<Guid> rowIds, string propClave, CancellationToken ct)
+  public Task<Dictionary<Guid, string>> GetRowPropValuesAsync(IEnumerable<Guid> rowIds, string propClave, CancellationToken ct) => WithDbAsync(async db =>
   {
     var ids = rowIds.Distinct().ToArray();
     if (ids.Length == 0) return new();
@@ -69,5 +65,5 @@ public sealed class AuxCatalogReader(BlendingDbContext db) : IAuxCatalogReader
       select new { v.RowId, v.Valor };
 
     return await query.ToDictionaryAsync(x => x.RowId, x => x.Valor, ct);
-  }
+  }, ct);
 }
