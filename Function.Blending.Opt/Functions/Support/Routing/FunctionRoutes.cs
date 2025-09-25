@@ -17,6 +17,7 @@ public static class FunctionRoutes
     public const string GetById = $"{ApiBase}quality/executions/{{id:guid}}";
     public const string History = $"{ApiBase}quality/executions/history";
     public const string ChangeAccepted = $"{ApiBase}quality/executions/{{id:guid}}/accept/change";
+    public const string GetParameters = $"{ApiBase}quality/executions/{{id:guid}}/parameters";
   }
 
   public static class Logistics

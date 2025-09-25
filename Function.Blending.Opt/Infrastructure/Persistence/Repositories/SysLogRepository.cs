@@ -21,6 +21,7 @@ public sealed class SysLogRepository(BlendingDbContext db) : ISysLogRepository
       MethodName = entry.MethodName,
       Username = entry.Username,
       UserId = entry.UserId,
+      DateTime = DateTime.UtcNow,
       Message = entry.Message,
       StackTrace = entry.StackTrace,
       ExtraInfo = entry.ExtraInfo,
