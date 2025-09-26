@@ -51,6 +51,8 @@ var host = new HostBuilder()
             cfg.AddProfile<TipoProduccionProfile>();
             cfg.AddProfile<CalidadParametroProfile>();
             cfg.AddProfile<AppParamProfile>();
+            cfg.AddProfile<AuxTablePorfile>();
+            cfg.AddProfile<AuxRowPorfile>();
             // Removed GraphProfile reference to prevent build error
         });
         services.AddScoped<IProductoRepository, ProductoRepository>();
@@ -62,6 +64,8 @@ var host = new HostBuilder()
         services.AddScoped<ITipoProduccionRepository, TipoProduccionRepository>();
         services.AddScoped<ICalidadParametroRepository, CalidadParametroRepository>();
         services.AddScoped<IAppParamRepository, AppParamRepository>();
+        services.AddScoped<IAuxTableRepository, AuxTableRepository>();
+        services.AddScoped<IAuxRowRepository, AuxRowRepository>();
         
         // === Servicios de Autenticación JWT ===
         // Servicios para decodificar y validar tokens JWT directamente

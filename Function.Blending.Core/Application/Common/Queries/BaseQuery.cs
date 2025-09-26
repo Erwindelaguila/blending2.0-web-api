@@ -6,7 +6,7 @@ public abstract class BaseQuery<TResponse> : IRequest<TResponse>
 {
 
     public object RequestContext { get; }
-
+    protected BaseQuery() { }
     protected BaseQuery(object requestContext)
     {
         RequestContext = requestContext ?? throw new ArgumentNullException(nameof(requestContext));

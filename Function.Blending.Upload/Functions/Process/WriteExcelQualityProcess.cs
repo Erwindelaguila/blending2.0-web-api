@@ -64,6 +64,8 @@ public class WriteExcelQualityProcess
             config.Detalle.ParametrosCalidad, startRowDetalle);
         var blobResult = await _blobStorageService.UploadExcelAndGetLinkAsync(workbook, "quality-report");
         blobResult.DataExcel = null;
+        
+        
         _logger.LogInformation($"Reporte de Excel de calidad guardado con exito con el nombre:{blobResult.FileName}");
         return blobResult;
     }
