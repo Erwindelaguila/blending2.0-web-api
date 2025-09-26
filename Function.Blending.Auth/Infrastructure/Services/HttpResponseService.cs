@@ -40,6 +40,23 @@ namespace Function.Blending.Auth.Infrastructure.Services
             return response;
         }
 
+        public async Task<HttpResponseData> ToHttpResponseAsync<T>(HttpRequestData request, Application.Common.Results.Result<T> result)
+        {
+            if (result.IsSuccess)
+            {
+                return await CreateSuccessResponseAsync(request, result.Data);
+            }
+            else
+            {
+                return await CreateErrorResponseAsync(request, result.ErrorMessage ?? "Error desconocido", result.StatusCode);
+            }
+        }
+
+        public async Task<HttpResponseData> InternalServerError(HttpRequestData request, string message)
+        {
+            return await CreateErrorResponseAsync(request, message, HttpStatusCode.InternalServerError);
+        }
+
         private static void SetJsonContentType(HttpResponseData response)
         {
             if (!response.Headers.Contains("Content-Type"))

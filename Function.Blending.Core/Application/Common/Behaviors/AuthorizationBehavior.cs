@@ -97,7 +97,8 @@ public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
             entityName.StartsWith("calidadparametro") ||
             entityName.StartsWith("planta") ||
             entityName.StartsWith("tipoproduccion") ||
-            entityName.StartsWith("calidad"))
+            entityName.StartsWith("calidad") ||
+            entityName.StartsWith("appparam"))
         {
             return string.Empty; // Sin scope requerido = sin validación
         }

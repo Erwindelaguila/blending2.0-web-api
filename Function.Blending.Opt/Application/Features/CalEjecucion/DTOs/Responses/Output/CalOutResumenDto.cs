@@ -1,9 +1,11 @@
-﻿namespace Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Response.Output;
+﻿namespace Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Responses.Output;
 
 public sealed class CalOutResumenDto
 {
   public Guid Id { get; init; }
+
   public Guid EjecucionId { get; init; }
+
   public string? Grupo { get; init; }
 
   public decimal? Toneladas { get; init; }
@@ -21,4 +23,6 @@ public sealed class CalOutResumenDto
   public decimal? ValorAgregado { get; init; }
 
   public bool? Aceptado { get; init; } = false;
+
+  public IReadOnlyList<CalOutResParametroDto>? Parametros { get; init; }
 }

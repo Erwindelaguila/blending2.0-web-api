@@ -6,9 +6,9 @@ using Function.Blending.Opt.Infrastructure.Persistence.Mappings;
 
 namespace Function.Blending.Opt.Infrastructure.Persistence.Mappings
 {
-  public sealed class CalidadInputProfile : Profile
+  public sealed class CalidadInputVoToEfProfile : Profile
   {
-    public CalidadInputProfile()
+    public CalidadInputVoToEfProfile()
     {
       CreateMap<DomainVO.CalInpFiltro, Ef.CalInpFiltro>()
         .ForMember(d => d.Id, o => o.MapFrom(_ => Guid.NewGuid()))

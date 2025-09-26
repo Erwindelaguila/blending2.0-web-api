@@ -16,4 +16,8 @@ public interface IAuxCatalogReader
 
   /// <summary>Devuelve valores (string) por RowId para una propiedad (por clave) para múltiples filas.</summary>
   Task<Dictionary<Guid, string>> GetRowPropValuesAsync(IEnumerable<Guid> rowIds, string propClave, CancellationToken ct);
+
+  Task<AuxRowWithPropsSnapshot?> GetRowWithPropsAsync(Guid rowId, IEnumerable<string> propClaves, CancellationToken ct);
+
+  Task<IReadOnlyList<AuxRowWithPropsSnapshot>> GetRowsWithPropsAsync(IEnumerable<Guid> rowIds, IEnumerable<string> propClaves, CancellationToken ct);
 }

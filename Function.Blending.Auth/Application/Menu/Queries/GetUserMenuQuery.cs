@@ -1,10 +1,21 @@
+using System;
 using Function.Blending.Auth.Application.Menu.DTOs;
+using Function.Blending.Auth.Infrastructure.Middleware;
+using Function.Blending.Auth.Application.Common;
 using MediatR;
+using Microsoft.Azure.Functions.Worker.Http;
 
 namespace Function.Blending.Auth.Application.Menu.Queries
 {
-    public class GetUserMenuQuery(string jwtToken) : IRequest<MenuResponse>
+    public class GetUserMenuQuery : IRequest<HttpResponseData>
     {
-        public string JwtToken { get; } = jwtToken ?? throw new ArgumentNullException(nameof(jwtToken));
+        public UserClaims UserClaims { get; }
+        public HttpRequestData HttpRequest { get; }
+
+        public GetUserMenuQuery(UserClaims userClaims, HttpRequestData httpRequest)
+        {
+            UserClaims = userClaims ?? throw new ArgumentNullException(nameof(userClaims));
+            HttpRequest = httpRequest ?? throw new ArgumentNullException(nameof(httpRequest));
+        }
     }
 }

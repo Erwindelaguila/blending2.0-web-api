@@ -13,6 +13,8 @@ public static partial class ConfigurationKeys
         public const string WriteStart = "Auth_Allow_Quality_WriteStart";
         public const string ChangeAccepted = "Auth_Allow_Quality_ChangeAccepted";
         public const string ReadParameters = "Auth_Allow_Quality_ReadParameters";
+        public const string ReadInputById = "Auth_Allow_Quality_ReadInputById";
+        public const string ReadOutputById = "Auth_Allow_Quality_ReadOutputById";
       }
       public static class Logistics
       {

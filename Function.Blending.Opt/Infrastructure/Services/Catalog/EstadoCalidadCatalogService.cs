@@ -43,12 +43,35 @@ public sealed class EstadoCalidadCatalogService(IAuxCatalogReader aux, IOptions<
 
     foreach (var kv in names)
     {
-      var head = await aux.GetRowHeaderAsync(kv.Key, ct);
+      var head = await aux.GetRowWithPropsAsync(kv.Key, [_opts.ColorPropClave], ct);
       if (head is null) continue;
       if (head.TableId != _opts.EstadoTableId.Value) continue;
 
-      dict[kv.Key] = new EstadoCalidadSnapshot(kv.Key) { Nombre = kv.Value };
+      var color = head.Props.ContainsKey(_opts.ColorPropClave) ? head.Props[_opts.ColorPropClave] : null;
+      dict[kv.Key] = new EstadoCalidadSnapshot(kv.Key) { Nombre = kv.Value, Color = color };
     }
     return dict;
   }
+  //public async Task<IDictionary<Guid, EstadoCalidadSnapshot>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct)
+  //{
+  //  var names = await aux.GetRowNamesAsync(ids, ct);
+  //  var dict = new Dictionary<Guid, EstadoCalidadSnapshot>(names.Count);
+
+  //  if (!_opts.EstadoTableId.HasValue)
+  //  {
+  //    foreach (var kv in names)
+  //      dict[kv.Key] = new EstadoCalidadSnapshot(kv.Key) { Nombre = kv.Value };
+  //    return dict;
+  //  }
+
+  //  foreach (var kv in names)
+  //  {
+  //    var head = await aux.GetRowHeaderAsync(kv.Key, ct);
+  //    if (head is null) continue;
+  //    if (head.TableId != _opts.EstadoTableId.Value) continue;
+
+  //    dict[kv.Key] = new EstadoCalidadSnapshot(kv.Key) { Nombre = kv.Value };
+  //  }
+  //  return dict;
+  //}
 }

@@ -58,6 +58,7 @@ public class GetAllPlantasQueryHandler : IRequestHandler<GetAllPlantasQuery, Pla
                     Id = planta.Id,
                     Codigo = planta.Codigo,
                     Nombre = planta.Nombre,
+                    NumeroRuma = planta.NumeroRuma
                 });
                 
                 var listPlantaShort = plantasShort.ToList();
