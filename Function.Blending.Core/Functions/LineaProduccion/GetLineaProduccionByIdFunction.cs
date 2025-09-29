@@ -3,8 +3,8 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.LineaProduccion.DTOs;
 using Function.Blending.Core.Application.LineaProduccion.Queries;
-using Function.Blending.Core.Application.Interfaces.Services;
-using Function.Blending.Core.Infrastructure.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -15,28 +15,19 @@ namespace Function.Blending.Core.Functions.LineaProduccion;
 public class GetLineaProduccionByIdFunction
 {
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
-    public GetLineaProduccionByIdFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
+    public GetLineaProduccionByIdFunction(IMediator mediator)
     {
         _mediator = mediator;
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador,Logistica")]
     [Function(FunctionNames.LineaProduccion.GetById)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Production.LineaProduccionGetById)] HttpRequestData req)
     {
         try
         {
-
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             var idString = query["id"];
             if (string.IsNullOrEmpty(idString) || !Guid.TryParse(idString, out var lineaProduccionId))
@@ -48,7 +39,7 @@ public class GetLineaProduccionByIdFunction
                 ));
             }
 
-            var queryRequest = new GetLineaProduccionByIdQuery(lineaProduccionId, req);
+            var queryRequest = new GetLineaProduccionByIdQuery(lineaProduccionId);
             var result = await _mediator.Send(queryRequest);
 
             if (result == null)
@@ -76,10 +67,6 @@ public class GetLineaProduccionByIdFunction
                 500
             ));
         }
-        finally
-        {
 
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

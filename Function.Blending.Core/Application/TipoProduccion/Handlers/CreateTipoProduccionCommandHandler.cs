@@ -1,7 +1,10 @@
 using Function.Blending.Core.Application.TipoProduccion.Commands;
 using Function.Blending.Core.Application.TipoProduccion.DTOs;
 using Function.Blending.Core.Application.Interfaces.Repositories;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Execution;
+using Function.Blending.Core.Shared.Extensions;
+using Function.Blending.Core.Shared.Constants;
+using System.Security.Claims;
 using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Domain.Entities;
 using MediatR;
@@ -14,28 +17,23 @@ public class CreateTipoProduccionCommandHandler : IRequestHandler<CreateTipoProd
     private readonly ITipoProduccionRepository _tipoProduccionRepository;
     private readonly ILineaProduccionRepository _lineaProduccionRepository;
     private readonly IAgregadoRepository _agregadoRepository;
-    private readonly IAuthorizationService _authorizationService;
+    private readonly IFunctionContextAccessor _functionContextAccessor;
     
     public CreateTipoProduccionCommandHandler(
         ITipoProduccionRepository tipoProduccionRepository,
         ILineaProduccionRepository lineaProduccionRepository,
         IAgregadoRepository agregadoRepository,
-        IAuthorizationService authorizationService)
+        IFunctionContextAccessor functionContextAccessor)
     {
         _tipoProduccionRepository = tipoProduccionRepository ?? throw new ArgumentNullException(nameof(tipoProduccionRepository));
         _lineaProduccionRepository = lineaProduccionRepository ?? throw new ArgumentNullException(nameof(lineaProduccionRepository));
         _agregadoRepository = agregadoRepository ?? throw new ArgumentNullException(nameof(agregadoRepository));
-        _authorizationService = authorizationService ?? throw new ArgumentNullException(nameof(authorizationService));
+        _functionContextAccessor = functionContextAccessor;
     }
 
     public async Task<TipoProduccionDTO> Handle(CreateTipoProduccionCommand request, CancellationToken cancellationToken)
     {
-        // Obtener usuario actual para auditoría
-        var currentUserIdString = _authorizationService.GetCurrentUserId();
-        if (!Guid.TryParse(currentUserIdString, out var currentUserId))
-        {
-            throw new UnauthorizedAccessException("User ID inválido en headers");
-        }
+        var currentUserId = GetCurrentUserId();
 
         // Validar que el código no existe
         if (await _tipoProduccionRepository.ExistsActiveCodigoAsync(request.Codigo))
@@ -111,5 +109,29 @@ public class CreateTipoProduccionCommandHandler : IRequestHandler<CreateTipoProd
         if (agregado.Activo == false)
             throw new BusinessRuleException($"Cannot create/activate TipoProduccion because Agregado '{agregado.Nombre}' is inactive.", 
                 "AGREGADO_INACTIVE");
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        try
+        {
+            var context = _functionContextAccessor.Current;
+            if (context?.Items.TryGetValue(MiscellaneousConstants.Principal, out var principalObj) == true &&
+                principalObj is ClaimsPrincipal principal)
+            {
+                var userIdString = principal.GetUserId();
+                if (!string.IsNullOrEmpty(userIdString) && Guid.TryParse(userIdString, out var userId))
+                {
+                    return userId;
+                }
+            }
+        }
+        catch
+        {
+            // Si hay error obteniendo el usuario, usar fallback
+        }
+        
+        // Fallback: usuario del sistema
+        return Guid.Parse("00000000-0000-0000-0000-000000000001");
     }
 }

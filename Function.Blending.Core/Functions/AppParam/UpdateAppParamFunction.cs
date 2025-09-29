@@ -4,10 +4,11 @@ using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using Function.Blending.Core.Application.AppParam.Commands;
 using Function.Blending.Core.Application.AppParam.DTOs;
-using Function.Blending.Core.Infrastructure.Services;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -17,14 +18,13 @@ namespace Function.Blending.Core.Functions.AppParam;
 public class UpdateAppParamFunction
 {
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
-    public UpdateAppParamFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
+    public UpdateAppParamFunction(IMediator mediator)
     {
         _mediator = mediator;
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador,Calidad")]
     [Function(FunctionNames.AppParam.Update)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Put, Route = ApiRoutes.Core.AppParam.GetById + "/{key}")] HttpRequestData req,
@@ -32,13 +32,6 @@ public class UpdateAppParamFunction
     {
         try
         {
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             var body = await req.ReadAsStringAsync();
             if (string.IsNullOrEmpty(body))
             {
@@ -85,8 +78,7 @@ public class UpdateAppParamFunction
                 isInternal: dto.IsInternal,
                 isVisible: dto.IsVisible,
                 isDisableable: dto.IsDisableable,
-                isRemovable: dto.IsRemovable,
-                requestContext: req
+                isRemovable: dto.IsRemovable
             );
 
             var result = await _mediator.Send(command);
@@ -153,10 +145,6 @@ public class UpdateAppParamFunction
                 500
             ));
         }
-        finally
-        {
 
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

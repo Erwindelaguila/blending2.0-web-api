@@ -1,10 +1,11 @@
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using Function.Blending.Core.Application.Parametro.DTOs;
 using Function.Blending.Core.Application.Parametro.Queries;
-using Function.Blending.Core.Infrastructure.Services;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -17,32 +18,22 @@ public class GetAllParametrosFunction
 {
     private readonly IMediator _mediator;
     private readonly ILogger<GetAllParametrosFunction> _logger;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
     public GetAllParametrosFunction(
         IMediator mediator, 
-        ILogger<GetAllParametrosFunction> logger,
-        IAuthorizationHeaderExtractor headerExtractor)
+        ILogger<GetAllParametrosFunction> logger)
     {
         _mediator = mediator;
         _logger = logger;
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador")]
     [Function(FunctionNames.Parametro.GetAll)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Parametro.Base)] HttpRequestData req)
     {
         try
         {
-
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             
             // Log para debug - ver qué parámetros llegan
@@ -65,7 +56,7 @@ public class GetAllParametrosFunction
             // Solo enviar filtros si al menos uno está activo
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var queryRequest = new GetAllParametrosQuery(page, size, filtersToApply, req);
+            var queryRequest = new GetAllParametrosQuery(page, size, filtersToApply);
             var result = await _mediator.Send(queryRequest);
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<ParametroDTO>>.Success(result, "Parámetros obtenidos correctamente"));
@@ -96,10 +87,6 @@ public class GetAllParametrosFunction
                 500
             ));
         }
-        finally
-        {
          
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

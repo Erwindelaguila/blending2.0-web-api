@@ -6,7 +6,7 @@ public class DeleteAppParamCommand : BaseCommand<bool>
 {
     public string Key { get; }
 
-    public DeleteAppParamCommand(string key, object requestContext) : base(requestContext)
+    public DeleteAppParamCommand(string key)
     {
         Key = key;
     }

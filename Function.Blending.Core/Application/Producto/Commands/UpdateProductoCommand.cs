@@ -21,8 +21,7 @@ public class UpdateProductoCommand : BaseCommand<ProductoDTO>
         string? descripcion,
         Guid calidadId,
         Guid tipoProduccionId,
-        bool? activo,
-        object requestContext) : base(requestContext)
+        bool? activo)
     {
         Id = id;
         Codigo = codigo;

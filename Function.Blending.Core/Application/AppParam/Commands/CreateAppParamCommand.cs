@@ -27,8 +27,7 @@ public class CreateAppParamCommand : BaseCommand<AppParamDTO>
         bool isInternal,
         bool isVisible,
         bool isDisableable,
-        bool isRemovable,
-        object requestContext) : base(requestContext)
+        bool isRemovable)
     {
         Key = key;
         Value = value;

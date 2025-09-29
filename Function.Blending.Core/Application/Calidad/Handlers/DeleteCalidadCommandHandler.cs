@@ -1,7 +1,10 @@
 using Function.Blending.Core.Application.Interfaces.Repositories;
-// using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Calidad.Commands;
 using Function.Blending.Core.Application.Common.Exceptions;
+using Function.Blending.Core.Functions.Support.Execution;
+using Function.Blending.Core.Shared.Constants;
+using Function.Blending.Core.Shared.Extensions;
+using System.Security.Claims;
 using MediatR;
 
 namespace Function.Blending.Core.Application.Calidad.Handlers;
@@ -9,12 +12,14 @@ namespace Function.Blending.Core.Application.Calidad.Handlers;
 public class DeleteCalidadCommandHandler : IRequestHandler<DeleteCalidadCommand, bool>
 {
     private readonly ICalidadRepository _calidadRepository;
-    // private readonly IAuthorizationService _authorizationService;
+    private readonly IFunctionContextAccessor _functionContextAccessor;
 
-    public DeleteCalidadCommandHandler(ICalidadRepository calidadRepository/*, IAuthorizationService authorizationService*/)
+    public DeleteCalidadCommandHandler(
+        ICalidadRepository calidadRepository,
+        IFunctionContextAccessor functionContextAccessor)
     {
         _calidadRepository = calidadRepository;
-        // _authorizationService = authorizationService;
+        _functionContextAccessor = functionContextAccessor;
     }
 
     public async Task<bool> Handle(DeleteCalidadCommand request, CancellationToken cancellationToken)
@@ -30,12 +35,34 @@ public class DeleteCalidadCommandHandler : IRequestHandler<DeleteCalidadCommand,
             throw new EntityInUseException("la Calidad", "está siendo usada por al menos un Producto activo");
         }
 
-        // var eliminadoPorIdString = _authorizationService.GetCurrentUserId();
-        // var eliminadoPorId = Guid.Parse(eliminadoPorIdString);
-        var eliminadoPorId = Guid.NewGuid(); // Valor temporal mientras no hay autorización
+        var eliminadoPorId = GetCurrentUserId();
 
         await _calidadRepository.DeleteAsync(request.Id, eliminadoPorId);
         
         return true;
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        try
+        {
+            var context = _functionContextAccessor.Current;
+            if (context?.Items.TryGetValue(MiscellaneousConstants.Principal, out var principalObj) == true &&
+                principalObj is ClaimsPrincipal principal)
+            {
+                var userIdString = principal.GetUserId();
+                if (!string.IsNullOrEmpty(userIdString) && Guid.TryParse(userIdString, out var userId))
+                {
+                    return userId;
+                }
+            }
+        }
+        catch
+        {
+            // Si hay error obteniendo el usuario, usar fallback
+        }
+        
+        // Fallback: usuario del sistema
+        return Guid.Parse("00000000-0000-0000-0000-000000000001");
     }
 }

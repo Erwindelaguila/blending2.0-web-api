@@ -5,8 +5,8 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.LineaProduccion.Commands;
 using Function.Blending.Core.Application.LineaProduccion.DTOs;
-using Function.Blending.Core.Application.Interfaces.Services;
-using Function.Blending.Core.Infrastructure.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -16,27 +16,19 @@ namespace Function.Blending.Core.Functions.LineaProduccion;
 public class CreateLineaProduccionFunction
 {
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
-    public CreateLineaProduccionFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
+    public CreateLineaProduccionFunction(IMediator mediator)
     {
         _mediator = mediator;
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador,Logistica")]
     [Function(FunctionNames.LineaProduccion.Create)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Post, Route = ApiRoutes.Core.Production.LineaProduccionBase)] HttpRequestData req)
     {
         try
         {
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             var body = await req.ReadAsStringAsync();
 
             if (string.IsNullOrEmpty(body))
@@ -65,8 +57,7 @@ public class CreateLineaProduccionFunction
                 dto.Codigo,
                 dto.Nombre,
                 dto.Descripcion,
-                dto.Activo,
-                req
+                dto.Activo
             );
 
             var result = await _mediator.Send(command);
@@ -105,10 +96,6 @@ public class CreateLineaProduccionFunction
                 null,
                 500
             ));
-        }
-        finally
-        {
-            AuthorizationService.ClearCurrentContext();
         }
     }
 }

@@ -1,6 +1,5 @@
 using Function.Blending.Core.Application.LineaProduccion.DTOs;
 using Function.Blending.Core.Application.Common.Commands;
-using Microsoft.Azure.Functions.Worker.Http;
 using System.Text.Json.Serialization;
 
 namespace Function.Blending.Core.Application.LineaProduccion.Commands;
@@ -17,8 +16,7 @@ public class CreateLineaProduccionCommand : BaseCommand<LineaProduccionDTO>
         string codigo,
         string nombre,
         string? descripcion = null,
-        bool? activo = null,
-        HttpRequestData? requestContext = null) : base(requestContext!)
+        bool? activo = null)
     {
         Codigo = codigo;
         Nombre = nombre;

@@ -1,10 +1,11 @@
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using Function.Blending.Core.Application.Parametro.DTOs;
 using Function.Blending.Core.Application.Parametro.Queries;
-using Function.Blending.Core.Infrastructure.Services;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -15,30 +16,19 @@ namespace Function.Blending.Core.Functions.Parametro;
 public class GetParametroByIdFunction
 {
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
-    public GetParametroByIdFunction(
-        IMediator mediator,
-        IAuthorizationHeaderExtractor headerExtractor)
+    public GetParametroByIdFunction(IMediator mediator)
     {
         _mediator = mediator;
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador")]
     [Function(FunctionNames.Parametro.GetById)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Parametro.GetById)]HttpRequestData req)
     {
         try
         {
-            
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             var idString = query["id"];
             
@@ -51,7 +41,7 @@ public class GetParametroByIdFunction
                 ));
             }
 
-            var queryRequest = new GetParametroByIdQuery(parametroId, req);
+            var queryRequest = new GetParametroByIdQuery(parametroId);
             var result = await _mediator.Send(queryRequest);
             
             if (result == null)
@@ -80,10 +70,6 @@ public class GetParametroByIdFunction
                 500
             ));
         }
-        finally
-        {
            
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

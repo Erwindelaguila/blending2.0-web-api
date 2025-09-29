@@ -3,8 +3,8 @@ using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Agregado.Commands;
-using Function.Blending.Core.Application.Interfaces.Services;
-using Function.Blending.Core.Infrastructure.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -15,14 +15,13 @@ namespace Function.Blending.Core.Functions.Agregado;
 public class DeleteAgregadoFunction
 {
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
-    public DeleteAgregadoFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
+    public DeleteAgregadoFunction(IMediator mediator)
     {
         _mediator = mediator;
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador")]
     [Function(FunctionNames.Agregado.Delete)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Delete, Route = ApiRoutes.Core.Production.AgregadoBase + "/{id}")] HttpRequestData req,
@@ -30,14 +29,6 @@ public class DeleteAgregadoFunction
     {
         try
         {
-
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             if (!Guid.TryParse(id, out var agregadoId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
@@ -47,7 +38,7 @@ public class DeleteAgregadoFunction
                 ));
             }
 
-            var command = new DeleteAgregadoCommand(agregadoId, req);
+            var command = new DeleteAgregadoCommand(agregadoId);
             var result = await _mediator.Send(command);
 
             if (!result)
@@ -85,10 +76,6 @@ public class DeleteAgregadoFunction
                 500
             ));
         }
-        finally
-        {
 
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

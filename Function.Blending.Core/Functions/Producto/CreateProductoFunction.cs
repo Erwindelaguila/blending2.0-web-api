@@ -3,10 +3,11 @@ using FluentValidation;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using Function.Blending.Core.Application.Producto.Commands;
 using Function.Blending.Core.Application.Producto.DTOs;
-using Function.Blending.Core.Infrastructure.Services;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -18,27 +19,19 @@ namespace Function.Blending.Core.Functions.Producto;
 public class CreateProductoFunction
 {
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
-    public CreateProductoFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
+    public CreateProductoFunction(IMediator mediator)
     {
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador")]
     [Function(FunctionNames.Producto.Create)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Post, Route = ApiRoutes.Core.Production.ProductoBase)] HttpRequestData req)
     {
         try
         {
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             var body = await req.ReadAsStringAsync();
             if (string.IsNullOrEmpty(body))
             {
@@ -69,8 +62,7 @@ public class CreateProductoFunction
                 dto.Descripcion,
                 dto.CalidadId,
                 dto.TipoProduccionId,
-                dto.Activo,
-                req
+                dto.Activo
             );
             
             var result = await _mediator.Send(command);
@@ -108,10 +100,6 @@ public class CreateProductoFunction
                 null,
                 500
             ));
-        }
-        finally
-        {
-            AuthorizationService.ClearCurrentContext();
         }
     }
 }
