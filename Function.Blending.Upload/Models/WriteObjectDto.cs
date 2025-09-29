@@ -4,14 +4,8 @@ namespace Function.Blending.Upload.Models;
 
 public class WriteObjectDto
 { 
-    public Resultado resultado { get; set; }
-    public string status { get; set; } 
-}
-
-public class Resultado
-{
-    public JsonObject grupos { get; set; }
-    public JsonObject rumas { get; set; } 
+    public List<Dictionary<string, object>> grupos { get; set; }
+    public List<Dictionary<string, object>> detalles { get; set; } 
 }
 
 

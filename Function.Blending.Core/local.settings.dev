@@ -41,10 +41,13 @@
     // === Time: Zona Horaria ===
     "Time_TimeZoneId": "America/Lima",
     "Time_WindowsTimeZoneId": "SA Pacific Standard Time",
-    "Time_IanaTimeZoneId": "America/Lima"
+    "Time_IanaTimeZoneId": "America/Lima",
+    
+    //Refecias para estados de Calidad en rowTable
+    "Id_Status_Quality" : "98066F2C-9B5D-46E4-A29E-C7D97F8F920C"
   },
   "Host": {
     "CORS": "*",
     "CORS_SUPPORT_CREDENTIALS": true
   }
-}                      
+}                                          
