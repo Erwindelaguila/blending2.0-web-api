@@ -46,7 +46,7 @@ namespace Function.Blending.Opt.Functions.Triggers.LogEjecucion
       }
 
       // 3) Command con inputs (profundo)
-      var cmd = new StartLogEjecucionCommand(dto.PlantaId, dto.Mensaje, creadoPorId)
+      var cmd = new StartLogEjecucionCommand(dto.Mensaje, creadoPorId)
       {
         Info = dto.Info,
         Filtro = dto.Filtro,

@@ -423,8 +423,6 @@ public partial class BlendingDbContext : DbContext
 
             entity.HasIndex(e => e.EstadoId, "IX_LogEjecucion_EstadoId");
 
-            entity.HasIndex(e => e.PlantaId, "IX_LogEjecucion_PlantaId");
-
             entity.HasIndex(e => e.Codigo, "UQ_LogEjecucion_Codigo").IsUnique();
 
             entity.HasIndex(e => e.Secuencial, "UQ_LogEjecucion_Secuencial").IsUnique();
@@ -438,11 +436,6 @@ public partial class BlendingDbContext : DbContext
             entity.HasOne(d => d.Asociado).WithMany(p => p.InverseAsociado)
                 .HasForeignKey(d => d.AsociadoId)
                 .HasConstraintName("FK_LogEjecucion_Asociado");
-
-            entity.HasOne(d => d.Planta).WithMany(p => p.LogEjecucion)
-                .HasForeignKey(d => d.PlantaId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_LogEjecucion_Planta");
         });
 
         modelBuilder.Entity<LogInpFilCapacidad>(entity =>

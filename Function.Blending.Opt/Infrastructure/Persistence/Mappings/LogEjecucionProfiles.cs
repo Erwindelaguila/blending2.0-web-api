@@ -15,7 +15,6 @@ public sealed class LogEjecucionProfiles : Profile
       .ForMember(d => d.Estado, cfg => cfg.Ignore())
       .ForMember(d => d.EstadoNombre, cfg => cfg.Ignore())
       .ForMember(d => d.Id, o => o.MapFrom(s => new V.EjecucionId(s.Id)))
-      .ForMember(d => d.PlantaId, o => o.MapFrom(s => new V.PlantaId(s.PlantaId)))
       .ForMember(d => d.EstadoId, o => o.MapFrom(s => new V.EstadoId(s.EstadoId)));
 
     // EF → ReadModel (history)

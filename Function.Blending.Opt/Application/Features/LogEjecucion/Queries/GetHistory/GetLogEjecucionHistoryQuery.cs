@@ -16,6 +16,5 @@ public sealed record GetLogEjecucionHistoryQuery(
   DateTime? CreadoDelUtc,
   DateTime? CreadoAlUtc,
   Guid? EstadoId,
-  Guid? PlantaId,
   string? Codigo
 ) : IRequest<Result<PageResponse<LogEjecucionHistoryItemResponse>>>;

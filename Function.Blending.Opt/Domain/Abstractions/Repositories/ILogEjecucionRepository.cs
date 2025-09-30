@@ -20,13 +20,11 @@ namespace Function.Blending.Opt.Domain.Abstractions.Repositories
       DateTime? creadoDelUtc,
       DateTime? creadoAlUtc,
       Guid? estadoId,
-      Guid? plantaId,
       string? codigo,
       CancellationToken ct
     );
 
     Task<LogEjecucion?> StartAsync(
-      Guid plantaId,
       Guid estadoInicialId,
       string? mensaje,
       Guid creadoPorId,

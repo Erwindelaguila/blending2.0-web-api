@@ -8,7 +8,6 @@ public sealed class LogEjecucion
 {
   public EjecucionId Id { get; set; }
 
-  public PlantaId PlantaId { get; private set; }
   public EstadoId EstadoId { get; private set; }
 
   public string? Codigo { get; set; }

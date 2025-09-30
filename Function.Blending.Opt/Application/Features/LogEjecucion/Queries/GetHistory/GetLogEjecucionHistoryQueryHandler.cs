@@ -22,7 +22,6 @@ public sealed class GetLogEjecucionHistoryQueryHandler(ILogEjecucionRepository r
       request.CreadoDelUtc,
       request.CreadoAlUtc,
       request.EstadoId,
-      request.PlantaId,
       request.Codigo,
       ct
     );
