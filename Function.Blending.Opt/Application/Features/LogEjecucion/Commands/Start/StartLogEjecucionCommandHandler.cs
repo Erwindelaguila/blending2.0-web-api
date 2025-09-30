@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Function.Blending.Opt.Application.Abstractions.External;
 using Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Responses;
 using Function.Blending.Opt.Domain.Abstractions.Repositories;
 using Function.Blending.Opt.Domain.Abstractions.Services;
@@ -6,9 +7,6 @@ using Function.Blending.Opt.Shared.Constants;
 using Function.Blending.Opt.Shared.Results;
 using MediatR;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 // Aliases
 using VO = Function.Blending.Opt.Domain.ValueObjects;
@@ -19,7 +17,8 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
     ILogEjecucionRepository repo,
     IMapper mapper,
     IConfiguration cfg,
-    IEstadoLogisticaCatalogService estados
+    IEstadoLogisticaCatalogService estados,
+    ILogisticaModelStarter modelStarter
   ) : IRequestHandler<StartLogEjecucionCommand, Result<StartLogEjecucionResponse>>
   {
     public async Task<Result<StartLogEjecucionResponse>> Handle(StartLogEjecucionCommand request, CancellationToken ct)
@@ -55,9 +54,13 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
       entity.Estado = estadoSnapshot;
 
       // ===== DISPARO SIN ESPERAR (fire-and-forget) =====
-      //var model = request.Model;
-      //model.EjecucionId = entity.Id;
-      //_ = modelStarter.StartAsync(model, CancellationToken.None); // NO await
+      _ = bool.TryParse(cfg[ConfigurationKeys.ExternalServices.EnableLogisticsModel], out var enableLogisticsModel);
+      if (enableLogisticsModel)
+      {
+        var model = request.Model;
+        model.EjecucionId = entity.Id;
+        _ = modelStarter.StartAsync(model, CancellationToken.None); // NO await
+      }
 
       // 5) Domain -> DTO
       var dto = mapper.Map<StartLogEjecucionResponse>(entity);

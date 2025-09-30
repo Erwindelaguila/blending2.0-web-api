@@ -59,9 +59,13 @@ public sealed class StartCalEjecucionCommandHandler(
     entity.Estado = await estadosService.GetByIdAsync(entity.EstadoId.Value, ct);
 
     // ===== DISPARO SIN ESPERAR (fire-and-forget) =====
-    var model = request.Model;
-    model.EjecucionId = entity.Id;
-    _ = modelStarter.StartAsync(model, CancellationToken.None); // NO await
+    _ = bool.TryParse(cfg[ConfigurationKeys.ExternalServices.EnableQualityModel], out var enableQualityModel);
+    if (enableQualityModel)
+    {
+      var model = request.Model;
+      model.EjecucionId = entity.Id;
+      _ = modelStarter.StartAsync(model, CancellationToken.None); // NO await
+    }
 
     var dto = mapper.Map<StartCalEjecucionResponse>(entity);
     return Result<StartCalEjecucionResponse>.Ok(dto);
