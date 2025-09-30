@@ -7,8 +7,8 @@ public sealed class LogisticaModelPayloadValidator : AbstractValidator<Logistica
 {
   public LogisticaModelPayloadValidator()
   {
-    RuleFor(x => x.Demanda).NotNull();
-    RuleFor(x => x.Demanda.Cantidad).GreaterThan(0);
+    RuleFor(x => x.Objetivo).NotNull();
+    RuleFor(x => x.Objetivo.Cantidad).GreaterThan(0);
 
     RuleFor(x => x.Oferta).NotNull()
         .Must(x => x.Count > 0).WithMessage("Se requiere al menos un lote de oferta.");

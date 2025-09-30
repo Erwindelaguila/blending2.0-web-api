@@ -5,7 +5,7 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Requests.
 public sealed record LogisticaModelPayload
 {
   public Guid? EjecucionId { get; set; } = null;
-  public DemandaDto? Demanda { get; init; }
+  public ObjetivoDto? Objetivo { get; init; }
   public IReadOnlyList<OfertaItemDto>? Oferta { get; init; }
   public IReadOnlyList<string>? Contenedores { get; init; }
   public IReadOnlyList<string>? ParametrosSeleccionados { get; init; }

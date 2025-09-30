@@ -118,8 +118,12 @@
     "Security_Hmac_CacheSeconds": "600",
     "Security_Hmac_TenantId": "b7e26f48-2292-4a14-a355-1aeb8489ae3d", // opcional, ayuda en multi-tenant
     "Security_Hmac_Credential_Mode": "Interactive", // usa CLI si existe; si no, abre login interactivo -> PROD: ManagedIdentity -> necesario(Security_Hmac_Credential_ClientId)
-    "Security_Hmac_Credential_ClientId": "b7e26f48-2292-4a14-a355-1aeb8489ae3d", // <clientId-de-la-UAMI>
+    "Security_Hmac_Credential_ClientId": "a3a4b98f-7daf-4fb6-ab90-2d7c1999356b", // <clientId-de-la-UAMI>
     "Security_Hmac_Credential_TenantId": "b7e26f48-2292-4a14-a355-1aeb8489ae3d",
+
+    // ===== External Services =====
+    "ExternalService_EnableQualityModel": "true",
+    "ExternalService_EnableLogisticsModel": "false",
 
     // ===== External - Calidad Model =====
     //"External_QualityModel_BaseUrl": "https://app-blending2-modelo-calidad-prod.azurewebsites.net",
@@ -127,6 +131,13 @@
     "External_QualityModel_StartPath": "/blending_harina",
     "External_QualityModel_TimeoutSeconds": "600",
     "External_QualityModel_ApiKey": null,
+
+    // ===== External - Logistica Model =====
+    //"External_QualityModel_BaseUrl": "https://app-blending2-modelo-logistica-prod.azurewebsites.net",
+    "External_LogisticsModel_BaseUrl": "http://localhost:5000",
+    "External_LogisticsModel_StartPath": "/blending_contenedor",
+    "External_LogisticsModel_TimeoutSeconds": "600",
+    "External_LogisticsModel_ApiKey": null,
 
     // ===== Logging DB =====
     "Logging_Db_Enabled": "true",
