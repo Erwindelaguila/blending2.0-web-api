@@ -8,21 +8,26 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
     public StartLogEjecucionCommandValidator()
     {
       RuleFor(x => x.CreadoPorId).NotEmpty();
-      RuleFor(x => x.Mensaje).MaximumLength(250);
+      RuleFor(x => x.Start.Mensaje).MaximumLength(250);
 
-      When(x => x.Info is not null, () =>
+      When(x => x.Start.Info is not null, () =>
       {
-        RuleFor(x => x.Info!).SetValidator(new LogInpInfoDtoValidator());
+        RuleFor(x => x.Start.Info!).SetValidator(new LogInpInfoDtoValidator());
       });
 
-      When(x => x.Filtro is not null, () =>
+      When(x => x.Start.Filtro is not null, () =>
       {
-        RuleFor(x => x.Filtro!).SetValidator(new LogInpFiltroDtoValidator());
+        RuleFor(x => x.Start.Filtro!).SetValidator(new LogInpFiltroDtoValidator());
       });
 
-      When(x => x.Oferta is not null, () =>
+      When(x => x.Start.Oferta is not null, () =>
       {
-        RuleFor(x => x.Oferta!).SetValidator(new LogInpOfertaDtoValidator());
+        RuleFor(x => x.Start.Oferta!).SetValidator(new LogInpOfertaDtoValidator());
+      });
+
+      When(x => x.Model is not null, () =>
+      {
+        RuleFor(x => x.Model!).SetValidator(new LogisticaModelPayloadValidator());
       });
     }
   }
