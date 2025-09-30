@@ -1,15 +1,9 @@
-﻿using System;
-using Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Requests.Input;
+﻿using Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Requests.Payload;
 
-namespace Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Requests
+namespace Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Requests;
+
+public sealed record StartLogEjecucionRequest
 {
-  // Record posicional, 1 solo tipo en el archivo (estilo Calidad)
-  public sealed record StartLogEjecucionRequest(
-    string? Mensaje
-  )
-  {
-    public LogInpInfoDto? Info { get; init; }
-    public LogInpFiltroDto? Filtro { get; init; }
-    public LogInpOfertaDto? Oferta { get; init; }
-  }
+  public LogisticaStartPayload Start { get; init; } = null!;
+  public LogisticaModelPayload Model { get; init; } = null!;
 }

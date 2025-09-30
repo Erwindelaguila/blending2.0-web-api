@@ -31,14 +31,14 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
         return Result<StartLogEjecucionResponse>.Fail($"Config inválida: '{key}' no es un GUID.");
 
       // 2) DTO -> VO
-      VO.LogInpInfo? infoVo = mapper.Map<VO.LogInpInfo?>(request.Info);
-      VO.LogInpFiltro? filtroVo = mapper.Map<VO.LogInpFiltro?>(request.Filtro);
-      VO.LogInpOferta? ofertaVo = mapper.Map<VO.LogInpOferta?>(request.Oferta);
+      VO.LogInpInfo? infoVo = mapper.Map<VO.LogInpInfo?>(request.Start.Info);
+      VO.LogInpFiltro? filtroVo = mapper.Map<VO.LogInpFiltro?>(request.Start.Filtro);
+      VO.LogInpOferta? ofertaVo = mapper.Map<VO.LogInpOferta?>(request.Start.Oferta);
 
       // 3) Repo.Start
       var entity = await repo.StartAsync(
         estadoInicialId,
-        request.Mensaje,
+        request.Start.Mensaje,
         request.CreadoPorId,
         infoVo,
         filtroVo,
@@ -51,8 +51,13 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
 
       // 4) Enriquecer Estado (VO) antes del mapping → igual que Calidad
       //    (Color vendrá solo si configuraste ExposeColor/ColorPropClave para Logística)
-      var estadoRef = await estados.GetByIdAsync(entity.EstadoId, ct);
-      entity.Estado = estadoRef;
+      var estadoSnapshot = await estados.GetByIdAsync(entity.EstadoId, ct);
+      entity.Estado = estadoSnapshot;
+
+      // ===== DISPARO SIN ESPERAR (fire-and-forget) =====
+      //var model = request.Model;
+      //model.EjecucionId = entity.Id;
+      //_ = modelStarter.StartAsync(model, CancellationToken.None); // NO await
 
       // 5) Domain -> DTO
       var dto = mapper.Map<StartLogEjecucionResponse>(entity);
