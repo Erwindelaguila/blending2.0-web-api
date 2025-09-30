@@ -7,8 +7,6 @@ public partial class LogEjecucion
 {
     public Guid Id { get; set; }
 
-    public Guid PlantaId { get; set; }
-
     public string Codigo { get; set; } = null!;
 
     public string? Mensaje { get; set; }
@@ -42,6 +40,4 @@ public partial class LogEjecucion
     public virtual LogInpOferta? LogInpOferta { get; set; }
 
     public virtual ICollection<LogOutContenedor> LogOutContenedor { get; set; } = new List<LogOutContenedor>();
-
-    public virtual Planta Planta { get; set; } = null!;
 }

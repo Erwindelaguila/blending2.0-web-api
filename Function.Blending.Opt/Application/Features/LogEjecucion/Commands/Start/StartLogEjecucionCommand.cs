@@ -8,7 +8,6 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
 {
   // Igual patrón que Calidad: record + props init adicionales
   public sealed partial record StartLogEjecucionCommand(
-    Guid PlantaId,
     string? Mensaje,
     Guid CreadoPorId
   ) : IRequest<Result<StartLogEjecucionResponse>>

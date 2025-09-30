@@ -37,7 +37,6 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
 
       // 3) Repo.Start
       var entity = await repo.StartAsync(
-        request.PlantaId,
         estadoInicialId,
         request.Mensaje,
         request.CreadoPorId,

@@ -9,6 +9,5 @@ public sealed class LogEjecucionHistoryItemResponse
   public bool? Confirmado { get; init; }
   public Guid EstadoId { get; init; }
   public string? EstadoNombre { get; init; } // ← NUEVO
-  public Guid PlantaId { get; init; }
   public DateTime CreadoEl { get; init; }
 }

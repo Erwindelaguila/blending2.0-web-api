@@ -14,13 +14,11 @@ internal static class LogEjecucionHistoryQuery
     DateTime? creadoDelUtc,
     DateTime? creadoAlUtc,
     Guid? estadoId,
-    Guid? plantaId,
     string? codigo)
   {
     if (creadoDelUtc.HasValue) q = q.Where(x => x.CreadoEl >= creadoDelUtc.Value);
     if (creadoAlUtc.HasValue) q = q.Where(x => x.CreadoEl <= creadoAlUtc.Value);
     if (estadoId.HasValue) q = q.Where(x => x.EstadoId == estadoId.Value);
-    if (plantaId.HasValue) q = q.Where(x => x.PlantaId == plantaId.Value);
 
     if (!string.IsNullOrWhiteSpace(codigo))
     {
@@ -49,7 +47,6 @@ internal static class LogEjecucionHistoryQuery
       "confirmado" => desc ? q.OrderByDescending(x => x.Confirmado) : q.OrderBy(x => x.Confirmado),
       "codigo" => desc ? q.OrderByDescending(x => x.Codigo) : q.OrderBy(x => x.Codigo),
       "estadoid" => desc ? q.OrderByDescending(x => x.EstadoId) : q.OrderBy(x => x.EstadoId),
-      "plantaid" => desc ? q.OrderByDescending(x => x.PlantaId) : q.OrderBy(x => x.PlantaId),
       _ => desc ? q.OrderByDescending(x => x.CreadoEl) : q.OrderBy(x => x.CreadoEl),
     };
   }

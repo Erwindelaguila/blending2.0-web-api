@@ -5,7 +5,6 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Requests
 {
   // Record posicional, 1 solo tipo en el archivo (estilo Calidad)
   public sealed record StartLogEjecucionRequest(
-    Guid PlantaId,
     string? Mensaje
   )
   {

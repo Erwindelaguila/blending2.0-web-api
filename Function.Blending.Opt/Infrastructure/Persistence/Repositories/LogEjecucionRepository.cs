@@ -24,7 +24,6 @@ public sealed class LogEjecucionRepository(
 ) : ILogEjecucionRepository
 {
   public async Task<DE.LogEjecucion?> StartAsync(
-    Guid plantaId,
     Guid estadoInicialId,
     string? mensaje,
     Guid creadoPorId,
@@ -38,7 +37,6 @@ public sealed class LogEjecucionRepository(
     var model = new EF.LogEjecucion
     {
       Id = id,
-      PlantaId = plantaId,
       EstadoId = estadoInicialId,
       Codigo = codeGen.MakeTemp(),
       Mensaje = mensaje,
@@ -114,7 +112,6 @@ public sealed class LogEjecucionRepository(
     DateTime? creadoDelUtc, 
     DateTime? creadoAlUtc, 
     Guid? estadoId, 
-    Guid? plantaId, 
     string? codigo, 
     CancellationToken ct
   )
@@ -124,7 +121,7 @@ public sealed class LogEjecucionRepository(
 
     var baseQuery = db.Set<EF.LogEjecucion>().AsNoTracking();
 
-    var filtered = LogEjecucionHistoryQuery.ApplyFilters(baseQuery, confirmado, creadoDelUtc, creadoAlUtc, estadoId, plantaId, codigo);
+    var filtered = LogEjecucionHistoryQuery.ApplyFilters(baseQuery, confirmado, creadoDelUtc, creadoAlUtc, estadoId, codigo);
 
     var ordered = LogEjecucionHistoryQuery.ApplyOrdering(filtered, sortBy, sortDir);
 

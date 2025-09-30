@@ -7,7 +7,6 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
   {
     public StartLogEjecucionCommandValidator()
     {
-      RuleFor(x => x.PlantaId).NotEmpty();
       RuleFor(x => x.CreadoPorId).NotEmpty();
       RuleFor(x => x.Mensaje).MaximumLength(250);
 
