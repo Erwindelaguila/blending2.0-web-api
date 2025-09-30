@@ -79,10 +79,15 @@ public class UpdateParametroFunction
         }
         catch (ValidationException ex)
         {
-            var validationErrors = ex.Errors.Select(e => new { Field = e.PropertyName, Error = e.ErrorMessage });
+            var errors = ex.Errors.Select(e => new { Campo = e.PropertyName, Error = e.ErrorMessage }).ToList();
+            
+            var errorSummary = errors.Count == 1 
+                ? errors.First().Error
+                : $"Se encontraron {errors.Count} errores de validación";
+            
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                validationErrors,
-                "Errores de validación",
+                errors,
+                errorSummary,
                 400
             ));
         }

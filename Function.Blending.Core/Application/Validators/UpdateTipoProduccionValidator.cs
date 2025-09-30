@@ -8,19 +8,24 @@ public class UpdateTipoProduccionValidator : AbstractValidator<UpdateTipoProducc
     public UpdateTipoProduccionValidator()
     {
         RuleFor(x => x.Id)
-            .NotEmpty().WithMessage("El Id es requerido");
+            .NotEmpty().WithMessage("El ID del tipo de producción es requerido");
+        
         RuleFor(x => x.Codigo)
-            .NotEmpty().WithMessage("El código es requerido")
-            .MaximumLength(20).WithMessage("El código no debe exceder 20 caracteres");
+            .NotEmpty().WithMessage("El código del tipo de producción es requerido")
+            .MaximumLength(20).WithMessage("El código del tipo de producción no puede exceder 20 caracteres");
+        
         RuleFor(x => x.Nombre)
-            .NotEmpty().WithMessage("El nombre es requerido")
-            .MaximumLength(50).WithMessage("El nombre no debe exceder 50 caracteres");
+            .NotEmpty().WithMessage("El nombre del tipo de producción es requerido")
+            .MaximumLength(50).WithMessage("El nombre del tipo de producción no puede exceder 50 caracteres");
+        
         RuleFor(x => x.Descripcion)
-            .MaximumLength(150).WithMessage("La descripción no debe exceder 150 caracteres");
+            .MaximumLength(150).WithMessage("La descripción del tipo de producción no puede exceder 150 caracteres")
+            .When(x => !string.IsNullOrEmpty(x.Descripcion));
+        
         RuleFor(x => x.LineaProduccionId)
-            .NotEmpty().WithMessage("El Id de la línea de producción es requerido");
+            .NotEmpty().WithMessage("La línea de producción es requerida");
+        
         RuleFor(x => x.AgregadoId)
-            .NotEmpty().WithMessage("El Id del agregado es requerido");
-        // ModificadoPorId se maneja automáticamente por el AuthorizationBehavior
+            .NotEmpty().WithMessage("El agregado es requerido");
     }
 }

@@ -80,6 +80,12 @@ public static class FunctionNames
         public const string GetAll = "GetAllAppParams";
         public const string GetById = "GetAppParamById";
     }
+
+    // AuxRow - Funciones auxiliares
+    public static class AuxRow
+    {
+        public const string GetAllStatusQuality = "GetAllStatusQuality";
+    }
     
     // Agrega otras funciones según tu dominio...
 }

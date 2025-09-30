@@ -68,10 +68,20 @@ public class CreateAgregadoFunction
         }
         catch (ValidationException ex)
         {
-            var errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }).ToList();
+            // Crear errores específicos por campo con mensajes claros
+            var validationErrors = ex.Errors.Select(error => new 
+            { 
+                Campo = error.PropertyName, 
+                Error = error.ErrorMessage
+            }).ToList();
+
+            var errorSummary = ex.Errors.Count() == 1 
+                ? ex.Errors.First().ErrorMessage
+                : $"Se encontraron {ex.Errors.Count()} errores de validación.";
+
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                errors,
-                "Validación fallida. Por favor, revise los campos.",
+                validationErrors,
+                errorSummary,
                 400
             ));
         }

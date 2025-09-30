@@ -69,10 +69,15 @@ public class CreateCalidadFunction
         }
         catch (ValidationException ex)
         {
-            var errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }).ToList();
+            var errors = ex.Errors.Select(e => new { Campo = e.PropertyName, Error = e.ErrorMessage }).ToList();
+            
+            var errorSummary = errors.Count == 1 
+                ? errors.First().Error
+                : $"Se encontraron {errors.Count} errores de validación";
+            
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 errors,
-                "Validación fallida. Por favor, revise los campos.",
+                errorSummary,
                 400
             ));
         }
