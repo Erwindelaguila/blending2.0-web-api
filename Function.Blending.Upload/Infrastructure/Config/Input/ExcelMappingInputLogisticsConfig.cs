@@ -5,6 +5,20 @@ public class  ExcelMappingInputLogisticsConfig
     public string Version { get; set; }
     public string SheetName { get; set; }
     public string Contrato { get; set; }
+    public string PedidoVenta { get; set; }
+    public string FechaCarguio { get; set; }
+    public string PlantaCodigo { get; set; }
+    public string PlantaDescripcion { get; set; } 
+    public string AlmacenCodigo { get; set; }
+    public string AlmacenDescripcion { get; set; }
+    public string Cliente { get; set; }
+    public string Asistente { get; set; }
+    public string Supervisora { get; set; }
+    public string PaisDestino  { get; set; }
+    public string CantidadRuma  { get; set; } 
+    public string UnidadMedidaRuma { get; set; }
+    public string NumeroMovimientos { get; set; }
+    
     public int StartRowOferta { get; set; }
     public string ColumCantidadSacos { get; set; }
     public Demanda Demanda { get; set; }
