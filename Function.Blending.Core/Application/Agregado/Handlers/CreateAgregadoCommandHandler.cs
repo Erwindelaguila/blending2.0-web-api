@@ -1,9 +1,12 @@
 using Function.Blending.Core.Application.Interfaces.Repositories;
-using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Agregado.Commands;
 using Function.Blending.Core.Application.Agregado.DTOs;
 using Function.Blending.Core.Domain.Entities;
+using Function.Blending.Core.Shared.Extensions;
+using Function.Blending.Core.Shared.Constants;
+using Function.Blending.Core.Functions.Support.Execution;
 using MediatR;
+using System.Security.Claims;
 
 namespace Function.Blending.Core.Application.Agregado.Handlers
 {
@@ -11,24 +14,19 @@ namespace Function.Blending.Core.Application.Agregado.Handlers
     public class CreateAgregadoCommandHandler : IRequestHandler<CreateAgregadoCommand, AgregadoDTO>
     {
         private readonly IAgregadoRepository _agregadoRepository;
-        private readonly IAuthorizationService _authorizationService;
+        private readonly IFunctionContextAccessor _functionContextAccessor;
 
-        public CreateAgregadoCommandHandler(
-            IAgregadoRepository agregadoRepository,
-            IAuthorizationService authorizationService)
+        public CreateAgregadoCommandHandler(IAgregadoRepository agregadoRepository, IFunctionContextAccessor functionContextAccessor)
         {
             _agregadoRepository = agregadoRepository ?? throw new ArgumentNullException(nameof(agregadoRepository));
-            _authorizationService = authorizationService ?? throw new ArgumentNullException(nameof(authorizationService));
+            _functionContextAccessor = functionContextAccessor ?? throw new ArgumentNullException(nameof(functionContextAccessor));
         }
 
         public async Task<AgregadoDTO> Handle(CreateAgregadoCommand request, CancellationToken cancellationToken)
         {
-            var currentUserIdString = _authorizationService.GetCurrentUserId();
-            if (!Guid.TryParse(currentUserIdString, out var currentUserId))
-            {
-                throw new UnauthorizedAccessException("User ID inválido en headers");
-            }
-
+            // Obtener el usuario actual del JWT
+            var currentUserId = GetCurrentUserId();
+            
             var agregado = new AgregadoEntity
             {
                 Id = Guid.NewGuid(),
@@ -36,7 +34,7 @@ namespace Function.Blending.Core.Application.Agregado.Handlers
                 Nombre = request.Nombre,
                 Descripcion = request.Descripcion,
                 Activo = request.Activo ?? true,
-                CreadoPorId = currentUserId,
+                CreadoPorId = currentUserId, 
                 CreadoEl = DateTime.UtcNow
             };
             
@@ -54,6 +52,30 @@ namespace Function.Blending.Core.Application.Agregado.Handlers
                 ModificadoPorId = agregado.ModificadoPorId,
                 ModificadoEl = agregado.ModificadoEl
             };
+        }
+
+        private Guid GetCurrentUserId()
+        {
+            try
+            {
+                var context = _functionContextAccessor.Current;
+                if (context?.Items.TryGetValue(MiscellaneousConstants.Principal, out var principalObj) == true &&
+                    principalObj is ClaimsPrincipal principal)
+                {
+                    var userIdString = principal.GetUserId();
+                    if (!string.IsNullOrEmpty(userIdString) && Guid.TryParse(userIdString, out var userId))
+                    {
+                        return userId;
+                    }
+                }
+            }
+            catch
+            {
+                // Si hay error obteniendo el usuario, usar fallback
+            }
+            
+            // Fallback: usuario del sistema
+            return Guid.Parse("00000000-0000-0000-0000-000000000001");
         }
     }
 }

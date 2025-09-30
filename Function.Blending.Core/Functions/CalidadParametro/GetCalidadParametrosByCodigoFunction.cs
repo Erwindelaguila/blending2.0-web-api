@@ -2,8 +2,9 @@ using Function.Blending.Core.Application.CalidadParametro.Queries;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
-using Function.Blending.Core.Infrastructure.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -16,18 +17,16 @@ public class GetCalidadParametrosByCodigoFunction
 {
     private readonly ILogger<GetCalidadParametrosByCodigoFunction> _logger;
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor; // ✅ NUEVO: Inyección para JWT
 
     public GetCalidadParametrosByCodigoFunction(
         ILogger<GetCalidadParametrosByCodigoFunction> logger,
-        IMediator mediator,
-        IAuthorizationHeaderExtractor headerExtractor) // ✅ NUEVO: Inyección
+        IMediator mediator)
     {
         _logger = logger;
         _mediator = mediator;
-        _headerExtractor = headerExtractor; // ✅ NUEVO: Asignación
     }
 
+    [RequireScopes("Administrador,Calidad")]
     [Function(FunctionNames.CalidadParametro.GetByCodigo)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Configuraciones.CalidadParametro)] HttpRequestData req)
@@ -39,13 +38,6 @@ public class GetCalidadParametrosByCodigoFunction
 
         try
         {
-            // ✅ NUEVO: Establecer contexto JWT al inicio de la función
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
 
             if (!queryParams.TryGetValue("codigoCalidad", out var codigoCalidad) || string.IsNullOrWhiteSpace(codigoCalidad))
             {
@@ -74,10 +66,6 @@ public class GetCalidadParametrosByCodigoFunction
                     "Ocurrió un error al procesar la solicitud",
                     500));
         }
-        finally
-        {
             // ✅ NUEVO: Limpiar contexto de autenticación
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

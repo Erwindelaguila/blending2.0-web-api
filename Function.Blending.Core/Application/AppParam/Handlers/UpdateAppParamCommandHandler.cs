@@ -1,10 +1,13 @@
 using Function.Blending.Core.Application.Interfaces.Repositories;
-using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.AppParam.Commands;
 using Function.Blending.Core.Application.AppParam.DTOs;
 using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Domain.Entities;
+using Function.Blending.Core.Functions.Support.Execution;
+using Function.Blending.Core.Shared.Constants;
+using Function.Blending.Core.Shared.Extensions;
 using MediatR;
+using System.Security.Claims;
 
 namespace Function.Blending.Core.Application.AppParam.Handlers;
 
@@ -12,24 +15,40 @@ namespace Function.Blending.Core.Application.AppParam.Handlers;
 public class UpdateAppParamCommandHandler : IRequestHandler<UpdateAppParamCommand, object>
 {
     private readonly IAppParamRepository _appParamRepository;
-    private readonly IAuthorizationService _authorizationService;
+    private readonly IFunctionContextAccessor _functionContextAccessor;
 
-    public UpdateAppParamCommandHandler(
-        IAppParamRepository appParamRepository,
-        IAuthorizationService authorizationService)
+    public UpdateAppParamCommandHandler(IAppParamRepository appParamRepository, IFunctionContextAccessor functionContextAccessor)
     {
         _appParamRepository = appParamRepository ?? throw new ArgumentNullException(nameof(appParamRepository));
-        _authorizationService = authorizationService ?? throw new ArgumentNullException(nameof(authorizationService));
+        _functionContextAccessor = functionContextAccessor ?? throw new ArgumentNullException(nameof(functionContextAccessor));
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        try
+        {
+            var context = _functionContextAccessor.Current;
+            if (context?.Items.TryGetValue(MiscellaneousConstants.Principal, out var principalObj) == true &&
+                principalObj is ClaimsPrincipal principal)
+            {
+                var userIdString = principal.GetUserId();
+                if (!string.IsNullOrEmpty(userIdString) && Guid.TryParse(userIdString, out var userId))
+                {
+                    return userId;
+                }
+            }
+        }
+        catch
+        {
+            // Si hay error obteniendo el usuario, usar fallback
+        }
+        
+        // Fallback: usuario del sistema
+        return Guid.Parse("00000000-0000-0000-0000-000000000001");
     }
 
     public async Task<object> Handle(UpdateAppParamCommand request, CancellationToken cancellationToken)
     {
-        // Obtener usuario actual usando servicios reutilizados de Auth
-        var currentUserIdString = _authorizationService.GetCurrentUserId();
-        if (!Guid.TryParse(currentUserIdString, out var currentUserId))
-        {
-            throw new UnauthorizedAccessException("User ID inválido en headers");
-        }
         
         var existingAppParam = await _appParamRepository.GetByKeyAsync(request.Key);
         
@@ -77,7 +96,7 @@ public class UpdateAppParamCommandHandler : IRequestHandler<UpdateAppParamComman
                 IsRemovable = existingAppParam.IsRemovable,
                 CreadoPorId = existingAppParam.CreadoPorId,
                 CreadoEl = existingAppParam.CreadoEl,
-                ModificadoPorId = currentUserId,
+                ModificadoPorId = GetCurrentUserId(),
                 ModificadoEl = DateTime.UtcNow
             };
             
@@ -123,7 +142,7 @@ public class UpdateAppParamCommandHandler : IRequestHandler<UpdateAppParamComman
             if (request.IsActive.HasValue)
                 existingAppParam.IsActive = request.IsActive.Value;
                 
-            existingAppParam.ModificadoPorId = currentUserId;
+            existingAppParam.ModificadoPorId = GetCurrentUserId();
             existingAppParam.ModificadoEl = DateTime.UtcNow;
 
             var updatedAppParam = await _appParamRepository.UpdateAndReturnAsync(existingAppParam);

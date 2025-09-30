@@ -5,40 +5,32 @@ using Function.Blending.Core.Application.Agregado.DTOs;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using System.Net;
-using Function.Blending.Core.Infrastructure.Services;
+
 
 namespace Function.Blending.Core.Functions.Agregado;
 
 public class CreateAgregadoFunction
 {
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
-    public CreateAgregadoFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
+    public CreateAgregadoFunction(IMediator mediator)
     {
         _mediator = mediator;
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador")]
     [Function(FunctionNames.Agregado.Create)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Post, Route = ApiRoutes.Core.Production.AgregadoBase)] HttpRequestData req)
     {
         try
         {
-      
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             var body = await req.ReadAsStringAsync();
 
             if (string.IsNullOrEmpty(body))
@@ -67,8 +59,7 @@ public class CreateAgregadoFunction
                 dto.Codigo,
                 dto.Nombre,
                 dto.Descripcion,
-                dto.Activo,
-                req
+                dto.Activo
             );
 
             var result = await _mediator.Send(command);
@@ -77,10 +68,20 @@ public class CreateAgregadoFunction
         }
         catch (ValidationException ex)
         {
-            var errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }).ToList();
+            // Crear errores específicos por campo con mensajes claros
+            var validationErrors = ex.Errors.Select(error => new 
+            { 
+                Campo = error.PropertyName, 
+                Error = error.ErrorMessage
+            }).ToList();
+
+            var errorSummary = ex.Errors.Count() == 1 
+                ? ex.Errors.First().ErrorMessage
+                : $"Se encontraron {ex.Errors.Count()} errores de validación.";
+
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                errors,
-                "Validación fallida. Por favor, revise los campos.",
+                validationErrors,
+                errorSummary,
                 400
             ));
         }
@@ -108,10 +109,6 @@ public class CreateAgregadoFunction
                 500
             ));
         }
-        finally
-        {
        
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

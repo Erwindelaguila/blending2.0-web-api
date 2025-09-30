@@ -3,10 +3,11 @@ using FluentValidation;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using Function.Blending.Core.Application.Planta.Commands;
 using Function.Blending.Core.Application.Planta.DTOs;
-using Function.Blending.Core.Infrastructure.Services;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -16,30 +17,19 @@ namespace Function.Blending.Core.Functions.Planta;
 public class CreatePlantaFunction
 {
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public CreatePlantaFunction(
-        IMediator mediator,
-        IAuthorizationHeaderExtractor headerExtractor)
+    public CreatePlantaFunction(IMediator mediator)
     {
         _mediator = mediator;
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador,Calidad")]
     [Function(FunctionNames.Planta.Create)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Post, Route = ApiRoutes.Core.Planta.Base)] HttpRequestData req)
     {
         try
         {
-            // ✅ NUEVO: Establecer contexto JWT al inicio de la función
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             var body = await req.ReadAsStringAsync();
 
             if (string.IsNullOrEmpty(body))
@@ -69,8 +59,7 @@ public class CreatePlantaFunction
                 dto.Nombre,
                 dto.Descripcion,
                 dto.NumeroRuma,
-                dto.Activo,
-                req
+                dto.Activo
             );
 
             var result = await _mediator.Send(command);
@@ -79,10 +68,20 @@ public class CreatePlantaFunction
         }
         catch (ValidationException ex)
         {
-            var errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }).ToList();
+            // Crear errores específicos por campo con mensajes claros
+            var validationErrors = ex.Errors.Select(error => new 
+            { 
+                Campo = error.PropertyName, 
+                Error = error.ErrorMessage
+            }).ToList();
+
+            var errorSummary = ex.Errors.Count() == 1 
+                ? ex.Errors.First().ErrorMessage
+                : $"Se encontraron {ex.Errors.Count()} errores de validación.";
+
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                errors,
-                "Validación fallida. Por favor, revise los campos.",
+                validationErrors,
+                errorSummary,
                 400
             ));
         }
@@ -110,10 +109,6 @@ public class CreatePlantaFunction
                 500
             ));
         }
-        finally
-        {
            
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

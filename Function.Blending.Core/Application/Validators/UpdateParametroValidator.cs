@@ -8,17 +8,17 @@ public class UpdateParametroValidator : AbstractValidator<UpdateParametroCommand
     public UpdateParametroValidator()
     {
         RuleFor(x => x.Id)
-            .NotEmpty().WithMessage("El ID es requerido");
+            .NotEmpty().WithMessage("El identificador del parámetro es requerido");
 
         RuleFor(x => x.Codigo)
-            .NotEmpty().WithMessage("El código es requerido")
-            .MaximumLength(20).WithMessage("El código no puede tener más de 20 caracteres");
+            .NotEmpty().WithMessage("El código del parámetro es requerido")
+            .MaximumLength(20).WithMessage("El código del parámetro no puede exceder 20 caracteres");
 
         RuleFor(x => x.Nombre)
-            .NotEmpty().WithMessage("El nombre es requerido")
-            .MaximumLength(50).WithMessage("El nombre no puede tener más de 50 caracteres");
+            .NotEmpty().WithMessage("El nombre del parámetro es requerido")
+            .MaximumLength(50).WithMessage("El nombre del parámetro no puede exceder 50 caracteres");
 
         RuleFor(x => x.Descripcion)
-            .MaximumLength(150).WithMessage("La descripción no puede tener más de 150 caracteres");
+            .MaximumLength(150).WithMessage("La descripción del parámetro no puede exceder 150 caracteres");
     }
 }

@@ -8,18 +8,23 @@ public class UpdateProductoValidator : AbstractValidator<UpdateProductoCommand>
     public UpdateProductoValidator()
     {
         RuleFor(x => x.Id)
-            .NotEmpty().WithMessage("El Id del producto es requerido");
+            .NotEmpty().WithMessage("El identificador del producto es requerido");
+        
         RuleFor(x => x.Codigo)
-            .NotEmpty().WithMessage("El código es requerido")
-            .MaximumLength(20).WithMessage("El código no debe exceder 20 caracteres");
+            .NotEmpty().WithMessage("El código del producto es requerido")
+            .MaximumLength(20).WithMessage("El código del producto no puede exceder 20 caracteres");
+        
         RuleFor(x => x.Nombre)
-            .NotEmpty().WithMessage("El nombre es requerido")
-            .MaximumLength(50).WithMessage("El nombre no debe exceder 50 caracteres");
+            .NotEmpty().WithMessage("El nombre del producto es requerido")
+            .MaximumLength(50).WithMessage("El nombre del producto no puede exceder 50 caracteres");
+        
         RuleFor(x => x.Descripcion)
-            .MaximumLength(150).WithMessage("La descripción no debe exceder 150 caracteres");
+            .MaximumLength(150).WithMessage("La descripción del producto no puede exceder 150 caracteres");
+        
         RuleFor(x => x.CalidadId)
-            .NotEmpty().WithMessage("El Id de calidad es requerido");
+            .NotEmpty().WithMessage("La calidad del producto es requerida");
+        
         RuleFor(x => x.TipoProduccionId)
-            .NotEmpty().WithMessage("El Id de tipo de producción es requerido");
+            .NotEmpty().WithMessage("El tipo de producción del producto es requerido");
     }
 }

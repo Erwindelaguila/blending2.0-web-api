@@ -17,8 +17,7 @@ namespace Function.Blending.Core.Application.Agregado.Commands
             string codigo,
             string nombre,
             string? descripcion,
-            bool? activo,
-            object requestContext) : base(requestContext)
+            bool? activo)
         {
             Id = id;
             Codigo = codigo;

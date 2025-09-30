@@ -3,8 +3,9 @@ using Function.Blending.Core.Application.CalidadParametro.DTOs;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
-using Function.Blending.Core.Infrastructure.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
+
 using FluentValidation;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
@@ -19,32 +20,22 @@ public class UpsertCalidadParametroFunction
 {
     private readonly ILogger<UpsertCalidadParametroFunction> _logger;
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor; // ✅ NUEVO: Inyección para JWT
 
     public UpsertCalidadParametroFunction(
         ILogger<UpsertCalidadParametroFunction> logger,
-        IMediator mediator,
-        IAuthorizationHeaderExtractor headerExtractor) // ✅ NUEVO: Inyección
+        IMediator mediator)
     {
         _logger = logger;
         _mediator = mediator;
-        _headerExtractor = headerExtractor; // ✅ NUEVO: Asignación
     }
 
+    [RequireScopes("Administrador,Calidad")]
     [Function(FunctionNames.CalidadParametro.Upsert)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", "put", Route = ApiRoutes.Core.Configuraciones.CalidadParametroUpsert)] HttpRequestData req)
     {
         try
         {
-            // ✅ NUEVO: Establecer contexto JWT al inicio de la función
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             _logger.LogInformation("UpsertCalidadParametroFunction procesando...");
 
             var body = await req.ReadAsStringAsync();
@@ -62,7 +53,7 @@ public class UpsertCalidadParametroFunction
                     BaseResponse<object>.Fail("Error al deserializar el comando.", "Error de validación", 400));
             }
 
-            // Convertir DTO a Command con RequestContext
+            // Convertir DTO a Command
             var cambios = batchDto.Cambios.Select(c => new CalidadParametroCambio
             {
                 CalidadId = c.CalidadId,
@@ -70,7 +61,7 @@ public class UpsertCalidadParametroFunction
                 Valor = c.Valor
             }).ToList();
 
-            var command = new UpsertCalidadParametroBatchCommand(cambios, req);
+            var command = new UpsertCalidadParametroBatchCommand(cambios);
 
             var result = await _mediator.Send(command);
 
@@ -113,10 +104,6 @@ public class UpsertCalidadParametroFunction
                 500
             ));
         }
-        finally
-        {
             // ✅ NUEVO: Limpiar contexto de autenticación
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

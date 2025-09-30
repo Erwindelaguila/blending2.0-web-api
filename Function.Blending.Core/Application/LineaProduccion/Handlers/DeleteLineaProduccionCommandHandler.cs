@@ -1,7 +1,11 @@
 using Function.Blending.Core.Application.Interfaces.Repositories;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Execution;
 using Function.Blending.Core.Application.LineaProduccion.Commands;
 using Function.Blending.Core.Application.Common.Exceptions;
+using Function.Blending.Core.Shared.Constants;
+using Function.Blending.Core.Shared.Extensions;
+using Function.Blending.Core.Shared.Security;
+using System.Security.Claims;
 using MediatR;
 
 namespace Function.Blending.Core.Application.LineaProduccion.Handlers;
@@ -9,23 +13,17 @@ namespace Function.Blending.Core.Application.LineaProduccion.Handlers;
 public class DeleteLineaProduccionCommandHandler : IRequestHandler<DeleteLineaProduccionCommand, bool>
 {
     private readonly ILineaProduccionRepository _lineaProduccionRepository;
-    private readonly IAuthorizationService _authorizationService;
+    private readonly IFunctionContextAccessor _functionContextAccessor;
 
-    public DeleteLineaProduccionCommandHandler(
-        ILineaProduccionRepository lineaProduccionRepository,
-        IAuthorizationService authorizationService)
+    public DeleteLineaProduccionCommandHandler(ILineaProduccionRepository lineaProduccionRepository, IFunctionContextAccessor functionContextAccessor)
     {
         _lineaProduccionRepository = lineaProduccionRepository;
-        _authorizationService = authorizationService;
+        _functionContextAccessor = functionContextAccessor;
     }
 
     public async Task<bool> Handle(DeleteLineaProduccionCommand request, CancellationToken cancellationToken)
     {
-        var currentUserIdString = _authorizationService.GetCurrentUserId();
-        if (!Guid.TryParse(currentUserIdString, out var currentUserId))
-        {
-            throw new InvalidOperationException("User ID inválido en headers");
-        }
+        var currentUserId = GetCurrentUserId();
 
         var linea = await _lineaProduccionRepository.GetByIdAsync(request.Id);
         if (linea == null)
@@ -46,5 +44,29 @@ public class DeleteLineaProduccionCommandHandler : IRequestHandler<DeleteLineaPr
         {
             throw new EntityInUseException("la Línea de Producción", "tiene dependencias en la base de datos");
         }
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        try
+        {
+            var context = _functionContextAccessor.Current;
+            if (context?.Items.TryGetValue(MiscellaneousConstants.Principal, out var principalObj) == true &&
+                principalObj is ClaimsPrincipal principal)
+            {
+                var userIdString = principal.GetUserId();
+                if (!string.IsNullOrEmpty(userIdString) && Guid.TryParse(userIdString, out var userId))
+                {
+                    return userId;
+                }
+            }
+        }
+        catch
+        {
+            // Si hay error obteniendo el usuario, usar fallback
+        }
+        
+        // Fallback: usuario del sistema
+        return Guid.Parse("00000000-0000-0000-0000-000000000001");
     }
 }

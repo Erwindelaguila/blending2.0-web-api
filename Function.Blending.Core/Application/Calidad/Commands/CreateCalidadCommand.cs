@@ -1,6 +1,5 @@
 ﻿using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Application.Common.Commands;
-using Microsoft.Azure.Functions.Worker.Http;
 using System.Text.Json.Serialization;
 
 namespace Function.Blending.Core.Application.Calidad.Commands;
@@ -21,8 +20,7 @@ public class CreateCalidadCommand : BaseCommand<CalidadDTO>
         string codigoMaterial,
         string? descripcion = null,
         bool? noConforme = null,
-        bool? activo = null,
-        HttpRequestData? requestContext = null) : base(requestContext!)
+        bool? activo = null)
     {
         Codigo = codigo;
         Nombre = nombre;

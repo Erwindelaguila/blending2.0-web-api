@@ -1,10 +1,11 @@
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using Function.Blending.Core.Application.TipoProduccion.DTOs;
 using Function.Blending.Core.Application.TipoProduccion.Queries;
-using Function.Blending.Core.Infrastructure.Services;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -19,30 +20,19 @@ namespace Function.Blending.Core.Functions.TipoProduccion;
 public class GetTipoProduccionByIdFunction
 {
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor; // ✅ NUEVO: Inyección para JWT
 
-    public GetTipoProduccionByIdFunction(
-        IMediator mediator,
-        IAuthorizationHeaderExtractor headerExtractor) // ✅ NUEVO: Inyección
+    public GetTipoProduccionByIdFunction(IMediator mediator)
     {
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-        _headerExtractor = headerExtractor ?? throw new ArgumentNullException(nameof(headerExtractor)); // ✅ NUEVO: Asignación
     }
 
+    [RequireScopes("Administrador")]
     [Function(FunctionNames.TipoProduccion.GetById)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Production.TipoProduccionGetById)] HttpRequestData req)
     {
         try
         {
-            // ✅ NUEVO: Establecer contexto JWT al inicio de la función
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             var idString = query["id"];
             
@@ -82,11 +72,6 @@ public class GetTipoProduccionByIdFunction
                 null,
                 500
             ));
-        }
-        finally
-        {
-            // ✅ NUEVO: Limpiar contexto de autenticación
-            AuthorizationService.ClearCurrentContext();
         }
     }
 }

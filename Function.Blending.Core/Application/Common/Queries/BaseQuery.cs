@@ -1,14 +1,19 @@
 using MediatR;
+using System;
 
-namespace Function.Blending.Core.Application.Common.Queries;
-
-public abstract class BaseQuery<TResponse> : IRequest<TResponse>
+namespace Function.Blending.Core.Application.Common.Queries
 {
-
-    public object RequestContext { get; }
-    protected BaseQuery() { }
-    protected BaseQuery(object requestContext)
+    public abstract class BaseQuery<TResponse> : IRequest<TResponse>
     {
-        RequestContext = requestContext ?? throw new ArgumentNullException(nameof(requestContext));
+        public object RequestContext { get; }
+
+        // Constructor vacío (para compatibilidad)
+        protected BaseQuery() { }
+
+        // Constructor con validación (tu mejora)
+        protected BaseQuery(object requestContext)
+        {
+            RequestContext = requestContext ?? throw new ArgumentNullException(nameof(requestContext));
+        }
     }
 }
