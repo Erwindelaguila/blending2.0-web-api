@@ -10,5 +10,6 @@ public sealed class LogEjecucionHistoryItemResponse
   public bool? Confirmado { get; init; }
   public Guid EstadoId { get; init; }
   public string? EstadoNombre { get; init; }
+  public string? EstadoColor { get; init; }
   public DateTime CreadoEl { get; init; }
 }

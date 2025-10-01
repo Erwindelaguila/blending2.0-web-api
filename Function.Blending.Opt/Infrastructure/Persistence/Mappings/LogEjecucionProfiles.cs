@@ -20,6 +20,7 @@ public sealed class LogEjecucionProfiles : Profile
     // EF → ReadModel (history)
     CreateMap<Ef.LogEjecucion, Rm.LogEjecucionHistoryItemRm>()
       .ForMember(d => d.Contrato, cfg => cfg.Ignore())
-      .ForMember(d => d.EstadoNombre, cfg => cfg.Ignore());
+      .ForMember(d => d.EstadoNombre, cfg => cfg.Ignore())
+      .ForMember(d => d.EstadoColor, cfg => cfg.Ignore());
   }
 }

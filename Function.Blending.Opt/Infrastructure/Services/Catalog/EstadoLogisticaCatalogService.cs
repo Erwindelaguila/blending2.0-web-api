@@ -46,11 +46,12 @@ public sealed class EstadoLogisticaCatalogService(IAuxCatalogReader aux, IOption
 
     foreach (var kv in names)
     {
-      var head = await aux.GetRowHeaderAsync(kv.Key, ct);
+      var head = await aux.GetRowWithPropsAsync(kv.Key, [_opts.ColorPropClave], ct);
       if (head is null) continue;
       if (head.TableId != _opts.EstadoTableId.Value) continue;
 
-      dict[kv.Key] = new EstadoLogisticaSnapshot(kv.Key) { Nombre = kv.Value };
+      var color = head.Props.ContainsKey(_opts.ColorPropClave) ? head.Props[_opts.ColorPropClave] : null;
+      dict[kv.Key] = new EstadoLogisticaSnapshot(kv.Key) { Nombre = kv.Value, Color = color };
     }
     return dict;
   }

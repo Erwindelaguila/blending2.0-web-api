@@ -52,26 +52,4 @@ public sealed class EstadoCalidadCatalogService(IAuxCatalogReader aux, IOptions<
     }
     return dict;
   }
-  //public async Task<IDictionary<Guid, EstadoCalidadSnapshot>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct)
-  //{
-  //  var names = await aux.GetRowNamesAsync(ids, ct);
-  //  var dict = new Dictionary<Guid, EstadoCalidadSnapshot>(names.Count);
-
-  //  if (!_opts.EstadoTableId.HasValue)
-  //  {
-  //    foreach (var kv in names)
-  //      dict[kv.Key] = new EstadoCalidadSnapshot(kv.Key) { Nombre = kv.Value };
-  //    return dict;
-  //  }
-
-  //  foreach (var kv in names)
-  //  {
-  //    var head = await aux.GetRowHeaderAsync(kv.Key, ct);
-  //    if (head is null) continue;
-  //    if (head.TableId != _opts.EstadoTableId.Value) continue;
-
-  //    dict[kv.Key] = new EstadoCalidadSnapshot(kv.Key) { Nombre = kv.Value };
-  //  }
-  //  return dict;
-  //}
 }

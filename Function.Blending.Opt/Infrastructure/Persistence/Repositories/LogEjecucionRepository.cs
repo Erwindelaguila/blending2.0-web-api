@@ -137,7 +137,10 @@ public sealed class LogEjecucionRepository(
       var dict = await estados.GetByIdsAsync(estadoIds, ct);
       foreach (var it in items)
         if (dict.TryGetValue(it.EstadoId, out var est) && est is not null)
+        { 
           it.EstadoNombre = est.Nombre;
+          it.EstadoColor = est.Color;
+        }
     }
 
     // Enriquecer contratos (batch)
