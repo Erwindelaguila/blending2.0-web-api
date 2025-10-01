@@ -75,6 +75,8 @@
     // === AppParam Keys ===
     "AppParam_QualityExecutionCodeFormat": "APP_CAL_CODIGO_FORMAT",
     "AppParam_LogisticExecutionCodeFormat": "APP_LOG_CODIGO_FORMAT",
+    "AppParam_LogisticTiempoEspera": "APP_LOG_TIEMPO_ESPERA_DEFAULT",
+    "AppParam_LogisticValorDivision": "APP_LOG_VALOR_DIVISION_DEFAULT",
 
     // === Chaché de AppParam ===
     "AppParamCache_Enabled": "true",
@@ -123,7 +125,7 @@
 
     // ===== External Services =====
     "ExternalService_EnableQualityModel": "true",
-    "ExternalService_EnableLogisticsModel": "false",
+    "ExternalService_EnableLogisticsModel": "true",
 
     // ===== External - Calidad Model =====
     //"External_QualityModel_BaseUrl": "https://app-blending2-modelo-calidad-prod.azurewebsites.net",

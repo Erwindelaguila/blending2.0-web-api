@@ -17,6 +17,7 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
     ILogEjecucionRepository repo,
     IMapper mapper,
     IConfiguration cfg,
+    IAppParamRepository appParams,
     IEstadoLogisticaCatalogService estados,
     ILogisticaModelStarter modelStarter
   ) : IRequestHandler<StartLogEjecucionCommand, Result<StartLogEjecucionResponse>>
@@ -34,7 +35,16 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
       VO.LogInpFiltro? filtroVo = mapper.Map<VO.LogInpFiltro?>(request.Start.Filtro);
       VO.LogInpOferta? ofertaVo = mapper.Map<VO.LogInpOferta?>(request.Start.Oferta);
 
-      // 3) Repo.Start
+      decimal timeout = await GetTiempoEsperaAsync(ct);
+
+      if (filtroVo is not null) 
+      {
+        var division = await appParams.GetValueAsync(cfg[ConfigurationKeys.AppParam.Keys.Logistics.ValorDivision] ?? AppParamDefaults.Keys.LogisticaValorDivision, ct);
+        filtroVo.Division = division ?? AppParamDefaults.Values.LogisticaValorDivision; 
+        filtroVo.TiempoEspera = timeout;
+      }
+
+      // 3) Repo.Start      
       var entity = await repo.StartAsync(
         estadoInicialId,
         request.Start.Mensaje,
@@ -59,12 +69,21 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
       {
         var model = request.Model;
         model.EjecucionId = entity.Id;
+        model.TiempoEspera = timeout;
         _ = modelStarter.StartAsync(model, CancellationToken.None); // NO await
       }
 
       // 5) Domain -> DTO
       var dto = mapper.Map<StartLogEjecucionResponse>(entity);
       return Result<StartLogEjecucionResponse>.Ok(dto);
+    }
+
+    private async Task<decimal> GetTiempoEsperaAsync(CancellationToken ct)
+    {
+      var timeoutFromDb = await appParams.GetValueAsync(cfg[ConfigurationKeys.AppParam.Keys.Logistics.TiempoEspera] ?? AppParamDefaults.Keys.LogisticaTiempoEspera, ct);
+      _ = decimal.TryParse(timeoutFromDb, out var timeout);
+      var _timeout = timeout > 0 ? timeout : AppParamDefaults.Values.LogisticaTiempoEspera;
+      return _timeout;
     }
   }
 }

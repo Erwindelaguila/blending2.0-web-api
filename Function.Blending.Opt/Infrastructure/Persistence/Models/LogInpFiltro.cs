@@ -19,7 +19,7 @@ public partial class LogInpFiltro
 
     public string? Division { get; set; }
 
-    public int? TiempoEspera { get; set; }
+    public decimal? TiempoEspera { get; set; }
 
     public virtual LogEjecucion Ejecucion { get; set; } = null!;
 

@@ -16,5 +16,5 @@ public sealed record LogisticaModelPayload
   public decimal? PesoContenedor { get; init; }
   public int? NroMovimientos { get; init; }
   public IReadOnlyDictionary<string, IReadOnlyDictionary<string, decimal>>? Emparejamientos { get; init; }
-  public decimal? TiempoEspera { get; init; }
+  public decimal? TiempoEspera { get; set; }
 }
