@@ -140,6 +140,18 @@ public sealed class LogEjecucionRepository(
           it.EstadoNombre = est.Nombre;
     }
 
+    // Enriquecer contratos (batch)
+    if (items.Count > 0)
+    {
+      var dict = await db.Set<EF.LogInpInfo>()
+                        .AsNoTracking()
+                        .Where(i => items.Select(it => it.Id).Contains(i.EjecucionId))
+                        .ToDictionaryAsync(i => i.EjecucionId, i => i.Contrato, ct);
+      foreach (var it in items)
+        if (dict.TryGetValue(it.Id, out var contrato))
+          it.Contrato = contrato;
+    }
+
     return (items, total);
   }
 

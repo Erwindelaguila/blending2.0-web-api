@@ -82,8 +82,8 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
     {
       var timeoutFromDb = await appParams.GetValueAsync(cfg[ConfigurationKeys.AppParam.Keys.Logistics.TiempoEspera] ?? AppParamDefaults.Keys.LogisticaTiempoEspera, ct);
       _ = decimal.TryParse(timeoutFromDb, out var timeout);
-      var _timeout = timeout > 0 ? timeout : AppParamDefaults.Values.LogisticaTiempoEspera;
-      return _timeout;
+      timeout = timeout > 0 ? timeout : AppParamDefaults.Values.LogisticaTiempoEspera;
+      return timeout;
     }
   }
 }

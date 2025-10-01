@@ -1,6 +1,5 @@
 using AutoMapper;
 using Function.Blending.Opt.Application.Common.Paging;
-using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Responses;
 using Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Responses;
 using Function.Blending.Opt.Domain.Abstractions.Repositories;
 using Function.Blending.Opt.Shared.Results;
