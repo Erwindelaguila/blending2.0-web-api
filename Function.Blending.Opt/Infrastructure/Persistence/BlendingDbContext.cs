@@ -496,6 +496,7 @@ public partial class BlendingDbContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Division).HasMaxLength(20);
             entity.Property(e => e.Parametros).HasMaxLength(200);
+            entity.Property(e => e.TiempoEspera).HasColumnType("decimal(10, 4)");
 
             entity.HasOne(d => d.Ejecucion).WithOne(p => p.LogInpFiltro)
                 .HasForeignKey<LogInpFiltro>(d => d.EjecucionId)

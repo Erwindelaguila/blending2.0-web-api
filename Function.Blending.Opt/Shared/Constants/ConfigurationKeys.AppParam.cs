@@ -23,6 +23,8 @@
         public static class Logistics
         {
           public const string ExecutionCodeFormat = "AppParam_LogisticExecutionCodeFormat";
+          public const string TiempoEspera = "AppParam_LogisticTiempoEspera";
+          public const string ValorDivision = "AppParam_LogisticValorDivision";
         }
       }
     }
