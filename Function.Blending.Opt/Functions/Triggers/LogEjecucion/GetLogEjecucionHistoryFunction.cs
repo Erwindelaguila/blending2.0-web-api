@@ -18,7 +18,7 @@ public sealed class GetLogEjecucionHistoryFunction(
   IRequestContext ctx)
 {
   [Function(nameof(GetLogEjecucionHistoryFunction))]
-  [RequireScopes(ConfigurationKeys.Auth.Scopes.Quality.ReadHistory)]
+  [RequireScopes(ConfigurationKeys.Auth.Scopes.Logistics.ReadHistory)]
   public async Task<HttpResponseData> Run(
     [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = FunctionRoutes.Logistics.History)]
     HttpRequestData req,

@@ -563,6 +563,8 @@ public partial class BlendingDbContext : DbContext
             entity.Property(e => e.Descripcion).HasMaxLength(50);
             entity.Property(e => e.Material).HasMaxLength(20);
             entity.Property(e => e.Tolerancia).HasColumnType("decimal(10, 4)");
+            entity.Property(e => e.UnidadMedidaAlmacen).HasMaxLength(10);
+            entity.Property(e => e.UnidadMedidaVenta).HasMaxLength(10);
 
             entity.HasOne(d => d.Ejecucion).WithOne(p => p.LogInpOferta)
                 .HasForeignKey<LogInpOferta>(d => d.EjecucionId)
@@ -687,6 +689,8 @@ public partial class BlendingDbContext : DbContext
 
             entity.HasIndex(e => e.RequestInvocationId, "IX_SysLog_RequestInvocationId");
 
+            entity.HasIndex(e => e.TraceParentId, "IX_SysLog_TraceParentId");
+
             entity.HasIndex(e => e.UserId, "IX_SysLog_UserId");
 
             entity.HasIndex(e => e.Username, "IX_SysLog_Username");
@@ -698,6 +702,7 @@ public partial class BlendingDbContext : DbContext
             entity.Property(e => e.NameSpace)
                 .HasMaxLength(250)
                 .IsUnicode(false);
+            entity.Property(e => e.TraceParentId).HasMaxLength(64);
             entity.Property(e => e.Username).HasMaxLength(100);
         });
 

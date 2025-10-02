@@ -4,7 +4,7 @@ using Function.Blending.Opt.Domain.ValueObjects;
 
 namespace Function.Blending.Opt.Infrastructure.Services;
 
-public sealed class CalOutResumenService(ICalEjecucionOutputRepository repo) : ICalEjecucionOutService
+public sealed class CalOutResumenService(ICalEjecucionOutputRepository repo) : ICalEjecucionOutputService
 {
   public Task<IReadOnlyList<CalOutResumen>> GetSummariesByExcecutionAsync(Guid executionId, CancellationToken ct) => repo.GetSummariesByExcecutionAsync(executionId, ct);
 

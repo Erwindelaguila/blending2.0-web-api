@@ -11,7 +11,7 @@ namespace Function.Blending.Opt.Application.Features.CalEjecucion.Queries.GetByI
 public sealed class GetCalEjecucionByIdQueryHandler(
     ICalEjecucionRepository repo,
     ICalEjecucionInputService inputService,
-    ICalEjecucionOutService outputService,
+    ICalEjecucionOutputService outputService,
     IEstadoCalidadCatalogService estadosService,
     IMapper mapper
   ) : IRequestHandler<GetCalEjecucionByIdQuery, Result<CalEjecucionResponse>>
@@ -51,7 +51,7 @@ public sealed class GetCalEjecucionByIdQueryHandler(
     entity.Parametros = await parametrosTask;
   }
 
-  static async Task LoadOutputAsync(Domain.Entities.CalEjecucion entity, ICalEjecucionOutService outputService, CancellationToken ct)
+  static async Task LoadOutputAsync(Domain.Entities.CalEjecucion entity, ICalEjecucionOutputService outputService, CancellationToken ct)
   {
     var summariesTask = outputService.GetDeepSummariesByExcecutionAsync(entity.Id, ct);
     var detailsTask = outputService.GetDeepDetailsByExcecutionAsync(entity.Id, ct);

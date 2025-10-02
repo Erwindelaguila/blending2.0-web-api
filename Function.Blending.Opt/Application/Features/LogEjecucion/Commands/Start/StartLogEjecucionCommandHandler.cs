@@ -35,13 +35,10 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
       VO.LogInpFiltro? filtroVo = mapper.Map<VO.LogInpFiltro?>(request.Start.Filtro);
       VO.LogInpOferta? ofertaVo = mapper.Map<VO.LogInpOferta?>(request.Start.Oferta);
 
-      decimal timeout = await GetTiempoEsperaAsync(ct);
-
       if (filtroVo is not null) 
       {
         var division = await appParams.GetValueAsync(cfg[ConfigurationKeys.AppParam.Keys.Logistics.ValorDivision] ?? AppParamDefaults.Keys.LogisticaValorDivision, ct);
         filtroVo.Division = division ?? AppParamDefaults.Values.LogisticaValorDivision; 
-        filtroVo.TiempoEspera = timeout;
       }
 
       // 3) Repo.Start      
@@ -69,7 +66,7 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
       {
         var model = request.Model;
         model.EjecucionId = entity.Id;
-        model.TiempoEspera = timeout;
+        model.NroMovimientos = await GetNumeroMovimientosAsync(ct);
         _ = modelStarter.StartAsync(model, CancellationToken.None); // NO await
       }
 
@@ -78,12 +75,12 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
       return Result<StartLogEjecucionResponse>.Ok(dto);
     }
 
-    private async Task<decimal> GetTiempoEsperaAsync(CancellationToken ct)
+    private async Task<decimal> GetNumeroMovimientosAsync(CancellationToken ct)
     {
-      var timeoutFromDb = await appParams.GetValueAsync(cfg[ConfigurationKeys.AppParam.Keys.Logistics.TiempoEspera] ?? AppParamDefaults.Keys.LogisticaTiempoEspera, ct);
-      _ = decimal.TryParse(timeoutFromDb, out var timeout);
-      timeout = timeout > 0 ? timeout : AppParamDefaults.Values.LogisticaTiempoEspera;
-      return timeout;
+      var numMovFromDb = await appParams.GetValueAsync(cfg[ConfigurationKeys.AppParam.Keys.Logistics.NumeroMovimientos] ?? AppParamDefaults.Keys.LogisticaNumeroMovimientos, ct);
+      _ = decimal.TryParse(numMovFromDb, out var numMov);
+      numMov = numMov > 0 ? numMov : AppParamDefaults.Values.LogisticaNumeroMovimientos;
+      return numMov;
     }
   }
 }

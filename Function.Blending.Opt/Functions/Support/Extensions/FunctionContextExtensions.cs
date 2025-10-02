@@ -12,6 +12,7 @@ public static partial class FunctionContextExtensions
   /// Devuelve el CorrelationId almacenado en el contexto (si existe).
   /// </summary>
   public static string? GetCorrelationId(this FunctionContext ctx) => ctx.Items.TryGetValue(CorrelationKeys.CorrelationIdItemKey, out var v) ? v?.ToString() : null;
+  public static string? GetTraceParent(this FunctionContext ctx) => ctx.Items.TryGetValue(CorrelationKeys.TraceParentIdItemKey, out var v) ? v?.ToString() : null;
 
   /// <summary>
   /// Devuelve el ClaimsPrincipal resuelto por middlewares previos (si existe).

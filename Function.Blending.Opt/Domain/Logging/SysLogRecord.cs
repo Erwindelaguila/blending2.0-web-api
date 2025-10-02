@@ -16,6 +16,7 @@ public sealed record SysLogRecord(
   string? Message,
   string? StackTrace,
   string? ExtraInfo,
+  string? TraceParentId,
   Guid? RequestInvocationId,
   Guid? FunctionInvocationId,
   Guid? ExceptionGroupId,

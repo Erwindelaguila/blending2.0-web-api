@@ -25,6 +25,7 @@ public sealed class SysLogRepository(BlendingDbContext db) : ISysLogRepository
       Message = entry.Message,
       StackTrace = entry.StackTrace,
       ExtraInfo = entry.ExtraInfo,
+      TraceParentId = entry.TraceParentId,
       RequestInvocationId = entry.RequestInvocationId,
       FunctionInvocationId = entry.FunctionInvocationId,
       ExceptionGroupId = entry.ExceptionGroupId,
