@@ -15,18 +15,14 @@ namespace Function.Blending.Opt.Functions.Pipeline;
 /// </summary>
 public sealed class CorrelationIdMiddleware(ILogger<CorrelationIdMiddleware> logger) : IFunctionsWorkerMiddleware
 {
-  private const string CorrelationIdItemKey = CorrelationKeys.CorrelationIdItemKey;
-  private const string CorrelationHeaderKey = CorrelationKeys.CorrelationHeaderKey;
-
   // Encabezados candidatos desde los que intentar leer el ID (respetando tus constantes/estilo)
-  private static readonly string[] HeaderCandidates = new[]
-  {
-    CorrelationHeaderKey,
+  private static readonly string[] HeaderCandidates =
+  [
+    CorrelationKeys.CorrelationHeaderKey,
     "X-Correlation-ID",
     "x-request-id",
-    "X-Request-ID",
-    "traceparent"
-  };
+    "X-Request-ID"
+  ];
 
   public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
   {
@@ -35,20 +31,26 @@ public sealed class CorrelationIdMiddleware(ILogger<CorrelationIdMiddleware> log
 
     // 2) Resolver o crear un CorrelationId
     var correlationId = ResolveCorrelationId(req);
-    if (string.IsNullOrWhiteSpace(correlationId))
+    var traceparent = req?.Headers.TryGetValues(CorrelationKeys.TraceParentHeaderKey, out var tpValues) == true ? tpValues.FirstOrDefault() : null;
+
+    if (string.IsNullOrWhiteSpace(correlationId) && string.IsNullOrWhiteSpace(traceparent))
+    { 
       correlationId = Guid.NewGuid().ToString("N");
+      traceparent = $"xx-{correlationId}-xx";
+    }
 
     // 3) Publicar en Items para el resto del pipeline
-    context.Items[CorrelationIdItemKey] = correlationId;
+    context.Items[CorrelationKeys.CorrelationIdItemKey] = correlationId;
+    context.Items[CorrelationKeys.TraceParentIdItemKey] = traceparent;
 
     // 4) Log no-crítico (si falla, no debe romper el pipeline)
     try
     {
-      logger.LogDebug("CorrelationId assigned: {CorrelationId}", correlationId);
+      logger.LogDebug("CorrelationId assigned: {CorrelationId} and {traceparent}", correlationId, traceparent);
     }
     catch (Exception ex) when (ex is not OperationCanceledException)
     {
-      logger.LogWarning(ex, "Non-critical: failed to log correlation id. corr={CorrelationId}", correlationId);
+      logger.LogWarning(ex, "Non-critical: failed to log correlation id. corr={CorrelationId}, traceparent={traceparent}", correlationId, traceparent);
     }
 
     // 5) Continuar la ejecución
@@ -57,14 +59,21 @@ public sealed class CorrelationIdMiddleware(ILogger<CorrelationIdMiddleware> log
     // 6) Adjuntar header a la respuesta HTTP (no crítico)
     try
     {
-      if (context.GetInvocationResult().Value is HttpResponseData res && !res.Headers.TryGetValues(CorrelationHeaderKey, out _))
+      if (context.GetInvocationResult().Value is HttpResponseData res)
       {
-        res.Headers.Add(CorrelationHeaderKey, correlationId);
+        if (!res.Headers.TryGetValues(CorrelationKeys.CorrelationHeaderKey, out _))
+        {
+          res.Headers.Add(CorrelationKeys.CorrelationHeaderKey, correlationId);
+        }
+        if (!res.Headers.TryGetValues(CorrelationKeys.TraceParentHeaderKey, out _))
+        {
+          res.Headers.Add(CorrelationKeys.TraceParentHeaderKey, traceparent);
+        }
       }
     }
     catch (Exception ex) when (ex is not OperationCanceledException)
     {
-      logger.LogWarning(ex, "Non-critical: failed to append correlation header. corr={CorrelationId}", correlationId);
+      logger.LogWarning(ex, "Non-critical: failed to append correlation header. corr={CorrelationId}, traceparent={traceparent}", correlationId, traceparent);
     }
   }
 

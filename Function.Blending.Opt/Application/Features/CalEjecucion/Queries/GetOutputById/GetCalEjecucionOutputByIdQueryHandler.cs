@@ -12,7 +12,7 @@ namespace Function.Blending.Opt.Application.Features.CalEjecucion.Queries.GetOut
 
 public sealed class GetCalEjecucionOutputByIdQueryHandler(
     ICalEjecucionRepository repo,
-    ICalEjecucionOutService outputService,
+    ICalEjecucionOutputService outputService,
     IEstadoCalidadCatalogService estadosService,
     IMapper mapper
   ) : IRequestHandler<GetCalEjecucionOutputByIdQuery, Result<CalEjecucionResponse>>

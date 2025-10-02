@@ -29,5 +29,7 @@ public static class FunctionRoutes
     public const string GetById = $"{ApiBase}logistics/executions/{{id:guid}}";
     public const string History = $"{ApiBase}logistics/executions/history";
     public const string ToggleConfirmed = $"{ApiBase}logistics/executions/{{id:guid}}/confirmed/toggle";
+    public const string GetInputById = $"{ApiBase}logistics/executions/{{id:guid}}/input";
+    public const string GetOutputById = $"{ApiBase}logistics/executions/{{id:guid}}/output";
   }
 }

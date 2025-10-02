@@ -71,8 +71,9 @@ public sealed class HmacValidationMiddleware(
   private async Task WriteProblemAsync(FunctionContext ctx, HttpRequestData req, HttpStatusCode status, string type, string title, string detail)
   {
     var res = req.CreateResponse(status);
-    var traceId = ctx.Items.TryGetValue(CorrelationKeys.CorrelationIdItemKey, out var v) ? v?.ToString() : null;
-    await pdf.WriteAsync(res, (int)status, title, type, detail, traceId);
+    var corr = ctx.Items.TryGetValue(CorrelationKeys.CorrelationIdItemKey, out var v) ? v?.ToString() : null;
+    var tp = ctx.Items.TryGetValue(CorrelationKeys.TraceParentIdItemKey, out var t) ? t?.ToString() : null;
+    await pdf.WriteAsync(res, (int)status, title, type, detail, corr ?? tp);
     ctx.GetInvocationResult().Value = res;
   }
 

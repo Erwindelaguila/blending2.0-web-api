@@ -25,7 +25,7 @@ public sealed class SysLogComposer(
   public Ef.SysLog FromException(Exception ex, string level = "error", string? extraInfo = null)
   {
     var (userId, username) = ResolveUser();
-    var (requestId, functionId) = ResolveInvocationIds();
+    var (requestId, traceparent, functionId) = ResolveInvocationIds();
 
     return new Ef.SysLog
     {
@@ -38,6 +38,7 @@ public sealed class SysLogComposer(
       Message = ex.Message,
       StackTrace = ex.ToString(),
       ExtraInfo = extraInfo,
+      TraceParentId = traceparent,
       RequestInvocationId = requestId,
       FunctionInvocationId = functionId,
       ExceptionGroupId = null,
@@ -51,7 +52,7 @@ public sealed class SysLogComposer(
   public Ef.SysLog FromMessage(string message, string level, string? extraInfo = null)
   {
     var (userId, username) = ResolveUser();
-    var (requestId, functionId) = ResolveInvocationIds();
+    var (requestId, traceparent, functionId) = ResolveInvocationIds();
 
     return new Ef.SysLog
     {
@@ -64,6 +65,7 @@ public sealed class SysLogComposer(
       Message = message,
       StackTrace = null,
       ExtraInfo = extraInfo,
+      TraceParentId = traceparent,
       RequestInvocationId = requestId,
       FunctionInvocationId = functionId,
       ExceptionGroupId = null,
@@ -86,7 +88,7 @@ public sealed class SysLogComposer(
     return (userId, username);
   }
 
-  private (Guid? requestId, Guid? functionId) ResolveInvocationIds()
+  private (Guid? requestId, string? traceparent, Guid? functionId) ResolveInvocationIds()
   {
     // FunctionInvocationId viene de FunctionContext.InvocationId (string),
     // lo parseamos si es Guid.
@@ -101,6 +103,8 @@ public sealed class SysLogComposer(
     if (!string.IsNullOrWhiteSpace(corr) && Guid.TryParse(corr, out var r))
       requestId = r;
 
-    return (requestId, functionId);
+    var traceparent = requestContext.TraceParent;
+
+    return (requestId, traceparent, functionId);
   }
 }

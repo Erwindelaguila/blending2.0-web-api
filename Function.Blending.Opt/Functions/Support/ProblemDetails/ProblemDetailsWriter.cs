@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Text.Json;
+﻿using Azure.Core;
 using Function.Blending.Opt.Domain.Abstractions.Services;
 using Function.Blending.Opt.Domain.Logging;
 using Function.Blending.Opt.Functions.Support.Execution;
@@ -9,6 +8,8 @@ using Function.Blending.Opt.Shared.Extensions;             // ClaimsPrincipal.Ge
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using System.Net;
+using System.Text.Json;
 
 namespace Function.Blending.Opt.Functions.Support.ProblemDetails;
 
@@ -38,7 +39,7 @@ public sealed class ProblemDetailsWriter(
       title: title,
       type: type,
       detail: detail,
-      traceId: ctx.GetCorrelationId(),
+      traceId: ctx.GetCorrelationId() ?? ctx.GetTraceParent(),
       errors: errors,
       extensions: extensions,
       instance: req.Url?.PathAndQuery
@@ -85,11 +86,14 @@ public sealed class ProblemDetailsWriter(
       if (!string.IsNullOrWhiteSpace(uid) && Guid.TryParse(uid, out var gUid))
         userId = gUid;
 
+
       // RequestInvocationId ← correlationId si es GUID
       Guid? requestId = null;
       var corr = ctx.GetCorrelationId();
       if (!string.IsNullOrWhiteSpace(corr) && Guid.TryParse(corr, out var gCorr))
         requestId = gCorr;
+
+      string? traceparent = ctx.GetTraceParent();
 
       // FunctionInvocationId ← InvocationId si es GUID
       Guid? functionId = null;
@@ -122,6 +126,7 @@ public sealed class ProblemDetailsWriter(
         Message: message,
         StackTrace: null,
         ExtraInfo: extra,
+        TraceParentId: traceparent,
         RequestInvocationId: requestId,
         FunctionInvocationId: functionId,
         ExceptionGroupId: groupId,

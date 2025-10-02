@@ -89,7 +89,7 @@ public sealed class ProblemDetailsFactory
     string? detail,
     string? traceId,
     IDictionary<string, string[]>? errors)
-    => WriteAsync(res, status, title, type, detail, traceId, (object?)errors, extensions: null, instance: null);
+    => WriteAsync(res, status, title, type, detail, traceId, errors, extensions: null, instance: null);
 
   private static void AddContentTypeIfMissing(HttpResponseData res, string contentType)
   {

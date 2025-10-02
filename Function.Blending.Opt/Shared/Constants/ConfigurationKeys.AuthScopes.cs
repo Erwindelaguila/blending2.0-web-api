@@ -22,6 +22,8 @@ public static partial class ConfigurationKeys
         public const string ReadHistory = "Auth_Allow_Logistics_ReadHistory";
         public const string WriteStart = "Auth_Allow_Logistics_WriteStart";
         public const string ToggleConfirmed = "Auth_Allow_Logistics_ToggleConfirmed";
+        public const string ReadInputById = "Auth_Allow_Logistics_ReadInputById";
+        public const string ReadOutputById = "Auth_Allow_Logistics_ReadOutputById";
       }
     }
   }

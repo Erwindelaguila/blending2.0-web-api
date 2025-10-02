@@ -2,6 +2,7 @@ using System.Net;
 using Function.Blending.Opt.Domain.Abstractions.Services;
 using Function.Blending.Opt.Domain.Logging;
 using Function.Blending.Opt.Functions.Support.Execution;
+using Function.Blending.Opt.Functions.Support.Http;
 using Function.Blending.Opt.Functions.Support.ProblemDetails;
 using Function.Blending.Opt.Infrastructure.Configuration.Options.Logging;
 using Function.Blending.Opt.Shared.Extensions; // GetUserId()
@@ -54,6 +55,8 @@ public sealed class ExceptionHandlingMiddleware(
           if (!string.IsNullOrWhiteSpace(corr) && Guid.TryParse(corr, out var corrGuid))
             requestId = corrGuid;
 
+          string? traceparent = requestContext.TraceParent ?? (context.Items.TryGetValue(CorrelationKeys.TraceParentIdItemKey, out var t) ? t?.ToString() : null);
+
           // FunctionInvocationId (si es GUID)
           Guid? functionId = null;
           var inv = context.InvocationId;
@@ -89,6 +92,7 @@ public sealed class ExceptionHandlingMiddleware(
             Message: ex.Message,
             StackTrace: ex.ToString(),
             ExtraInfo: null,
+            TraceParentId: traceparent,
             RequestInvocationId: requestId,
             FunctionInvocationId: functionId,
             ExceptionGroupId: groupId,
@@ -108,13 +112,17 @@ public sealed class ExceptionHandlingMiddleware(
       if (req is not null)
       {
         var res = req.CreateResponse(HttpStatusCode.InternalServerError);
+
+        var corr = requestContext.CorrelationId ?? (context.Items.TryGetValue(CorrelationKeys.CorrelationIdItemKey, out var v) ? v?.ToString() : null);
+        var traceparent= requestContext.TraceParent ?? (context.Items.TryGetValue(CorrelationKeys.TraceParentIdItemKey, out var t) ? t?.ToString() : null);
+
         await pdf.WriteAsync(
           res,
           status: 500,
           title: "Unexpected error",
           type: "urn:blending:error:unexpected",
           detail: "An unexpected error occurred.",
-          traceId: requestContext.CorrelationId ?? (context.Items.TryGetValue("CorrelationId", out var v) ? v?.ToString() : null),
+          traceId: corr ?? traceparent,
           instance: req.Url.PathAndQuery
         );
         context.GetInvocationResult().Value = res;

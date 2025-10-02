@@ -1,16 +1,12 @@
-﻿using System;
-using AutoMapper;
+﻿using AutoMapper;
 using Ef = Function.Blending.Opt.Infrastructure.Persistence.Models;
 using Vo = Function.Blending.Opt.Domain.ValueObjects;
 
-// Importa tus extensions para ctx.GetExecutionId()/GetParentId()
-using Function.Blending.Opt.Infrastructure.Persistence.Mappings;
-
 namespace Function.Blending.Opt.Infrastructure.Persistence.Mappings
 {
-  public sealed class LogisticaInputProfile : Profile
+  public sealed class LogEjecucionInputVoToEfProfiles : Profile
   {
-    public LogisticaInputProfile()
+    public LogEjecucionInputVoToEfProfiles()
     {
       // === Info (1:1 con Ejecucion) ===
       CreateMap<Vo.LogInpInfo, Ef.LogInpInfo>()

@@ -27,18 +27,20 @@
     "Auth_Bearer_ClockSkewSeconds": "300",
 
     // === Scopes dinámicos (CSV) ===
-    "Auth_Allow_Quality_ReadById": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
-    "Auth_Allow_Quality_ReadHistory": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
-    "Auth_Allow_Quality_WriteStart": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
-    "Auth_Allow_Quality_ChangeAccepted": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
-    "Auth_Allow_Quality_ReadParameters": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
-    "Auth_Allow_Quality_ReadInputById": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
-    "Auth_Allow_Quality_ReadOutputById": "ee48df9c-0dc1-4428-9bf2-55945b50a6be",
+    "Auth_Allow_Quality_ReadById": "262c6df9-c3e5-4785-922b-0a9dd8a7ecec",
+    "Auth_Allow_Quality_ReadHistory": "262c6df9-c3e5-4785-922b-0a9dd8a7ecec",
+    "Auth_Allow_Quality_WriteStart": "262c6df9-c3e5-4785-922b-0a9dd8a7ecec",
+    "Auth_Allow_Quality_ChangeAccepted": "262c6df9-c3e5-4785-922b-0a9dd8a7ecec",
+    "Auth_Allow_Quality_ReadParameters": "262c6df9-c3e5-4785-922b-0a9dd8a7ecec",
+    "Auth_Allow_Quality_ReadInputById": "262c6df9-c3e5-4785-922b-0a9dd8a7ecec",
+    "Auth_Allow_Quality_ReadOutputById": "262c6df9-c3e5-4785-922b-0a9dd8a7ecec",
 
-    "Auth_Allow_Logistics_ReadById": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
-    "Auth_Allow_Logistics_ReadHistory": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
-    "Auth_Allow_Logistics_WriteStart": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
-    "Auth_Allow_Logistics_ToggleConfirmed": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f,ee48df9c-0dc1-4428-9bf2-55945b50a6be",
+    "Auth_Allow_Logistics_ReadById": "c0f64f45-72dc-4d8d-a1a8-c225c41a202d",
+    "Auth_Allow_Logistics_ReadHistory": "c0f64f45-72dc-4d8d-a1a8-c225c41a202d",
+    "Auth_Allow_Logistics_WriteStart": "c0f64f45-72dc-4d8d-a1a8-c225c41a202d",
+    "Auth_Allow_Logistics_ToggleConfirmed": "c0f64f45-72dc-4d8d-a1a8-c225c41a202d",
+    "Auth_Allow_Logistics_ReadInputById": "c0f64f45-72dc-4d8d-a1a8-c225c41a202d",
+    "Auth_Allow_Logistics_ReadOutputById": "c0f64f45-72dc-4d8d-a1a8-c225c41a202d",
 
     // === Límites ===
     "Limits_WebhookMaxBytes": "2097152",
@@ -75,7 +77,7 @@
     // === AppParam Keys ===
     "AppParam_QualityExecutionCodeFormat": "APP_CAL_CODIGO_FORMAT",
     "AppParam_LogisticExecutionCodeFormat": "APP_LOG_CODIGO_FORMAT",
-    "AppParam_LogisticTiempoEspera": "APP_LOG_TIEMPO_ESPERA_DEFAULT",
+    "AppParam_LogisticNumeroMovimientos": "APP_LOG_NUMERO_MOVIMIENTOS_DEFAULT",
     "AppParam_LogisticValorDivision": "APP_LOG_VALOR_DIVISION_DEFAULT",
 
     // === Chaché de AppParam ===
@@ -119,7 +121,7 @@
     "Security_Hmac_VaultUrl": "https://kvblending2.vault.azure.net/",
     "Security_Hmac_CacheSeconds": "600",
     "Security_Hmac_TenantId": "b7e26f48-2292-4a14-a355-1aeb8489ae3d", // opcional, ayuda en multi-tenant
-    "Security_Hmac_Credential_Mode": "Interactive", // usa CLI si existe; si no, abre login interactivo -> PROD: ManagedIdentity -> necesario(Security_Hmac_Credential_ClientId)
+    "Security_Hmac_Credential_Mode": "ManagedIdentity", // usa CLI si existe; si no, abre login interactivo -> PROD: ManagedIdentity -> necesario(Security_Hmac_Credential_ClientId)
     "Security_Hmac_Credential_ClientId": "a3a4b98f-7daf-4fb6-ab90-2d7c1999356b", // <clientId-de-la-UAMI>
     "Security_Hmac_Credential_TenantId": "b7e26f48-2292-4a14-a355-1aeb8489ae3d",
 
@@ -128,15 +130,13 @@
     "ExternalService_EnableLogisticsModel": "true",
 
     // ===== External - Calidad Model =====
-    //"External_QualityModel_BaseUrl": "https://app-blending2-modelo-calidad-prod.azurewebsites.net",
-    "External_QualityModel_BaseUrl": "http://localhost:5000",
+    "External_QualityModel_BaseUrl": "https://app-blending2-modelo-calidad-prod.azurewebsites.net",
     "External_QualityModel_StartPath": "/blending_harina",
     "External_QualityModel_TimeoutSeconds": "600",
     "External_QualityModel_ApiKey": null,
 
     // ===== External - Logistica Model =====
-    //"External_QualityModel_BaseUrl": "https://app-blending2-modelo-logistica-prod.azurewebsites.net",
-    "External_LogisticsModel_BaseUrl": "http://localhost:5000",
+    "External_QualityModel_BaseUrl": "https://app-blending2-modelo-logistica-prod.azurewebsites.net",
     "External_LogisticsModel_StartPath": "/blending_contenedor",
     "External_LogisticsModel_TimeoutSeconds": "600",
     "External_LogisticsModel_ApiKey": null,

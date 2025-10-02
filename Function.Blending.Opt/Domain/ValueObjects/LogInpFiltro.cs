@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Function.Blending.Opt.Domain.ValueObjects;
+﻿namespace Function.Blending.Opt.Domain.ValueObjects;
 
 public sealed record LogInpFiltro
 {

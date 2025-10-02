@@ -25,6 +25,8 @@ public partial class SysLog
 
     public string? ExtraInfo { get; set; }
 
+    public string? TraceParentId { get; set; }
+
     public Guid? RequestInvocationId { get; set; }
 
     public Guid? FunctionInvocationId { get; set; }
