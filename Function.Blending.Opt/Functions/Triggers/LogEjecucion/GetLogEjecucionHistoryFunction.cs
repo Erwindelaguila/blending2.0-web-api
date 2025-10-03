@@ -41,9 +41,10 @@ public sealed class GetLogEjecucionHistoryFunction(
     bool? confirmado = qs.GetBoolOrNull("confirmado");
 
     var codigo = qs.GetStringOrNull("codigo");
+    var contrato = qs.GetStringOrNull("contrato");
 
     var result = await mediator.Send(
-      new GetLogEjecucionHistoryQuery(page, pageSize, sortBy, sortDir, confirmado, creadoDelUtc, creadoAlUtc, estadoId, codigo));
+      new GetLogEjecucionHistoryQuery(page, pageSize, sortBy, sortDir, confirmado, creadoDelUtc, creadoAlUtc, estadoId, codigo, contrato));
 
     if (!result.IsSuccess)
     {

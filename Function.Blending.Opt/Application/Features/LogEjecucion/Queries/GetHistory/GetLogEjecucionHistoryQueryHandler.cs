@@ -7,8 +7,7 @@ using MediatR;
 
 namespace Function.Blending.Opt.Application.Features.LogEjecucion.Queries.GetHistory;
 
-public sealed class GetLogEjecucionHistoryQueryHandler(ILogEjecucionRepository repo, IMapper mapper)
-  : IRequestHandler<GetLogEjecucionHistoryQuery, Result<PageResponse<LogEjecucionHistoryItemResponse>>>
+public sealed class GetLogEjecucionHistoryQueryHandler(ILogEjecucionRepository repo, IMapper mapper): IRequestHandler<GetLogEjecucionHistoryQuery, Result<PageResponse<LogEjecucionHistoryItemResponse>>>
 {
   public async Task<Result<PageResponse<LogEjecucionHistoryItemResponse>>> Handle(GetLogEjecucionHistoryQuery request, CancellationToken ct)
   {
@@ -22,6 +21,7 @@ public sealed class GetLogEjecucionHistoryQueryHandler(ILogEjecucionRepository r
       request.CreadoAlUtc,
       request.EstadoId,
       request.Codigo,
+      request.Contrato,
       ct
     );
 
