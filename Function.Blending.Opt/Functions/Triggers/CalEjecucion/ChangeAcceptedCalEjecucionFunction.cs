@@ -1,9 +1,5 @@
 ﻿using Function.Blending.Opt.Application.Features.CalEjecucion.Commands.ChangeAccepted;
-using Function.Blending.Opt.Application.Features.CalEjecucion.Commands.Start;
 using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Requests;
-using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Responses;
-using Function.Blending.Opt.Application.Features.LogEjecucion.Commands.ToggleState;
-using Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Requests;
 using Function.Blending.Opt.Functions.Support.Authorization;
 using Function.Blending.Opt.Functions.Support.Execution;
 using Function.Blending.Opt.Functions.Support.Extensions;

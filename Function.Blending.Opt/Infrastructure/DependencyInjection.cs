@@ -26,6 +26,8 @@ public static partial class DependencyInjection
     ConfigureExternalClients(services, cfg);      // Clientes externos (HTTP)
     ConfigureSysLog(services, cfg);               // Logging a DDBB
 
+    ConfigureTime(services, cfg);                 // Time Zone Service
+
     return services;
   }
 }
