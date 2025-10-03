@@ -29,14 +29,15 @@ public sealed class RequestSizeLimitMiddleware(IOptions<RequestSizeOptions> opts
         if (long.TryParse(raw, out var len) && len > _opts.MaxBytes)
         {
           var res = req.CreateResponse(HttpStatusCode.RequestEntityTooLarge);
-          var traceId = context.Items.TryGetValue(CorrelationKeys.CorrelationIdItemKey, out var v) ? v?.ToString() : null;
+          var corr = context.Items.TryGetValue(CorrelationKeys.CorrelationIdItemKey, out var v) ? v?.ToString() : null;
+          var tp = context.Items.TryGetValue(CorrelationKeys.TraceParentIdItemKey, out var t) ? t?.ToString() : null;
 
           await _pdf.WriteAsync(res,
             status: 413,
             title: "Payload Too Large",
             type: "urn:blending:error:payload-too-large",
             detail: $"Payload too large. Limit={_opts.MaxBytes} bytes.",
-            traceId: traceId);
+            traceId: corr ?? tp);
 
           context.GetInvocationResult().Value = res;
           return;

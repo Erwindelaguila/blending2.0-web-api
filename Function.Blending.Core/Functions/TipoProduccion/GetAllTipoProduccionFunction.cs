@@ -2,8 +2,9 @@ using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.TipoProduccion.Queries;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
-using Function.Blending.Core.Application.Interfaces.Services;
-using Function.Blending.Core.Infrastructure.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
+
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -20,31 +21,22 @@ public class GetAllTipoProduccionFunction
 {
     private readonly ILogger<GetAllTipoProduccionFunction> _logger;
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor; // ✅ NUEVO: Inyección para JWT
 
     public GetAllTipoProduccionFunction(
         ILogger<GetAllTipoProduccionFunction> logger,
-        IMediator mediator,
-        IAuthorizationHeaderExtractor headerExtractor) // ✅ NUEVO: Inyección
+        IMediator mediator)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-        _headerExtractor = headerExtractor ?? throw new ArgumentNullException(nameof(headerExtractor)); // ✅ NUEVO: Asignación
     }
 
+    [RequireScopes("Administrador")]
     [Function(FunctionNames.TipoProduccion.GetAll)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Production.TipoProduccionBase)] HttpRequestData req)
     {
         try
         {
-            // ✅ NUEVO: Establecer contexto JWT al inicio de la función
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
 
             _logger.LogInformation("GetAllTipoProduccionFunction procesando...");
 
@@ -93,11 +85,6 @@ public class GetAllTipoProduccionFunction
                 null,
                 500
             ));
-        }
-        finally
-        {
-            // ✅ NUEVO: Limpiar contexto de autenticación
-            AuthorizationService.ClearCurrentContext();
         }
     }
 }

@@ -10,6 +10,9 @@ public static partial class DependencyInjection
   {
     services.AddScoped<ICalEjecucionRepository, CalEjecucionRepository>();
     services.AddScoped<ILogEjecucionRepository, LogEjecucionRepository>();
-    services.AddScoped<ICalOutResumenRepository, CalOutResumenRepository>();
+    services.AddScoped<ICalEjecucionInputRepository, CalEjecucionInputRepository>();
+    services.AddScoped<ICalEjecucionOutputRepository, CalEjecucionOutputRepository>();
+    services.AddScoped<ILogEjecucionInputRepository, LogEjecucionInputRepository>();
+    services.AddScoped<ILogEjecucionOutputRepository, LogEjecucionOutputRepository>();
   }
 }

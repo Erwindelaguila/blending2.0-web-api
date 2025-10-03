@@ -3,8 +3,8 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Agregado.DTOs;
 using Function.Blending.Core.Application.Agregado.Queries;
-using Function.Blending.Core.Application.Interfaces.Services;
-using Function.Blending.Core.Infrastructure.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -15,28 +15,19 @@ namespace Function.Blending.Core.Functions.Agregado;
 public class GetAgregadoByIdFunction
 {
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
-    public GetAgregadoByIdFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
+    public GetAgregadoByIdFunction(IMediator mediator)
     {
         _mediator = mediator;
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador")]
     [Function(FunctionNames.Agregado.GetById)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Production.AgregadoGetById)] HttpRequestData req)
     {
         try
         {
-            
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             var idString = query["id"];
             if (string.IsNullOrEmpty(idString) || !Guid.TryParse(idString, out var agregadoId))
@@ -48,7 +39,7 @@ public class GetAgregadoByIdFunction
                 ));
             }
 
-            var command = new GetAgregadoByIdQuery(agregadoId, req);
+            var command = new GetAgregadoByIdQuery(agregadoId);
             var result = await _mediator.Send(command);
 
             if (result == null)
@@ -77,10 +68,6 @@ public class GetAgregadoByIdFunction
                 500
             ));
         }
-        finally
-        {
        
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

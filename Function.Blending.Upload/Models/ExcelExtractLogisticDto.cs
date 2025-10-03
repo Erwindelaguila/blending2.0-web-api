@@ -6,6 +6,19 @@ public class ExcelExtractLogisticDto
     public Dictionary<string, Oferta> Oferta { get; set; } = new Dictionary<string, Oferta>();
     public string Contrato { get; set; } = string.Empty;
     public string PesoContenedores { get; set; }= string.Empty;
+    public string PedidoVenta { get; set; } = string.Empty;
+    public string FechaCarguio { get; set; } = string.Empty;
+    public string PlantaCodigo { get; set; } = string.Empty;
+    public string PlantaDescripcion { get; set; } = string.Empty;
+    public string AlmacenCodigo { get; set; } = string.Empty;
+    public string AlmacenDescripcion { get; set; } = string.Empty;
+    public string Cliente { get; set; } = string.Empty;
+    public string Asistente { get; set; } = string.Empty;
+    public string Supervisora { get; set; } = string.Empty;
+    public string PaisDestino  { get; set; } = string.Empty;
+    public string CantidadRuma  { get; set; } = string.Empty;
+    public string UnidadMedidaRuma { get; set; } = string.Empty;
+    public string NumeroMovimientos { get; set; } = string.Empty;
 }
 
 public class Demanda

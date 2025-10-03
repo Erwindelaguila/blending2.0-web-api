@@ -6,7 +6,7 @@ public class DeleteAgregadoCommand : BaseCommand<bool>
 {
     public Guid Id { get; }
 
-    public DeleteAgregadoCommand(Guid id, object requestContext) : base(requestContext)
+    public DeleteAgregadoCommand(Guid id)
     {
         Id = id;
     }

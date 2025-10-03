@@ -56,5 +56,11 @@ public class ApiRoutes
             public const string Base = "core/appparam";                 
             public const string GetById = "core/appparam/detail";         
         }
+        
+        // Rutas de AuxRow
+        public static class AuxRow
+        {
+            public const string StatusQuality = "core/auxrow/statusquality";
+        }
     }
 }

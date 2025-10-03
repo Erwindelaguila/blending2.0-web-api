@@ -1,8 +1,11 @@
 ﻿using Function.Blending.Core.Application.Interfaces.Repositories;
-// using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Calidad.Commands;
 using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Domain.Entities;
+using Function.Blending.Core.Functions.Support.Execution;
+using Function.Blending.Core.Shared.Constants;
+using Function.Blending.Core.Shared.Extensions;
+using System.Security.Claims;
 using MediatR;
 
 namespace Function.Blending.Core.Application.Calidad.Handlers;
@@ -10,19 +13,19 @@ namespace Function.Blending.Core.Application.Calidad.Handlers;
 public class CreateCalidadCommandHandler : IRequestHandler<CreateCalidadCommand, CalidadDTO>
 {
     private readonly ICalidadRepository _calidadRepository;
-    // private readonly IAuthorizationService _authorizationService;
+    private readonly IFunctionContextAccessor _functionContextAccessor;
 
-    public CreateCalidadCommandHandler(ICalidadRepository calidadRepository/*, IAuthorizationService authorizationService*/)
+    public CreateCalidadCommandHandler(
+        ICalidadRepository calidadRepository,
+        IFunctionContextAccessor functionContextAccessor)
     {
         _calidadRepository = calidadRepository;
-        // _authorizationService = authorizationService;
+        _functionContextAccessor = functionContextAccessor;
     }
 
     public async Task<CalidadDTO> Handle(CreateCalidadCommand request, CancellationToken cancellationToken)
     {
-        // var creadoPorIdString = _authorizationService.GetCurrentUserId();
-        // var creadoPorId = Guid.Parse(creadoPorIdString);
-        var creadoPorId = Guid.NewGuid(); // Valor temporal mientras no hay autorización
+        var creadoPorId = GetCurrentUserId();
 
         var calidad = new CalidadEntity
         {
@@ -54,5 +57,29 @@ public class CreateCalidadCommandHandler : IRequestHandler<CreateCalidadCommand,
             ModificadoPorId = calidad.ModificadoPorId,
             ModificadoEl = calidad.ModificadoEl
         };
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        try
+        {
+            var context = _functionContextAccessor.Current;
+            if (context?.Items.TryGetValue(MiscellaneousConstants.Principal, out var principalObj) == true &&
+                principalObj is ClaimsPrincipal principal)
+            {
+                var userIdString = principal.GetUserId();
+                if (!string.IsNullOrEmpty(userIdString) && Guid.TryParse(userIdString, out var userId))
+                {
+                    return userId;
+                }
+            }
+        }
+        catch
+        {
+            // Si hay error obteniendo el usuario, usar fallback
+        }
+        
+        // Fallback: usuario del sistema
+        return Guid.Parse("00000000-0000-0000-0000-000000000001");
     }
 }

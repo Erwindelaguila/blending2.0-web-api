@@ -1,10 +1,11 @@
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using Function.Blending.Core.Application.AppParam.Queries;
 using Function.Blending.Core.Application.AppParam.DTOs;
-using Function.Blending.Core.Infrastructure.Services;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -14,14 +15,13 @@ namespace Function.Blending.Core.Functions.AppParam;
 public class GetAppParamByIdFunction
 {
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public GetAppParamByIdFunction(IMediator mediator, IAuthorizationHeaderExtractor headerExtractor)
+    public GetAppParamByIdFunction(IMediator mediator)
     {
         _mediator = mediator;
-        _headerExtractor = headerExtractor; 
     }
 
+    [RequireScopes("Administrador,Calidad")]
     [Function(FunctionNames.AppParam.GetById)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.AppParam.GetById + "/{key}")] HttpRequestData req,
@@ -29,14 +29,6 @@ public class GetAppParamByIdFunction
     {
         try
         {
-      
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             if (string.IsNullOrWhiteSpace(key))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<AppParamDTO>.Fail(
@@ -79,10 +71,6 @@ public class GetAppParamByIdFunction
                 500
             ));
         }
-        finally
-        {
      
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

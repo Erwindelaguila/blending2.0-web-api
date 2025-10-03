@@ -4,10 +4,11 @@ using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using Function.Blending.Core.Application.Planta.Commands;
 using Function.Blending.Core.Application.Planta.DTOs;
-using Function.Blending.Core.Infrastructure.Services;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -18,30 +19,19 @@ namespace Function.Blending.Core.Functions.Planta;
 public class UpdatePlantaFunction
 {
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor; // ✅ NUEVO: Inyección para JWT
 
-    public UpdatePlantaFunction(
-        IMediator mediator,
-        IAuthorizationHeaderExtractor headerExtractor) // ✅ NUEVO: Inyección
+    public UpdatePlantaFunction(IMediator mediator)
     {
         _mediator = mediator;
-        _headerExtractor = headerExtractor; // ✅ NUEVO: Asignación
     }
 
+    [RequireScopes("Administrador,Calidad")]
     [Function(FunctionNames.Planta.Update)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Put, Route = ApiRoutes.Core.Planta.GetById)] HttpRequestData req)
     {
         try
         {
-            // ✅ NUEVO: Establecer contexto JWT al inicio de la función
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             var body = await req.ReadAsStringAsync();
             if (string.IsNullOrEmpty(body))
             {
@@ -81,8 +71,7 @@ public class UpdatePlantaFunction
                 dto.Nombre,
                 dto.Descripcion,
                 dto.NumeroRuma,
-                dto.Activo,
-                req
+                dto.Activo
             );
 
             var result = await _mediator.Send(command);
@@ -91,10 +80,20 @@ public class UpdatePlantaFunction
         }
         catch (ValidationException ex)
         {
-            var validationErrors = ex.Errors.Select(e => new { Field = e.PropertyName, Error = e.ErrorMessage });
+            // Crear errores específicos por campo con mensajes claros
+            var validationErrors = ex.Errors.Select(error => new 
+            { 
+                Campo = error.PropertyName, 
+                Error = error.ErrorMessage
+            }).ToList();
+
+            var errorSummary = ex.Errors.Count() == 1 
+                ? ex.Errors.First().ErrorMessage
+                : $"Se encontraron {ex.Errors.Count()} errores de validación.";
+
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 validationErrors,
-                "Errores de validación",
+                errorSummary,
                 400
             ));
         }
@@ -129,11 +128,6 @@ public class UpdatePlantaFunction
                 null,
                 500
             ));
-        }
-        finally
-        {
-            // ✅ NUEVO: Limpiar contexto de autenticación
-            AuthorizationService.ClearCurrentContext();
         }
     }
 }

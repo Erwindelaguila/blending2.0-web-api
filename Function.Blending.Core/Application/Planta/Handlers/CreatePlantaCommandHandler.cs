@@ -1,5 +1,8 @@
 using Function.Blending.Core.Application.Interfaces.Repositories;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Execution;
+using Function.Blending.Core.Shared.Extensions;
+using System.Security.Claims;
+
 using Function.Blending.Core.Application.Planta.Commands;
 using Function.Blending.Core.Application.Planta.DTOs;
 using Function.Blending.Core.Domain.Entities;
@@ -10,18 +13,17 @@ namespace Function.Blending.Core.Application.Planta.Handlers;
 public class CreatePlantaCommandHandler : IRequestHandler<CreatePlantaCommand, PlantaDTO>
 {
     private readonly IPlantaRepository _plantaRepository;
-    private readonly IAuthorizationService _authorizationService;
+    private readonly IFunctionContextAccessor _functionContextAccessor;
 
-    public CreatePlantaCommandHandler(IPlantaRepository plantaRepository, IAuthorizationService authorizationService)
+    public CreatePlantaCommandHandler(IPlantaRepository plantaRepository, IFunctionContextAccessor functionContextAccessor)
     {
         _plantaRepository = plantaRepository;
-        _authorizationService = authorizationService;
+        _functionContextAccessor = functionContextAccessor;
     }
 
     public async Task<PlantaDTO> Handle(CreatePlantaCommand request, CancellationToken cancellationToken)
     {
-        var creadoPorIdString = _authorizationService.GetCurrentUserId();
-        var creadoPorId = Guid.Parse(creadoPorIdString);
+        var creadoPorId = GetCurrentUserId();
 
         var planta = new PlantaEntity
         {
@@ -51,5 +53,29 @@ public class CreatePlantaCommandHandler : IRequestHandler<CreatePlantaCommand, P
             ModificadoPorId = planta.ModificadoPorId,
             ModificadoEl = planta.ModificadoEl
         };
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        try
+        {
+            var context = _functionContextAccessor.Current;
+            if (context?.Items.TryGetValue(Function.Blending.Core.Shared.Constants.MiscellaneousConstants.Principal, out var principalObj) == true &&
+                principalObj is System.Security.Claims.ClaimsPrincipal principal)
+            {
+                var userIdString = principal.GetUserId();
+                if (!string.IsNullOrEmpty(userIdString) && Guid.TryParse(userIdString, out var userId))
+                {
+                    return userId;
+                }
+            }
+        }
+        catch
+        {
+            // Si hay error obteniendo el usuario, usar fallback
+        }
+        
+        // Fallback: usuario del sistema
+        return Guid.Parse("00000000-0000-0000-0000-000000000001");
     }
 }

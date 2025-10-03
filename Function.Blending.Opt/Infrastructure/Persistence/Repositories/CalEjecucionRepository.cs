@@ -53,8 +53,7 @@ public sealed class CalEjecucionRepository(
 
     var baseQuery = db.Set<EF.CalEjecucion>().AsNoTracking();
 
-    var filtered = CalEjecucionHistoryQuery.ApplyFilters(baseQuery,
-      creadoDelUtc, creadoAlUtc, estadoId, plantaId, codigo);
+    var filtered = CalEjecucionHistoryQuery.ApplyFilters(baseQuery, creadoDelUtc, creadoAlUtc, estadoId, plantaId, codigo);
 
     var ordered = CalEjecucionHistoryQuery.ApplyOrdering(filtered, sortBy, sortDir);
 
@@ -70,7 +69,10 @@ public sealed class CalEjecucionRepository(
       var dict = await estados.GetByIdsAsync(estadoIds, ct);
       foreach (var it in items)
         if (dict.TryGetValue(it.EstadoId, out var est) && est is not null)
+        {
           it.EstadoNombre = est.Nombre;
+          it.EstadoColor = est.Color;
+        }
     }
 
     return (items, total);

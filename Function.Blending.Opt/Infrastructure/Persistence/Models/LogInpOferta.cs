@@ -17,11 +17,11 @@ public partial class LogInpOferta
 
     public int CantidadAsignadaVenta { get; set; }
 
-    public int UnidadMedidaVenta { get; set; }
+    public string UnidadMedidaVenta { get; set; } = null!;
 
     public int CantidadAsignadaAlmacen { get; set; }
 
-    public int UnidadMedidaAlmacen { get; set; }
+    public string UnidadMedidaAlmacen { get; set; } = null!;
 
     public decimal Tolerancia { get; set; }
 

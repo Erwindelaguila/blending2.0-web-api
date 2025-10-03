@@ -7,9 +7,9 @@ public sealed record LogInpOfertaDto(
   string Material,
   string Descripcion,
   int CantidadAsignadaVenta,
-  int UnidadMedidaVenta,
+  string UnidadMedidaVenta,
   int CantidadAsignadaAlmacen,
-  int UnidadMedidaAlmacen,
+  string UnidadMedidaAlmacen,
   decimal Tolerancia
 )
 {

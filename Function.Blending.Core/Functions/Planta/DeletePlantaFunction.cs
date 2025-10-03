@@ -2,9 +2,10 @@ using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using Function.Blending.Core.Application.Planta.Commands;
-using Function.Blending.Core.Infrastructure.Services;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -14,16 +15,13 @@ namespace Function.Blending.Core.Functions.Planta;
 public class DeletePlantaFunction
 {
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public DeletePlantaFunction(
-        IMediator mediator,
-        IAuthorizationHeaderExtractor headerExtractor) 
+    public DeletePlantaFunction(IMediator mediator) 
     {
         _mediator = mediator;
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador,Calidad")]
     [Function(FunctionNames.Planta.Delete)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Delete, Route = ApiRoutes.Core.Planta.Base + "/{id}")] HttpRequestData req,
@@ -31,14 +29,6 @@ public class DeletePlantaFunction
     {
         try
         {
-        
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             if (!Guid.TryParse(id, out var plantaId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
@@ -48,7 +38,7 @@ public class DeletePlantaFunction
                 ));
             }
 
-            var command = new DeletePlantaCommand(plantaId, req);
+            var command = new DeletePlantaCommand(plantaId);
             var result = await _mediator.Send(command);
 
             if (!result)
@@ -85,10 +75,6 @@ public class DeletePlantaFunction
                 500
             ));
         }
-        finally
-        {
       
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Function.Blending.Opt.Domain.Logging;
+﻿namespace Function.Blending.Opt.Domain.Logging;
 
 public enum SysLogLevel
 {

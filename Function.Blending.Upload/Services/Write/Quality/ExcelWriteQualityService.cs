@@ -7,9 +7,9 @@ namespace Function.Blending.Upload.Services.Write.Quality;
 
 public class ExcelWriteQualityService
 {
-    public static void Execute<T>(
+    public static void Execute(
         IXLWorksheet hoja,
-        JsonObject data,
+        List<Dictionary<string, object>> data,
         Dictionary<string, ExcelConfig> parametros,
         int startRow,
         bool usarItemKeyEnColumnaA = false 
@@ -20,17 +20,15 @@ public class ExcelWriteQualityService
             var key = param.Key;
             var config = param.Value;
 
+            // Header
             hoja.Cell($"{config.Column}{startRow}").Value = config.Header;
             var row = startRow + 1;
 
             foreach (var entry in data)
             {
-                var itemKey = entry.Key;
-                var node = entry.Value[$"{key}"];
-                
-                object? valorFinal = null;
-                string? error = null;
+                if (!entry.ContainsKey(key)) continue;
 
+                var value = entry[key];
                 var expectedType = (config.DataType ?? "").ToLower();
 
                 try
@@ -38,29 +36,35 @@ public class ExcelWriteQualityService
                     switch (expectedType)
                     {
                         case "string":
-                            valorFinal = ((JsonValue?)node)?.GetValue<string>();
+                            hoja.Cell($"{config.Column}{row}").Value = value?.ToString() ?? "";
                             break;
 
                         case "number":
-                            // Intentar convertir a double (puede adaptarse a decimal/int si prefieres)
-                            valorFinal = ((JsonValue?)node)?.GetValue<double>();
+                            if (value is JsonValue jvNumber &&
+                                jvNumber.TryGetValue<double>(out var dbl))
+                            {
+                                hoja.Cell($"{config.Column}{row}").Value = dbl;
+                            }
+                            else if (double.TryParse(value?.ToString(), out var number))
+                            {
+                                hoja.Cell($"{config.Column}{row}").Value = number;
+                            }
+                            else
+                            {
+                                hoja.Cell($"{config.Column}{row}").Value = value?.ToString() ?? "";
+                            }
                             break;
 
                         default:
-                            valorFinal = node?.ToString(); // fallback
+                            hoja.Cell($"{config.Column}{row}").Value = value?.ToString() ?? "";
                             break;
                     }
                 }
                 catch
                 {
-                    error = $"Valor \"{node}\" no es tipo {expectedType}";
+                    hoja.Cell($"{config.Column}{row}").Value = value?.ToString() ?? "";
                 }
 
-                object? valorEscrito = config.Column == "A"
-                    ? (usarItemKeyEnColumnaA ? itemKey : valorFinal)
-                    : valorFinal;
-
-                hoja.Cell($"{config.Column}{row}").Value = error ?? valorEscrito?.ToString();
                 row++;
             }
         }

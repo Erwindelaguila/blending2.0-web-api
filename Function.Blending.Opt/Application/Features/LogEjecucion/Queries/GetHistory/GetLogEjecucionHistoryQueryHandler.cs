@@ -1,6 +1,5 @@
 using AutoMapper;
 using Function.Blending.Opt.Application.Common.Paging;
-using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Responses;
 using Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Responses;
 using Function.Blending.Opt.Domain.Abstractions.Repositories;
 using Function.Blending.Opt.Shared.Results;
@@ -8,8 +7,7 @@ using MediatR;
 
 namespace Function.Blending.Opt.Application.Features.LogEjecucion.Queries.GetHistory;
 
-public sealed class GetLogEjecucionHistoryQueryHandler(ILogEjecucionRepository repo, IMapper mapper)
-  : IRequestHandler<GetLogEjecucionHistoryQuery, Result<PageResponse<LogEjecucionHistoryItemResponse>>>
+public sealed class GetLogEjecucionHistoryQueryHandler(ILogEjecucionRepository repo, IMapper mapper): IRequestHandler<GetLogEjecucionHistoryQuery, Result<PageResponse<LogEjecucionHistoryItemResponse>>>
 {
   public async Task<Result<PageResponse<LogEjecucionHistoryItemResponse>>> Handle(GetLogEjecucionHistoryQuery request, CancellationToken ct)
   {
@@ -22,8 +20,8 @@ public sealed class GetLogEjecucionHistoryQueryHandler(ILogEjecucionRepository r
       request.CreadoDelUtc,
       request.CreadoAlUtc,
       request.EstadoId,
-      request.PlantaId,
       request.Codigo,
+      request.Contrato,
       ct
     );
 

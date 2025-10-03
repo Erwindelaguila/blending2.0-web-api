@@ -19,8 +19,7 @@ public class CreateTipoProduccionCommand : BaseCommand<TipoProduccionDTO>
         string? descripcion,
         Guid lineaProduccionId,
         Guid agregadoId,
-        bool? activo,
-        object requestContext) : base(requestContext)
+        bool? activo)
     {
         Codigo = codigo;
         Nombre = nombre;

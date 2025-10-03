@@ -2,40 +2,32 @@ using Function.Blending.Core.Application.Agregado.Commands;
 using Function.Blending.Core.Application.Agregado.DTOs;
 using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Interfaces.Repositories;
-using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Domain.Entities;
+using Function.Blending.Core.Shared.Extensions;
+using Function.Blending.Core.Shared.Constants;
+using Function.Blending.Core.Functions.Support.Execution;
 using MediatR;
+using System.Security.Claims;
 
 namespace Function.Blending.Core.Application.Agregado.Handlers
 {
     public class UpdateAgregadoCommandHandler : IRequestHandler<UpdateAgregadoCommand, AgregadoDTO>
     {
         private readonly IAgregadoRepository _agregadoRepository;
-        private readonly IAuthorizationService _authorizationService;
+        private readonly IFunctionContextAccessor _functionContextAccessor;
 
-        public UpdateAgregadoCommandHandler(
-            IAgregadoRepository agregadoRepository,
-            IAuthorizationService authorizationService)
+        public UpdateAgregadoCommandHandler(IAgregadoRepository agregadoRepository, IFunctionContextAccessor functionContextAccessor)
         {
             _agregadoRepository = agregadoRepository ?? throw new ArgumentNullException(nameof(agregadoRepository));
-            _authorizationService = authorizationService ?? throw new ArgumentNullException(nameof(authorizationService));
+            _functionContextAccessor = functionContextAccessor ?? throw new ArgumentNullException(nameof(functionContextAccessor));
         }
 
         public async Task<AgregadoDTO> Handle(UpdateAgregadoCommand request, CancellationToken cancellationToken)
         {
-          
-            var currentUserIdString = _authorizationService.GetCurrentUserId();
-            if (!Guid.TryParse(currentUserIdString, out var currentUserId))
-            {
-                throw new UnauthorizedAccessException("User ID inválido en headers");
-            }
-            
-          
             var currentAgregado = await _agregadoRepository.GetByIdAsync(request.Id);
             if (currentAgregado == null)
                 throw new InvalidOperationException("Agregado no encontrado");
 
-          
             if (currentAgregado.Activo && request.Activo == false)
             {
                 var isUsedByActiveTipoProduccion = await _agregadoRepository.IsUsedByActiveTipoProduccionAsync(request.Id);
@@ -52,7 +44,7 @@ namespace Function.Blending.Core.Application.Agregado.Handlers
                 Nombre = request.Nombre,
                 Descripcion = request.Descripcion,
                 Activo = request.Activo ?? currentAgregado.Activo, 
-                ModificadoPorId = currentUserId,
+                ModificadoPorId = GetCurrentUserId(), // Usuario real del JWT
                 ModificadoEl = DateTime.UtcNow,
                 // Preservar campos que no deben modificarse
                 CreadoPorId = currentAgregado.CreadoPorId,
@@ -76,6 +68,30 @@ namespace Function.Blending.Core.Application.Agregado.Handlers
                 ModificadoPorId = agregadoToUpdate.ModificadoPorId,
                 ModificadoEl = agregadoToUpdate.ModificadoEl
             };
+        }
+
+        private Guid GetCurrentUserId()
+        {
+            try
+            {
+                var context = _functionContextAccessor.Current;
+                if (context?.Items.TryGetValue(MiscellaneousConstants.Principal, out var principalObj) == true &&
+                    principalObj is ClaimsPrincipal principal)
+                {
+                    var userIdString = principal.GetUserId();
+                    if (!string.IsNullOrEmpty(userIdString) && Guid.TryParse(userIdString, out var userId))
+                    {
+                        return userId;
+                    }
+                }
+            }
+            catch
+            {
+                // Si hay error obteniendo el usuario, usar fallback
+            }
+            
+            // Fallback: usuario del sistema
+            return Guid.Parse("00000000-0000-0000-0000-000000000001");
         }
     }
 }

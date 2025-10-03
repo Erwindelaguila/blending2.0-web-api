@@ -1,9 +1,5 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Function.Blending.Opt.Domain.Abstractions.Repositories;
+﻿using Function.Blending.Opt.Domain.Abstractions.Repositories;
 using Function.Blending.Opt.Domain.Logging;
-using Function.Blending.Opt.Infrastructure.Persistence;
 using EF = Function.Blending.Opt.Infrastructure.Persistence.Models;
 
 namespace Function.Blending.Opt.Infrastructure.Persistence.Repositories;
@@ -21,9 +17,11 @@ public sealed class SysLogRepository(BlendingDbContext db) : ISysLogRepository
       MethodName = entry.MethodName,
       Username = entry.Username,
       UserId = entry.UserId,
+      DateTime = DateTime.UtcNow,
       Message = entry.Message,
       StackTrace = entry.StackTrace,
       ExtraInfo = entry.ExtraInfo,
+      TraceParentId = entry.TraceParentId,
       RequestInvocationId = entry.RequestInvocationId,
       FunctionInvocationId = entry.FunctionInvocationId,
       ExceptionGroupId = entry.ExceptionGroupId,

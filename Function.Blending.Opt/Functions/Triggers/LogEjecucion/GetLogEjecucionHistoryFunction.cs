@@ -18,7 +18,7 @@ public sealed class GetLogEjecucionHistoryFunction(
   IRequestContext ctx)
 {
   [Function(nameof(GetLogEjecucionHistoryFunction))]
-  [RequireScopes(ConfigurationKeys.Auth.Scopes.Quality.ReadHistory)]
+  [RequireScopes(ConfigurationKeys.Auth.Scopes.Logistics.ReadHistory)]
   public async Task<HttpResponseData> Run(
     [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = FunctionRoutes.Logistics.History)]
     HttpRequestData req,
@@ -38,13 +38,13 @@ public sealed class GetLogEjecucionHistoryFunction(
     var creadoAlUtc = qs.GetUtcDateTime("creadoAlUtc", "creadoAl");
 
     Guid? estadoId = qs.GetGuidOrNull("estadoId");
-    Guid? plantaId = qs.GetGuidOrNull("plantaId");
     bool? confirmado = qs.GetBoolOrNull("confirmado");
 
     var codigo = qs.GetStringOrNull("codigo");
+    var contrato = qs.GetStringOrNull("contrato");
 
     var result = await mediator.Send(
-      new GetLogEjecucionHistoryQuery(page, pageSize, sortBy, sortDir, confirmado, creadoDelUtc, creadoAlUtc, estadoId, plantaId, codigo));
+      new GetLogEjecucionHistoryQuery(page, pageSize, sortBy, sortDir, confirmado, creadoDelUtc, creadoAlUtc, estadoId, codigo, contrato));
 
     if (!result.IsSuccess)
     {
@@ -68,7 +68,6 @@ public sealed class GetLogEjecucionHistoryFunction(
             creadoDel = creadoDelUtc,
             creadoAl = creadoAlUtc,
             estadoId,
-            plantaId,
             codigo
           }
         });
@@ -90,7 +89,6 @@ public sealed class GetLogEjecucionHistoryFunction(
         creadoDel = creadoDelUtc,
         creadoAl = creadoAlUtc,
         estadoId,
-        plantaId,
         confirmado,
         codigo
       }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
+﻿using Azure;
 using Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Complete;
 using Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Requests;
 using Function.Blending.Opt.Domain.Abstractions.Services;
@@ -17,6 +14,7 @@ using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
+using System.Net;
 
 namespace Function.Blending.Opt.Functions.Triggers.LogEjecucion
 {
@@ -26,7 +24,10 @@ namespace Function.Blending.Opt.Functions.Triggers.LogEjecucion
     IProblemDetailsWriter problem,
     IRequestContext ctx,
     ISysParamService sysParamService,
-    IConfiguration configuration)
+    IConfiguration configuration,
+    IFunctionContextAccessor fctxAccessor,
+    ISysLogService syslog
+  )
   {
     [Function(nameof(CompleteLogEjecucionFunction))]
     [AllowAnonymous]
@@ -38,7 +39,7 @@ namespace Function.Blending.Opt.Functions.Triggers.LogEjecucion
       FunctionContext fctx)
     {
       // A) Lectura robusta: usa RawBody del pipeline si existe; si no, lee el stream
-      var body = await req.TryReadFromJsonOrRawAsync<CompleteLogEjecucionRequest>(fctx);
+      var body = await req.TryReadJsonWithSysLogAsync<CompleteLogEjecucionRequest>(fctx, ctx, fctxAccessor, syslog);
       if (body is null)
       {
         return await problem.CreateAsync(
@@ -57,15 +58,18 @@ namespace Function.Blending.Opt.Functions.Triggers.LogEjecucion
       {
         userId = await sysParamService.GetRequiredIdAsync(sysParamKey, fctx.CancellationToken);
       }
-      catch
+      catch(Exception ex)
       {
-        return await problem.CreateAsync(
-          fctx, req, HttpStatusCode.BadRequest,
+        return await problem.BadRequestWithLogAsync(
+          fctx, req, syslog, ctx, fctxAccessor,
           type: "urn:blending:error:invalid-user",
           title: "Invalid user id",
           detail: $"System user not configured or inactive for SysParam key '{sysParamKey}'.",
-          extensions: new Dictionary<string, object?> { ["requestedBy"] = ctx.Username }
-        );
+          ex: ex,
+          extraInfo: $"sysParamKey={sysParamKey}",
+          extensions: new Dictionary<string, object?> { ["requestedBy"] = ctx.Username },
+          sourceType: typeof(CompleteLogEjecucionFunction),
+          methodName: nameof(Run));
       }
 
       // C) Ejecutar comando (el handler enriquece Estado antes de mapear)

@@ -4,6 +4,8 @@ namespace Function.Blending.Opt.Domain.ValueObjects;
 
 // VO: inmutable, igualdad por valor (record), sin identidad propia
 public sealed record CalInpFiltro(
+  Guid? Id,
+  Guid? EjecucionId,
   string CentroUbicacion,
   string CentroProduccion,
   string UbicacionAlmacen,

@@ -24,8 +24,9 @@ public sealed class RequestLoggingMiddleware(
     var sw = Stopwatch.StartNew();
     var name = context.FunctionDefinition.Name;
     var corr = context.Items.TryGetValue(CorrelationKeys.CorrelationIdItemKey, out var v) ? v?.ToString() : null;
+    var trace = context.Items.TryGetValue(CorrelationKeys.TraceParentIdItemKey, out var t) ? t?.ToString() : null;
 
-    logger.LogInformation("REQ start {Function} corr=({CorrelationId})", name, corr);
+    logger.LogInformation("REQ start {Function} corr=({CorrelationId}), traceparent=({TraceParent})", name, corr, trace);
 
     HttpRequestData? req = null;
     try
@@ -75,6 +76,7 @@ public sealed class RequestLoggingMiddleware(
             Message: msg,
             StackTrace: null,
             ExtraInfo: null,
+            TraceParentId: trace,
             RequestInvocationId: requestId,
             FunctionInvocationId: functionId,
             ExceptionGroupId: context.Items.TryGetValue("ExceptionGroupId", out var eg) && Guid.TryParse(eg?.ToString(), out var gid) ? gid : null,
@@ -85,18 +87,16 @@ public sealed class RequestLoggingMiddleware(
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-          logger.LogWarning(ex, "Non-critical: failed to persist Info request log. corr={CorrelationId}", corr);
+          logger.LogWarning(ex, "Non-critical: failed to persist Info request log. corr={CorrelationId}, traceparent={TraceParent}", corr, trace);
         }
       }
 
-      logger.LogInformation("REQ end   {Function} corr=({CorrelationId}) elapsed_ms={Elapsed} status={Status}",
-        name, corr, sw.ElapsedMilliseconds, status);
+      logger.LogInformation("REQ end   {Function} corr=({CorrelationId}) traceparent=({TraceParent}) elapsed_ms={Elapsed} status={Status}", name, corr, trace, sw.ElapsedMilliseconds, status);
     }
     catch (Exception ex)
     {
       sw.Stop();
-      logger.LogError(ex, "REQ error {Function} corr=({CorrelationId}) elapsed_ms={Elapsed}",
-        name, corr, sw.ElapsedMilliseconds);
+      logger.LogError(ex, "REQ error {Function} corr=({CorrelationId}) traceparent=({TraceParent}) elapsed_ms={Elapsed}", name, corr, trace, sw.ElapsedMilliseconds);
       throw;
     }
   }

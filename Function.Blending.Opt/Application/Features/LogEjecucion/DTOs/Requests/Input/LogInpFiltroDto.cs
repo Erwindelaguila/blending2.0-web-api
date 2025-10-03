@@ -8,7 +8,7 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Requests.
     string? Parametros,
     bool? HabilitarDivision,
     string? Division,
-    int? TiempoEspera
+    decimal? TiempoEspera
   )
   {
     // Colecciones: nombres en plural

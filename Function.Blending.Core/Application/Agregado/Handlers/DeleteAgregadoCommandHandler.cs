@@ -1,7 +1,10 @@
 using Function.Blending.Core.Application.Interfaces.Repositories;
-using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Agregado.Commands;
 using Function.Blending.Core.Application.Common.Exceptions;
+using Function.Blending.Core.Shared.Extensions;
+using Function.Blending.Core.Shared.Constants;
+using Function.Blending.Core.Functions.Support.Execution;
+using System.Security.Claims;
 using MediatR;
 
 namespace Function.Blending.Core.Application.Agregado.Handlers;
@@ -9,14 +12,12 @@ namespace Function.Blending.Core.Application.Agregado.Handlers;
 public class DeleteAgregadoCommandHandler : IRequestHandler<DeleteAgregadoCommand, bool>
 {
     private readonly IAgregadoRepository _agregadoRepository;
-    private readonly IAuthorizationService _authorizationService;
+    private readonly IFunctionContextAccessor _functionContextAccessor;
 
-    public DeleteAgregadoCommandHandler(
-        IAgregadoRepository agregadoRepository,
-        IAuthorizationService authorizationService)
+    public DeleteAgregadoCommandHandler(IAgregadoRepository agregadoRepository, IFunctionContextAccessor functionContextAccessor)
     {
         _agregadoRepository = agregadoRepository;
-        _authorizationService = authorizationService;
+        _functionContextAccessor = functionContextAccessor;
     }    public async Task<bool> Handle(DeleteAgregadoCommand request, CancellationToken cancellationToken)
     {
         var agregado = await _agregadoRepository.GetByIdAsync(request.Id);
@@ -28,11 +29,8 @@ public class DeleteAgregadoCommandHandler : IRequestHandler<DeleteAgregadoComman
         {
             throw new EntityInUseException("el Agregado", "está siendo usado por al menos un Tipo de Producción activo");
         }
-        var currentUserIdString = _authorizationService.GetCurrentUserId();
-        if (!Guid.TryParse(currentUserIdString, out var currentUserId))
-        {
-            throw new UnauthorizedAccessException("User ID inválido en headers");
-        }
+        
+        var currentUserId = GetCurrentUserId(); 
 
         try
         {
@@ -43,5 +41,29 @@ public class DeleteAgregadoCommandHandler : IRequestHandler<DeleteAgregadoComman
         {
             throw new EntityInUseException("el Agregado", "tiene dependencias en la base de datos");
         }
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        try
+        {
+            var context = _functionContextAccessor.Current;
+            if (context?.Items.TryGetValue(MiscellaneousConstants.Principal, out var principalObj) == true &&
+                principalObj is ClaimsPrincipal principal)
+            {
+                var userIdString = principal.GetUserId();
+                if (!string.IsNullOrEmpty(userIdString) && Guid.TryParse(userIdString, out var userId))
+                {
+                    return userId;
+                }
+            }
+        }
+        catch
+        {
+            // Si hay error obteniendo el usuario, usar fallback
+        }
+        
+        // Fallback: usuario del sistema
+        return Guid.Parse("00000000-0000-0000-0000-000000000001");
     }
 }

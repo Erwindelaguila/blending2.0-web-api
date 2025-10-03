@@ -13,10 +13,8 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Validators.Inp
       RuleFor(x => x.Descripcion).NotEmpty().MaximumLength(50);
 
       RuleFor(x => x.CantidadAsignadaVenta).GreaterThanOrEqualTo(0);
-      RuleFor(x => x.UnidadMedidaVenta).GreaterThan(0);
 
       RuleFor(x => x.CantidadAsignadaAlmacen).GreaterThanOrEqualTo(0);
-      RuleFor(x => x.UnidadMedidaAlmacen).GreaterThan(0);
 
       RuleFor(x => x.Parametros).SetValidator(new LogInpOfeParametrosListValidator());
     }

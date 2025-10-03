@@ -3,8 +3,8 @@ using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
 using Function.Blending.Core.Application.Agregado.DTOs;
 using Function.Blending.Core.Application.Agregado.Queries;
-using Function.Blending.Core.Application.Interfaces.Services;
-using Function.Blending.Core.Infrastructure.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -18,18 +18,16 @@ public class GetAllAgregadosFunction
 {
     private readonly IMediator _mediator;
     private readonly ILogger<GetAllAgregadosFunction> _logger;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
     public GetAllAgregadosFunction(
         IMediator mediator, 
-        ILogger<GetAllAgregadosFunction> logger,
-        IAuthorizationHeaderExtractor headerExtractor)
+        ILogger<GetAllAgregadosFunction> logger)
     {
         _mediator = mediator;
         _logger = logger;
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador")]
     [Function(FunctionNames.Agregado.GetAll)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Production.AgregadoBase)] HttpRequestData req)
@@ -38,14 +36,6 @@ public class GetAllAgregadosFunction
         
         try
         {
-      
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-            
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             
             _logger.LogInformation("GetAllAgregados called with query: {QueryString}", req.Url.Query);
@@ -53,7 +43,7 @@ public class GetAllAgregadosFunction
             if (query["activo"] == "true")
             {
                 _logger.LogInformation("Returning active agregados for combo");
-                var activosResult = await _mediator.Send(new GetAllAgregadosActivosQuery(req), cts.Token);
+                var activosResult = await _mediator.Send(new GetAllAgregadosActivosQuery(), cts.Token);
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(activosResult, "Agregados activos obtenidos correctamente"));
             }
             
@@ -69,7 +59,7 @@ public class GetAllAgregadosFunction
             
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var result = await _mediator.Send(new GetAllAgregadosQuery(page, size, filtersToApply, req), cts.Token);
+            var result = await _mediator.Send(new GetAllAgregadosQuery(page, size, filtersToApply), cts.Token);
             
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<AgregadoDTO>>.Success(result, "Agregados obtenidos correctamente"));
@@ -107,10 +97,6 @@ public class GetAllAgregadosFunction
                 500
             ));
         }
-        finally
-        {
          
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

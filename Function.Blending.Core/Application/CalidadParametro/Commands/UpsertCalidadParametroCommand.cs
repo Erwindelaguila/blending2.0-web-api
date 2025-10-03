@@ -1,5 +1,4 @@
 using Function.Blending.Core.Application.Common.Commands;
-using Microsoft.Azure.Functions.Worker.Http;
 
 namespace Function.Blending.Core.Application.CalidadParametro.Commands;
 
@@ -12,8 +11,7 @@ public class UpsertCalidadParametroCommand : BaseCommand<bool>
     public UpsertCalidadParametroCommand(
         Guid calidadId,
         Guid parametroId,
-        decimal valor,
-        HttpRequestData requestContext) : base(requestContext)
+        decimal valor)
     {
         CalidadId = calidadId;
         ParametroId = parametroId;

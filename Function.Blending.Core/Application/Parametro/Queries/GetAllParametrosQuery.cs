@@ -1,7 +1,6 @@
 using Function.Blending.Core.Application.Parametro.DTOs;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Common.Queries;
-using Microsoft.Azure.Functions.Worker.Http;
 
 namespace Function.Blending.Core.Application.Parametro.Queries;
 
@@ -11,7 +10,7 @@ public class GetAllParametrosQuery : BaseQuery<PagedResponse<ParametroDTO>>
     public int Size { get; }
     public ParametroFilterDTO? Filters { get; }
 
-    public GetAllParametrosQuery(int page, int size, ParametroFilterDTO? filters = null, HttpRequestData? requestContext = null) : base(requestContext!)
+    public GetAllParametrosQuery(int page, int size, ParametroFilterDTO? filters = null)
     {
         Page = page;
         Size = size;

@@ -13,10 +13,16 @@ public static partial class DependencyInjection
 {
   private static void ConfigureExternalClients(IServiceCollection services, IConfiguration cfg)
   {
-    var baseUrl = cfg[ConfigurationKeys.ExternalApi.QualityModel.BaseUrl] ?? string.Empty;
-    var startPath = cfg[ConfigurationKeys.ExternalApi.QualityModel.StartPath] ?? "/api/quality/start";
-    var timeoutSeconds = int.TryParse(cfg[ConfigurationKeys.ExternalApi.QualityModel.TimeoutSeconds], out var t) ? Math.Max(1, t) : 30;
-    var apiKey = cfg[ConfigurationKeys.ExternalApi.QualityModel.ApiKey];
+    ConfigureCalidadModelClient(services, cfg);
+    ConfigureLogisticaModelClient(services, cfg);
+  }
+
+  private static void ConfigureCalidadModelClient(IServiceCollection services, IConfiguration cfg)
+  {
+    var baseUrl = cfg[ConfigurationKeys.ExternalServices.QualityModel.BaseUrl] ?? string.Empty;
+    var startPath = cfg[ConfigurationKeys.ExternalServices.QualityModel.StartPath] ?? "/api/quality/start";
+    var timeoutSeconds = int.TryParse(cfg[ConfigurationKeys.ExternalServices.QualityModel.TimeoutSeconds], out var t) ? Math.Max(1, t) : 30;
+    var apiKey = cfg[ConfigurationKeys.ExternalServices.QualityModel.ApiKey];
 
     var options = new CalidadModelOptions
     {
@@ -26,7 +32,7 @@ public static partial class DependencyInjection
       ApiKey = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey
     };
 
-    services.AddSingleton<IOptions<CalidadModelOptions>>(Options.Create(options));
+    services.AddSingleton(Options.Create(options));
 
     services.AddHttpClient<ICalidadModelStarter, CalidadModelStarterHttp>((sp, http) =>
     {
@@ -37,4 +43,32 @@ public static partial class DependencyInjection
       http.Timeout = TimeSpan.FromSeconds(Math.Max(1, opts.TimeoutSeconds));
     });
   }
+
+  private static void ConfigureLogisticaModelClient(IServiceCollection services, IConfiguration cfg)
+  {
+    var baseUrl = cfg[ConfigurationKeys.ExternalServices.LogisticsModel.BaseUrl] ?? string.Empty;
+    var startPath = cfg[ConfigurationKeys.ExternalServices.LogisticsModel.StartPath] ?? "/api/logistics/start";
+    var timeoutSeconds = int.TryParse(cfg[ConfigurationKeys.ExternalServices.LogisticsModel.TimeoutSeconds], out var t) ? Math.Max(1, t) : 30;
+    var apiKey = cfg[ConfigurationKeys.ExternalServices.LogisticsModel.ApiKey];
+
+    var options = new LogisticaModelOptions
+    {
+      BaseUrl = baseUrl,
+      StartPath = startPath,
+      TimeoutSeconds = timeoutSeconds,
+      ApiKey = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey
+    };
+
+    services.AddSingleton(Options.Create(options));
+
+    services.AddHttpClient<ILogisticaModelStarter, LogisticaModelStarterHttp>((sp, http) =>
+    {
+      var opts = sp.GetRequiredService<IOptions<LogisticaModelOptions>>().Value;
+      if (!string.IsNullOrWhiteSpace(opts.BaseUrl))
+        http.BaseAddress = new Uri(opts.BaseUrl, UriKind.Absolute);
+
+      http.Timeout = TimeSpan.FromSeconds(Math.Max(1, opts.TimeoutSeconds));
+    });
+  }
+
 }

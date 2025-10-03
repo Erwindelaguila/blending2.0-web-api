@@ -1,6 +1,8 @@
 using Function.Blending.Core.Application.CalidadParametro.Commands;
 using Function.Blending.Core.Application.Interfaces.Repositories;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Execution;
+using Function.Blending.Core.Shared.Extensions;
+using System.Security.Claims;
 using MediatR;
 
 namespace Function.Blending.Core.Application.CalidadParametro.Handlers;
@@ -10,18 +12,18 @@ public class UpsertCalidadParametroBatchCommandHandler : IRequestHandler<UpsertC
     private readonly ICalidadParametroRepository _calidadParametroRepository;
     private readonly ICalidadRepository _calidadRepository;
     private readonly IParametroRepository _parametroRepository;
-    private readonly IAuthorizationService _authorizationService;
+    private readonly IFunctionContextAccessor _functionContextAccessor;
 
     public UpsertCalidadParametroBatchCommandHandler(
         ICalidadParametroRepository calidadParametroRepository,
         ICalidadRepository calidadRepository,
         IParametroRepository parametroRepository,
-        IAuthorizationService authorizationService)
+        IFunctionContextAccessor functionContextAccessor)
     {
         _calidadParametroRepository = calidadParametroRepository;
         _calidadRepository = calidadRepository;
         _parametroRepository = parametroRepository;
-        _authorizationService = authorizationService;
+        _functionContextAccessor = functionContextAccessor;
     }
 
     public async Task<int> Handle(UpsertCalidadParametroBatchCommand request, CancellationToken cancellationToken)
@@ -52,8 +54,7 @@ public class UpsertCalidadParametroBatchCommandHandler : IRequestHandler<UpsertC
         }
 
         // Obtener el ID del usuario actual para la auditoría
-        var currentUserIdString = _authorizationService.GetCurrentUserId();
-        var currentUserId = Guid.Parse(currentUserIdString);
+        var currentUserId = GetCurrentUserId();
 
         // Convertir a tuplas para el repositorio
         var cambiosTuplas = request.Cambios.Select(c => (c.CalidadId, c.ParametroId, c.Valor)).ToList();
@@ -62,5 +63,29 @@ public class UpsertCalidadParametroBatchCommandHandler : IRequestHandler<UpsertC
         var processedCount = await _calidadParametroRepository.UpsertBatchAsync(cambiosTuplas, currentUserId);
 
         return processedCount;
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        try
+        {
+            var context = _functionContextAccessor.Current;
+            if (context?.Items.TryGetValue(Function.Blending.Core.Shared.Constants.MiscellaneousConstants.Principal, out var principalObj) == true &&
+                principalObj is System.Security.Claims.ClaimsPrincipal principal)
+            {
+                var userIdString = principal.GetUserId();
+                if (!string.IsNullOrEmpty(userIdString) && Guid.TryParse(userIdString, out var userId))
+                {
+                    return userId;
+                }
+            }
+        }
+        catch
+        {
+            // Si hay error obteniendo el usuario, usar fallback
+        }
+        
+        // Fallback: usuario del sistema
+        return Guid.Parse("00000000-0000-0000-0000-000000000001");
     }
 }

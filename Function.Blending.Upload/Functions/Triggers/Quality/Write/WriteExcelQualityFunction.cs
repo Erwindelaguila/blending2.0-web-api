@@ -23,18 +23,13 @@ public class WriteExcelQualityFunction
 
     [Function(nameof(WriteExcelQualityFunction))]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "upload/write-excel-quality")] HttpRequestData req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "upload/write-excel-quality")] HttpRequestData req)
     {
         try
         {
             _logger.LogInformation("WriteExcelQualityFunction function processed a request.");
             var blobResult = await _writeExcelQualityProcess.ExecuteAsync(req);
-            return await HttpResponseHelper.WriteBaseResponseAsync(
-                req,
-                BaseResponse<BlobResultDto>.Success(
-                    blobResult,
-                    "Datos obtenidos correctamente")
-            );
+            return blobResult;
         }
         catch (Exception ex)
         {

@@ -1,9 +1,12 @@
 ﻿using Function.Blending.Core.Application.Interfaces.Repositories;
-// using Function.Blending.Core.Application.Interfaces.Services;
 using Function.Blending.Core.Application.Calidad.Commands;
 using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Domain.Entities;
+using Function.Blending.Core.Functions.Support.Execution;
+using Function.Blending.Core.Shared.Constants;
+using Function.Blending.Core.Shared.Extensions;
+using System.Security.Claims;
 using MediatR;
 
 namespace Function.Blending.Core.Application.Calidad.Handlers;
@@ -11,12 +14,14 @@ namespace Function.Blending.Core.Application.Calidad.Handlers;
 public class UpdateCalidadCommandHandler : IRequestHandler<UpdateCalidadCommand, CalidadDTO>
 {
     private readonly ICalidadRepository _calidadRepository;
-    // private readonly IAuthorizationService _authorizationService;
+    private readonly IFunctionContextAccessor _functionContextAccessor;
 
-    public UpdateCalidadCommandHandler(ICalidadRepository calidadRepository/*, IAuthorizationService authorizationService*/)
+    public UpdateCalidadCommandHandler(
+        ICalidadRepository calidadRepository,
+        IFunctionContextAccessor functionContextAccessor)
     {
         _calidadRepository = calidadRepository;
-        // _authorizationService = authorizationService;
+        _functionContextAccessor = functionContextAccessor;
     }
 
     public async Task<CalidadDTO> Handle(UpdateCalidadCommand request, CancellationToken cancellationToken)
@@ -35,9 +40,7 @@ public class UpdateCalidadCommandHandler : IRequestHandler<UpdateCalidadCommand,
             }
         }
 
-        // var modificadoPorIdString = _authorizationService.GetCurrentUserId();
-        // var modificadoPorId = Guid.Parse(modificadoPorIdString);
-        var modificadoPorId = Guid.NewGuid(); // Valor temporal mientras no hay autorización
+        var modificadoPorId = GetCurrentUserId();
 
         var calidad = new CalidadEntity
         {
@@ -68,5 +71,29 @@ public class UpdateCalidadCommandHandler : IRequestHandler<UpdateCalidadCommand,
             ModificadoPorId = calidadActualizada.ModificadoPorId,
             ModificadoEl = calidadActualizada.ModificadoEl,
         };
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        try
+        {
+            var context = _functionContextAccessor.Current;
+            if (context?.Items.TryGetValue(MiscellaneousConstants.Principal, out var principalObj) == true &&
+                principalObj is ClaimsPrincipal principal)
+            {
+                var userIdString = principal.GetUserId();
+                if (!string.IsNullOrEmpty(userIdString) && Guid.TryParse(userIdString, out var userId))
+                {
+                    return userId;
+                }
+            }
+        }
+        catch
+        {
+            // Si hay error obteniendo el usuario, usar fallback
+        }
+        
+        // Fallback: usuario del sistema
+        return Guid.Parse("00000000-0000-0000-0000-000000000001");
     }
 }

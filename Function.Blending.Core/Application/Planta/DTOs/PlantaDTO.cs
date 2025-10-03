@@ -21,6 +21,7 @@ public class PlantaShortDTO
     public Guid Id { get; set; }
     public string Codigo { get; set; } = null!;
     public string Nombre { get; set; } = null!;
+    public int NumeroRuma { get; set; }
 }
 
 
