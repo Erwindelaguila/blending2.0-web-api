@@ -1,5 +1,4 @@
-﻿using System;
-using Function.Blending.Opt.Domain.Logging;
+﻿using Function.Blending.Opt.Domain.Logging;
 using Function.Blending.Opt.Shared.Constants;
 using Microsoft.Extensions.Configuration;
 

@@ -1,7 +1,9 @@
 ﻿using Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start;
 using Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Requests;
 using Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Responses;
+using Function.Blending.Opt.Domain.Abstractions.Services;
 using Function.Blending.Opt.Functions.Support.Authorization;
+using Function.Blending.Opt.Functions.Support.Execution;
 using Function.Blending.Opt.Functions.Support.Extensions;
 using Function.Blending.Opt.Functions.Support.Http;
 using Function.Blending.Opt.Functions.Support.ProblemDetails;
@@ -14,7 +16,7 @@ using System.Net;
 
 namespace Function.Blending.Opt.Functions.Triggers.LogEjecucion
 {
-  public sealed class StartLogEjecucionFunction(IMediator mediator, IProblemDetailsWriter problem)
+  public sealed class StartLogEjecucionFunction(IMediator mediator, IProblemDetailsWriter problem, IRequestContext requestContext, IFunctionContextAccessor fctxAccessor, ISysLogService syslog)
   {
     [Function(nameof(StartLogEjecucionFunction))]
     [RequireScopes(ConfigurationKeys.Auth.Scopes.Logistics.WriteStart)]
@@ -24,7 +26,7 @@ namespace Function.Blending.Opt.Functions.Triggers.LogEjecucion
         FunctionContext fctx)
     {
       // 1) Leer JSON
-      var dto = await req.TryReadJsonAsync<StartLogEjecucionRequest>();
+      var dto = await req.TryReadJsonWithSysLogAsync<StartLogEjecucionRequest>(fctx, requestContext, fctxAccessor, syslog);
       if (dto is null)
       {
         return await problem.CreateAsync(

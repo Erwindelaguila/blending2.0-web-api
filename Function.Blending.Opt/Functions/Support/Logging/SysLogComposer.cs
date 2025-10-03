@@ -1,13 +1,11 @@
-﻿using Function.Blending.Opt.Functions.Support.Execution;
-using Function.Blending.Opt.Shared.Extensions; // GetUserId() de Claims
-
-// Alias EF model
-using Ef = Function.Blending.Opt.Infrastructure.Persistence.Models;
+﻿using Function.Blending.Opt.Domain.Logging;
+using Function.Blending.Opt.Functions.Support.Execution;
+using Function.Blending.Opt.Shared.Extensions; // GetUserId()
 
 namespace Function.Blending.Opt.Functions.Support.Logging;
 
 /// <summary>
-/// Compone filas para dbo.SysLog a partir de excepciones o mensajes,
+/// Compone un Domain.SysLogRecord (neutral a EF) a partir de excepciones o mensajes,
 /// usando únicamente lo que expone IRequestContext y el FunctionContext actual.
 /// </summary>
 public sealed class SysLogComposer(
@@ -20,66 +18,63 @@ public sealed class SysLogComposer(
   private readonly string? _className = sourceType.Name;
 
   /// <summary>
-  /// Crea un SysLog con Level=error (por defecto) a partir de una excepción.
+  /// Genera un SysLogRecord para una excepción.
   /// </summary>
-  public Ef.SysLog FromException(Exception ex, string level = "error", string? extraInfo = null)
+  public SysLogRecord FromException(Exception ex, SysLogLevel level = SysLogLevel.Error, string? extraInfo = null)
   {
     var (userId, username) = ResolveUser();
     var (requestId, traceparent, functionId) = ResolveInvocationIds();
 
-    return new Ef.SysLog
-    {
-      Id = Guid.NewGuid(),
-      NameSpace = _namespace,
-      ClassName = _className,
-      MethodName = methodName,
-      Username = username,
-      UserId = userId,
-      Message = ex.Message,
-      StackTrace = ex.ToString(),
-      ExtraInfo = extraInfo,
-      TraceParentId = traceparent,
-      RequestInvocationId = requestId,
-      FunctionInvocationId = functionId,
-      ExceptionGroupId = null,
-      Level = level
-    };
+    return new SysLogRecord(
+      Id: Guid.NewGuid(),
+      NameSpace: _namespace,
+      ClassName: _className,
+      MethodName: methodName,
+      Username: username,
+      UserId: userId,
+      Message: ex.Message,
+      StackTrace: ex.ToString(),
+      ExtraInfo: extraInfo,
+      TraceParentId: traceparent,
+      RequestInvocationId: requestId,
+      FunctionInvocationId: functionId,
+      ExceptionGroupId: null,
+      Level: level
+    );
   }
 
   /// <summary>
-  /// Crea un SysLog para un mensaje arbitrario (debug/info/warning/error).
+  /// Genera un SysLogRecord para un mensaje arbitrario (debug|info|warning|error).
   /// </summary>
-  public Ef.SysLog FromMessage(string message, string level, string? extraInfo = null)
+  public SysLogRecord FromMessage(string message, SysLogLevel level, string? extraInfo = null)
   {
     var (userId, username) = ResolveUser();
     var (requestId, traceparent, functionId) = ResolveInvocationIds();
 
-    return new Ef.SysLog
-    {
-      Id = Guid.NewGuid(),
-      NameSpace = _namespace,
-      ClassName = _className,
-      MethodName = methodName,
-      Username = username,
-      UserId = userId,
-      Message = message,
-      StackTrace = null,
-      ExtraInfo = extraInfo,
-      TraceParentId = traceparent,
-      RequestInvocationId = requestId,
-      FunctionInvocationId = functionId,
-      ExceptionGroupId = null,
-      Level = string.IsNullOrWhiteSpace(level) ? "error" : level.ToLowerInvariant()
-    };
+    return new SysLogRecord(
+      Id: Guid.NewGuid(),
+      NameSpace: _namespace,
+      ClassName: _className,
+      MethodName: methodName,
+      Username: username,
+      UserId: userId,
+      Message: message,
+      StackTrace: null,
+      ExtraInfo: extraInfo,
+      TraceParentId: traceparent,
+      RequestInvocationId: requestId,
+      FunctionInvocationId: functionId,
+      ExceptionGroupId: null,
+      Level: level
+    );
   }
 
   private (Guid? userId, string? username) ResolveUser()
   {
-    // Username ya está expuesto por IRequestContext (Username). :contentReference[oaicite:3]{index=3}
+    // Username desde IRequestContext
     var username = requestContext.Username;
 
-    // UserId lo resolvemos desde los claims usando tu extensión GetUserId()
-    // (por ejemplo oid/sub) y lo parseamos a Guid?.
+    // UserId desde claims (oid/sub) usando tu extensión GetUserId()
     Guid? userId = null;
     var uidStr = requestContext.User?.GetUserId();
     if (!string.IsNullOrWhiteSpace(uidStr) && Guid.TryParse(uidStr, out var g))
@@ -90,16 +85,15 @@ public sealed class SysLogComposer(
 
   private (Guid? requestId, string? traceparent, Guid? functionId) ResolveInvocationIds()
   {
-    // FunctionInvocationId viene de FunctionContext.InvocationId (string),
-    // lo parseamos si es Guid.
+    // FunctionInvocationId desde FunctionContext.InvocationId (si es GUID)
     Guid? functionId = null;
     var inv = functionContextAccessor.Current?.InvocationId;
     if (!string.IsNullOrWhiteSpace(inv) && Guid.TryParse(inv, out var g))
       functionId = g;
 
-    // RequestInvocationId: usamos el CorrelationId del request si es GUID; si no, null.
+    // RequestInvocationId: usa CorrelationId si es GUID
     Guid? requestId = null;
-    var corr = requestContext.CorrelationId; // expuesto por IRequestContext. :contentReference[oaicite:4]{index=4}
+    var corr = requestContext.CorrelationId;
     if (!string.IsNullOrWhiteSpace(corr) && Guid.TryParse(corr, out var r))
       requestId = r;
 

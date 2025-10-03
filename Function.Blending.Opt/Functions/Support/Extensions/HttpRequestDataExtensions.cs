@@ -6,12 +6,23 @@ namespace Function.Blending.Opt.Functions.Support.Extensions;
 
 public static class HttpRequestDataExtensions
 {
-  public static async Task<T?> TryReadJsonAsync<T>(this HttpRequestData req)
+  /// Intenta deserializar el body JSON a T. Si falla, devuelve default
+  /// y ejecuta onError(ex, rawBody) si fue provisto.
+  public static async Task<T?> TryReadJsonAsync<T>(this HttpRequestData req, Func<Exception, string, Task>? onError = null)
   {
     var body = await req.ReadAsStringAsync();
     if (string.IsNullOrWhiteSpace(body)) return default;
-    try { return JsonDefaults.Deserialize<T>(body); }
-    catch { return default; }
+
+    try
+    {
+      return JsonDefaults.Deserialize<T>(body);
+    }
+    catch (Exception ex)
+    {
+      if (onError is not null)
+        await onError(ex, body);
+      return default;
+    }
   }
 
   public static Uri BuildLocation(this HttpRequestData req, string relativeRoute)
@@ -24,7 +35,7 @@ public static class HttpRequestDataExtensions
     await res.WriteJsonAsync(body);
     return res;
   }
-
+  
   public static async Task WriteJsonAsync<T>(this HttpResponseData res, T value)
   {
     res.Headers.Add("Content-Type", "application/json; charset=utf-8");
