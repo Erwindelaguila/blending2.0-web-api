@@ -39,7 +39,7 @@ cache:
 
 .test_template: &test_template
   stage: test
-  tags: [mac-runner-local]
+  tags: [mac-runner-local, windows]
   script:
     - set -euo pipefail
     - if ! command -v dotnet &> /dev/null; then echo "Instalando .NET SDK..."; brew install dotnet || true; fi
@@ -53,7 +53,7 @@ cache:
 
 .deploy_template: &deploy_template
   stage: deploy
-  tags: [mac-runner-local]
+  tags: [mac-runner-local, windows]
   timeout: 30m
   retry: 2
   environment:
