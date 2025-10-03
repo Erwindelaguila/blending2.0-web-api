@@ -1,198 +1,260 @@
-stages:
-  - build
-  - test
-  - deploy
+# ============================================================
+# GitLab CI para Azure Functions (.NET 8 Isolated)
+# Equipo mixto: runner local Windows y runner local Mac
+# Requiere tags de runner:
+#   - Windows: ["windows","local","dotnet","functions"]
+#   - Mac:     ["mac","local","dotnet","functions"]
+# ============================================================
 
+stages: [build, test, deploy]
+
+# ---- Variables globales ----
 variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
   DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
 
+# ---- Cache de NuGet (comparte entre jobs por rama) ----
 cache:
   key: "nuget-${CI_COMMIT_REF_SLUG}"
   paths:
     - .nuget/packages
     - ~/.nuget/packages
 
-# ==============================
-# Plantillas (DRY)
-# ==============================
+# ============================================================
+# Helpers y plantillas (DRY) por OS
+# ============================================================
 
-.build_template: &build_template
-  stage: build
-  tags: [mac-runner-local, windows]
+# ---------- WINDOWS (PowerShell Core: pwsh) ----------
+.ensure_tools_win: &ensure_tools_win
+  # Comprueba dotnet y Azure CLI; instala Azure CLI si falta (winget/choco).
   before_script:
-    - set -euo pipefail
-    - if ! command -v dotnet &> /dev/null; then echo "Instalando .NET SDK..."; brew install dotnet || true; fi
-    - if ! command -v zip &> /dev/null; then echo "Instalando zip..."; if command -v brew &>/dev/null; then brew install zip || true; fi; fi
-    - dotnet --version
-    - mkdir -p .nuget/packages || true
+    - |
+      $ErrorActionPreference = 'Stop'
+      $PSStyle.OutputRendering = 'Ansi'
+      Write-Host "##[info] Host: $(hostname)"
+      $dot = (Get-Command dotnet -ErrorAction SilentlyContinue)
+      if (-not $dot) { throw "dotnet SDK no encontrado. Instálalo en el runner Windows." }
+      dotnet --info
+
+      # Crea carpeta de cache NuGet (idempotente)
+      New-Item -ItemType Directory -Force -Path ".nuget\packages" | Out-Null
+
+      # Azure CLI
+      $az = (Get-Command az -ErrorAction SilentlyContinue)
+      if (-not $az) {
+        Write-Host "##[info] Azure CLI no encontrado. Intentando instalar con winget..."
+        try {
+          winget install --id Microsoft.AzureCLI -e --accept-package-agreements --accept-source-agreements
+        } catch {
+          Write-Host "##[warn] winget no disponible o falló. Probando Chocolatey..."
+          try {
+            choco install azure-cli -y --no-progress
+          } catch {
+            Write-Host "##[error] No se pudo instalar Azure CLI automáticamente. Instálalo manualmente y reintenta."
+            throw
+          }
+        }
+      }
+      az version
+
+# Compilación/Publish para Windows
+.build_win: &build_win
+  stage: build
+  tags: ["windows","local","dotnet","functions"]
+  <<: *ensure_tools_win
   script:
-    - echo "Compilando ${SERVICE_SLUG}..."
-    - dotnet restore ${PROJECT_PATH}
-    - dotnet build ${PROJECT_PATH} -c Release --no-restore
-    - dotnet publish ${PROJECT_PATH} -c Release -o ./publish/${SERVICE_SLUG} --no-build
-    - cd ./publish/${SERVICE_SLUG} && zip -r ../${SERVICE_SLUG}.zip . && cd ../..
+    - |
+      Write-Host "##[info] Restaurando..."
+      dotnet restore "$env:PROJECT_PATH"
+      Write-Host "##[info] Compilando..."
+      dotnet build "$env:PROJECT_PATH" -c Release --no-restore
+      Write-Host "##[info] Publicando..."
+      $outDir = "publish\$env:SERVICE_SLUG"
+      dotnet publish "$env:PROJECT_PATH" -c Release -o $outDir --no-build
+
+      if (Test-Path "publish\$env:SERVICE_SLUG.zip") { Remove-Item "publish\$env:SERVICE_SLUG.zip" -Force }
+      Compress-Archive -Path "$outDir\*" -DestinationPath "publish\$env:SERVICE_SLUG.zip" -Force
   artifacts:
+    when: always
     paths:
       - publish/${SERVICE_SLUG}.zip
-    expire_in: 1 day
+    expire_in: 3 days
 
-.test_template: &test_template
+# Tests para Windows
+.test_win: &test_win
   stage: test
-  tags: [mac-runner-local, windows]
+  tags: ["windows","local","dotnet","functions"]
+  <<: *ensure_tools_win
   script:
-    - set -euo pipefail
-    - if ! command -v dotnet &> /dev/null; then echo "Instalando .NET SDK..."; brew install dotnet || true; fi
     - |
-      if [ -f "Function.Blending.sln" ]; then
-        echo "Ejecutando pruebas de la solución principal..."
-        dotnet test Function.Blending.sln --configuration Release --no-build --nologo
-      else
-        echo "No se encontró Function.Blending.sln. Omitiendo pruebas."
-      fi
+      if (Test-Path "Function.Blending.sln") {
+        dotnet test "Function.Blending.sln" -c Release --no-build --logger "trx;LogFileName=test-results.trx"
+      } else {
+        Write-Host "##[warn] No se encontró Function.Blending.sln — omitiendo tests."
+      }
+  artifacts:
+    when: always
+    paths:
+      - **/*.trx
+    expire_in: 3 days
 
-.deploy_template: &deploy_template
+# Deploy para Windows
+.deploy_win: &deploy_win
   stage: deploy
-  tags: [mac-runner-local, windows]
+  tags: ["windows","local","dotnet","functions"]
   timeout: 30m
-  retry: 2
-  environment:
-    name: production
+  <<: *ensure_tools_win
+  script:
+    - |
+      Write-Host "##[info] Login Azure (SPN)..."
+      az login --service-principal `
+        -u "$env:AZURE_CLIENT_ID" `
+        -p "$env:AZURE_CLIENT_SECRET" `
+        --tenant "$env:AZURE_TENANT_ID"
+      az account set --subscription "$env:AZURE_SUBSCRIPTION_ID"
+
+      if (-not (Test-Path "publish\$env:SERVICE_SLUG.zip")) {
+        throw "No existe publish\$env:SERVICE_SLUG.zip. Asegura que el build corrió y generó el paquete."
+      }
+
+      Write-Host "##[info] Desplegando ZIP a FunctionApp: $env:FUNCTION_APP_NAME"
+      az functionapp deployment source config-zip `
+        -g "$env:AZURE_RESOURCE_GROUP" `
+        -n "$env:FUNCTION_APP_NAME" `
+        --src "publish\$env:SERVICE_SLUG.zip" `
+        --timeout 1800
+
+# ---------- MAC (bash + Homebrew) ----------
+.ensure_tools_mac: &ensure_tools_mac
   before_script:
     - set -euo pipefail
-    - if ! command -v az &> /dev/null; then echo "Instalando Azure CLI..."; brew update && brew install azure-cli || true; fi
+    - echo "##[info] Host: $(hostname)"
+    - if ! command -v dotnet >/dev/null 2>&1; then echo "dotnet SDK no encontrado. Instálalo en el runner Mac."; exit 1; fi
+    - dotnet --info
+    - mkdir -p .nuget/packages || true
+    # Azure CLI
+    - |
+      if ! command -v az >/dev/null 2>&1; then
+        echo "##[info] Azure CLI no encontrado. Instalando con Homebrew..."
+        if ! command -v brew >/dev/null 2>&1; then
+          echo "Homebrew no está instalado. Instálalo en el runner Mac (https://brew.sh/)."; exit 1;
+        fi
+        brew update
+        brew install azure-cli
+      fi
     - az version
-    - echo "Debug - Variables:"
-    - echo "AZURE_RESOURCE_GROUP=${AZURE_RESOURCE_GROUP:-'NOT_SET'}"
-    - echo "FUNCTION_APP_NAME=${FUNCTION_APP_NAME:-'NOT_SET'}"
+
+# Compilación/Publish para Mac
+.build_mac: &build_mac
+  stage: build
+  tags: ["mac","local","dotnet","functions"]
+  <<: *ensure_tools_mac
+  script:
+    - echo "##[info] Restaurando..."
+    - dotnet restore "${PROJECT_PATH}"
+    - echo "##[info] Compilando..."
+    - dotnet build "${PROJECT_PATH}" -c Release --no-restore
+    - echo "##[info] Publicando..."
+    - outDir="publish/${SERVICE_SLUG}"
+    - dotnet publish "${PROJECT_PATH}" -c Release -o "${outDir}" --no-build
+    - (cd "publish" && zip -r "${SERVICE_SLUG}.zip" "${SERVICE_SLUG}")
+  artifacts:
+    when: always
+    paths: [ "publish/${SERVICE_SLUG}.zip" ]
+    expire_in: 3 days
+
+# Tests para Mac
+.test_mac: &test_mac
+  stage: test
+  tags: ["mac","local","dotnet","functions"]
+  <<: *ensure_tools_mac
+  script:
+    - set -euo pipefail
+    - if [ -f "Function.Blending.sln" ]; then dotnet test "Function.Blending.sln" -c Release --no-build; else echo "##[warn] Sin solución — omitiendo tests."; fi
+  artifacts:
+    when: always
+    paths: [ "**/*.trx" ]
+    expire_in: 3 days
+
+# Deploy para Mac
+.deploy_mac: &deploy_mac
+  stage: deploy
+  tags: ["mac","local","dotnet","functions"]
+  timeout: 30m
+  <<: *ensure_tools_mac
+  script:
+    - set -euo pipefail
+    - echo "##[info] Login Azure (SPN)..."
     - az login --service-principal -u "$AZURE_CLIENT_ID" -p "$AZURE_CLIENT_SECRET" --tenant "$AZURE_TENANT_ID"
     - az account set --subscription "$AZURE_SUBSCRIPTION_ID"
-  script:
-    - echo "Desplegando ${SERVICE_SLUG} a ${FUNCTION_APP_NAME}..."
-    - |
-      for i in {1..3}; do
-        echo "Intento $i/3: Desplegando ${SERVICE_SLUG}..."
-        if az functionapp deployment source config-zip \
-            -g "$AZURE_RESOURCE_GROUP" \
-            -n "${FUNCTION_APP_NAME}" \
-            --src ./publish/${SERVICE_SLUG}.zip \
-            --timeout 1800; then
-          echo "Despliegue de ${SERVICE_SLUG} completado exitosamente"
-          break
-        else
-          echo "Intento $i falló, reintentando en 30 segundos..."
-          sleep 30
-          if [ $i -eq 3 ]; then
-            echo "Todos los intentos fallaron para ${SERVICE_SLUG}"
-            exit 1
-          fi
-        fi
-      done
+    - test -f "publish/${SERVICE_SLUG}.zip"
+    - echo "##[info] Desplegando ZIP a FunctionApp: ${FUNCTION_APP_NAME}"
+    - az functionapp deployment source config-zip -g "$AZURE_RESOURCE_GROUP" -n "$FUNCTION_APP_NAME" --src "publish/${SERVICE_SLUG}.zip" --timeout 1800
 
-# ==============================
-# Jobs de BUILD
-# ==============================
-build-auth:
-  <<: *build_template
-  variables:
-    SERVICE_SLUG: "auth"
-    PROJECT_PATH: "Function.Blending.Auth/Function.Blending.Auth.csproj"
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
-      changes:
-        - Function.Blending.Auth/**/*
+# ============================================================
+# Jobs reales (duplicados por OS)
+# Ajusta PROJECT_PATH y SERVICE_SLUG a tus Functions (OPT, etc.)
+# ============================================================
 
-build-core:
-  <<: *build_template
-  variables:
-    SERVICE_SLUG: "core"
-    PROJECT_PATH: "Function.Blending.Core/Function.Blending.Core.csproj"
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
-      changes:
-        - Function.Blending.Core/**/*
-
-build-opt:
-  <<: *build_template
+# -------- BUILD --------
+build:opt:win:
+  <<: *build_win
   variables:
     SERVICE_SLUG: "opt"
     PROJECT_PATH: "Function.Blending.Opt/Function.Blending.Opt.csproj"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
-      changes:
-        - Function.Blending.Opt/**/*
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
-build-data:
-  <<: *build_template
+build:opt:mac:
+  <<: *build_mac
   variables:
-    SERVICE_SLUG: "data"
-    PROJECT_PATH: "Function.Blending.Upload/Function.Blending.Upload.csproj"
+    SERVICE_SLUG: "opt"
+    PROJECT_PATH: "Function.Blending.Opt/Function.Blending.Opt.csproj"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
-      changes:
-        - Function.Blending.Upload/**/*
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
-# ==============================
-# Job de TEST (opcional, corre si hay solución)
-# ==============================
-test-solution:
-  <<: *test_template
+# -------- TEST --------
+test:win:
+  <<: *test_win
+  needs: ["build:opt:win"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
-      changes:
-        - Function.Blending.Auth/**/*
-        - Function.Blending.Core/**/*
-        - Function.Blending.Opt/**/*
-        - Function.Blending.Upload/**/*
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
-# ==============================
-# Jobs de DEPLOY
-# ==============================
-deploy-auth:
-  <<: *deploy_template
-  variables:
-    SERVICE_SLUG: "auth"
-    FUNCTION_APP_NAME: "$FUNCTION_APP_AUTH_NAME"
-  resource_group: "deploy-${SERVICE_SLUG}"
-  needs: ["build-auth"]
+test:mac:
+  <<: *test_mac
+  needs: ["build:opt:mac"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
-      changes:
-        - Function.Blending.Auth/**/*
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
-deploy-core:
-  <<: *deploy_template
-  variables:
-    SERVICE_SLUG: "core"
-    FUNCTION_APP_NAME: "$FUNCTION_APP_CORE_NAME"
-  resource_group: "deploy-${SERVICE_SLUG}"
-  needs: ["build-core"]
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
-      changes:
-        - Function.Blending.Core/**/*
-
-deploy-opt:
-  <<: *deploy_template
+# -------- DEPLOY --------
+# Política: solo rama main y despliegue MANUAL (cualquiera de los dos puede ejecutarlo).
+deploy:opt:win:
+  <<: *deploy_win
   variables:
     SERVICE_SLUG: "opt"
     FUNCTION_APP_NAME: "$FUNCTION_APP_OPT_NAME"
-  resource_group: "deploy-${SERVICE_SLUG}"
-  needs: ["build-opt"]
+  needs: ["build:opt:win"]
+  environment:
+    name: production
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
-      changes:
-        - Function.Blending.Opt/**/*
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+      allow_failure: false
 
-deploy-data:
-  <<: *deploy_template
+deploy:opt:mac:
+  <<: *deploy_mac
   variables:
-    SERVICE_SLUG: "data"
-    FUNCTION_APP_NAME: "$FUNCTION_APP_DATA_NAME"
-  resource_group: "deploy-${SERVICE_SLUG}"
-  needs: ["build-data"]
+    SERVICE_SLUG: "opt"
+    FUNCTION_APP_NAME: "$FUNCTION_APP_OPT_NAME"
+  needs: ["build:opt:mac"]
+  environment:
+    name: production
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
-      changes:
-        - Function.Blending.Upload/**/*
- 
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+      allow_failure: false
