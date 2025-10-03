@@ -115,6 +115,7 @@
     "Time_TimeZoneId": "America/Lima",
     "Time_WindowsTimeZoneId": "SA Pacific Standard Time",
     "Time_IanaTimeZoneId": "America/Lima",
+    "Time_EnforceValidTimeZone": "true",
 
     // === Security ===
     "Security_Hmac_Resolver": "KeyVault",
