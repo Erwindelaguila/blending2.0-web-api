@@ -1,9 +1,7 @@
 using Function.Blending.Opt.Application.Common.Paging;
-using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Responses;
 using Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Responses;
 using Function.Blending.Opt.Shared.Results;
 using MediatR;
-using System;
 
 namespace Function.Blending.Opt.Application.Features.LogEjecucion.Queries.GetHistory;
 
@@ -16,5 +14,6 @@ public sealed record GetLogEjecucionHistoryQuery(
   DateTime? CreadoDelUtc,
   DateTime? CreadoAlUtc,
   Guid? EstadoId,
-  string? Codigo
+  string? Codigo,
+  string? Contrato
 ) : IRequest<Result<PageResponse<LogEjecucionHistoryItemResponse>>>;

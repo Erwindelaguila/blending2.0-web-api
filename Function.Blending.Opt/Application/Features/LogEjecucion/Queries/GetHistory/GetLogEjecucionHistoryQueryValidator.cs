@@ -6,7 +6,7 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Queries.GetHis
 
 public sealed class GetLogEjecucionHistoryQueryValidator : AbstractValidator<GetLogEjecucionHistoryQuery>
 {
-  private static readonly string[] AllowedSortBy = new[] { "creadoEl", "codigo", "confirmado", "estadoId" };
+  private static readonly string[] AllowedSortBy = new[] { "creadoEl", "codigo", "confirmado", "estado", "contrato" };
 
   public GetLogEjecucionHistoryQueryValidator()
   {

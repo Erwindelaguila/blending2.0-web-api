@@ -1,9 +1,6 @@
 using Function.Blending.Opt.Domain.Entities;
 using Function.Blending.Opt.Domain.ReadModels;
 using Function.Blending.Opt.Domain.ValueObjects;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Function.Blending.Opt.Domain.Abstractions.Repositories
 {
@@ -21,6 +18,7 @@ namespace Function.Blending.Opt.Domain.Abstractions.Repositories
       DateTime? creadoAlUtc,
       Guid? estadoId,
       string? codigo,
+      string? contrato,
       CancellationToken ct
     );
 
