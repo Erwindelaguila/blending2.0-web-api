@@ -19,19 +19,23 @@ cache:
 
 .build_template: &build_template
   stage: build
-  tags: [local-ci]
+  tags: [local-ci]  # Asegúrate que tu runner Windows tenga este tag
   before_script:
-    - set -euo pipefail
-    - if ! command -v dotnet &> /dev/null; then echo "Instalando .NET SDK..."; brew install dotnet || true; fi
-    - if ! command -v zip &> /dev/null; then echo "Instalando zip..."; if command -v brew &>/dev/null; then brew install zip || true; fi; fi
-    - dotnet --version
-    - mkdir -p .nuget/packages || true
+    - '$ErrorActionPreference = "Stop"'
+    - 'Write-Host "##[info] Host: $(hostname)"'
+    - 'if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) { choco install dotnet-8.0-sdk -y }'
+    - 'if (-not (Get-Command zip -ErrorAction SilentlyContinue))    { choco install zip -y }'
+    - 'dotnet --version'
+    - 'New-Item -ItemType Directory -Force -Path ".nuget\packages" | Out-Null'
   script:
-    - echo "Compilando ${SERVICE_SLUG}..."
-    - dotnet restore ${PROJECT_PATH}
-    - dotnet build ${PROJECT_PATH} -c Release --no-restore
-    - dotnet publish ${PROJECT_PATH} -c Release -o ./publish/${SERVICE_SLUG} --no-build
-    - cd ./publish/${SERVICE_SLUG} && zip -r ../${SERVICE_SLUG}.zip . && cd ../..
+    - 'Write-Host "Compilando $env:SERVICE_SLUG..."'
+    - 'dotnet restore "$env:PROJECT_PATH"'
+    - 'dotnet build   "$env:PROJECT_PATH" -c Release --no-restore'
+    - '$outDir = "publish\$env:SERVICE_SLUG"'
+    - 'if (Test-Path $outDir) { Remove-Item $outDir -Recurse -Force }'
+    - 'dotnet publish "$env:PROJECT_PATH" -c Release -o $outDir --no-build'
+    - 'if (Test-Path "publish\$env:SERVICE_SLUG.zip") { Remove-Item "publish\$env:SERVICE_SLUG.zip" -Force }'
+    - 'Compress-Archive -Path "$outDir\*" -DestinationPath "publish\$env:SERVICE_SLUG.zip" -Force'
   artifacts:
     paths:
       - publish/${SERVICE_SLUG}.zip
@@ -41,15 +45,19 @@ cache:
   stage: test
   tags: [local-ci]
   script:
-    - set -euo pipefail
-    - if ! command -v dotnet &> /dev/null; then echo "Instalando .NET SDK..."; brew install dotnet || true; fi
+    - '$ErrorActionPreference = "Stop"'
     - |
-      if [ -f "Function.Blending.sln" ]; then
-        echo "Ejecutando pruebas de la solución principal..."
-        dotnet test Function.Blending.sln --configuration Release --no-build --nologo
-      else
-        echo "No se encontró Function.Blending.sln. Omitiendo pruebas."
-      fi
+      if (Test-Path "Function.Blending.sln") {
+        Write-Host "Ejecutando pruebas..."
+        dotnet test "Function.Blending.sln" -c Release --no-build --nologo --logger "trx;LogFileName=test-results.trx"
+      } else {
+        Write-Host "No se encontró Function.Blending.sln. Omitiendo pruebas."
+      }
+  artifacts:
+    when: always
+    paths:
+      - "**/*.trx"
+    expire_in: 1 day
 
 .deploy_template: &deploy_template
   stage: deploy
@@ -59,35 +67,17 @@ cache:
   environment:
     name: production
   before_script:
-    - set -euo pipefail
-    - if ! command -v az &> /dev/null; then echo "Instalando Azure CLI..."; brew update && brew install azure-cli || true; fi
-    - az version
-    - echo "Debug - Variables:"
-    - echo "AZURE_RESOURCE_GROUP=${AZURE_RESOURCE_GROUP:-'NOT_SET'}"
-    - echo "FUNCTION_APP_NAME=${FUNCTION_APP_NAME:-'NOT_SET'}"
-    - az login --service-principal -u "$AZURE_CLIENT_ID" -p "$AZURE_CLIENT_SECRET" --tenant "$AZURE_TENANT_ID"
-    - az account set --subscription "$AZURE_SUBSCRIPTION_ID"
+    - '$ErrorActionPreference = "Stop"'
+    - 'if (-not (Get-Command az -ErrorAction SilentlyContinue)) { choco install azure-cli -y }'
+    - 'az version'
+    - 'Write-Host "AZURE_RESOURCE_GROUP=$env:AZURE_RESOURCE_GROUP"'
+    - 'Write-Host "FUNCTION_APP_NAME=$env:FUNCTION_APP_NAME"'
+    - 'az login --service-principal -u "$env:AZURE_CLIENT_ID" -p "$env:AZURE_CLIENT_SECRET" --tenant "$env:AZURE_TENANT_ID"'
+    - 'az account set --subscription "$env:AZURE_SUBSCRIPTION_ID"'
   script:
-    - echo "Desplegando ${SERVICE_SLUG} a ${FUNCTION_APP_NAME}..."
-    - |
-      for i in {1..3}; do
-        echo "Intento $i/3: Desplegando ${SERVICE_SLUG}..."
-        if az functionapp deployment source config-zip \
-            -g "$AZURE_RESOURCE_GROUP" \
-            -n "${FUNCTION_APP_NAME}" \
-            --src ./publish/${SERVICE_SLUG}.zip \
-            --timeout 1800; then
-          echo "Despliegue de ${SERVICE_SLUG} completado exitosamente"
-          break
-        else
-          echo "Intento $i falló, reintentando en 30 segundos..."
-          sleep 30
-          if [ $i -eq 3 ]; then
-            echo "Todos los intentos fallaron para ${SERVICE_SLUG}"
-            exit 1
-          fi
-        fi
-      done
+    - 'Write-Host "Desplegando $env:SERVICE_SLUG a $env:FUNCTION_APP_NAME..."'
+    - 'if (-not (Test-Path "publish\$env:SERVICE_SLUG.zip")) { throw "No existe publish\$env:SERVICE_SLUG.zip. Corre el build primero." }'
+    - 'az functionapp deployment source config-zip -g "$env:AZURE_RESOURCE_GROUP" -n "$env:FUNCTION_APP_NAME" --src "publish\$env:SERVICE_SLUG.zip" --timeout 1800'
 
 # ==============================
 # Jobs de BUILD
@@ -181,6 +171,7 @@ deploy-opt:
   needs: ["build-opt"]
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
       # changes:
       #   - Function.Blending.Opt/**/*
 
