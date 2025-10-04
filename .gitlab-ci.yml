@@ -118,7 +118,7 @@ build-opt:
     SERVICE_SLUG: "opt"
     PROJECT_PATH: "Function.Blending.Opt/Function.Blending.Opt.csproj"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
       # changes:
       #   - Function.Blending.Opt/**/*
 
@@ -180,7 +180,7 @@ deploy-opt:
   resource_group: "deploy-${SERVICE_SLUG}"
   needs: ["build-opt"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
       # changes:
       #   - Function.Blending.Opt/**/*
 
