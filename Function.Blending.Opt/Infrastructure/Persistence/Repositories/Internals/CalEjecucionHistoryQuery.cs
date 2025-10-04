@@ -1,4 +1,7 @@
-﻿// Aliases
+﻿using System;
+using System.Linq;
+
+// Aliases
 using E = Function.Blending.Opt.Infrastructure.Persistence.Models;
 
 namespace Function.Blending.Opt.Infrastructure.Persistence.Repositories.Internals;
