@@ -19,18 +19,31 @@ cache:
 
 .build_template: &build_template
   stage: build
-  tags: [local-ci]  # Asegúrate que tu runner Windows tenga este tag
+  tags: [local-ci]  # tu runner Windows debe tener este tag
   before_script:
     - '$ErrorActionPreference = "Stop"'
     - 'Write-Host "##[info] Host: $(hostname)"'
     - 'if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) { choco install dotnet-8.0-sdk -y }'
-    - 'if (-not (Get-Command zip -ErrorAction SilentlyContinue))    { choco install zip -y }'
+    - 'if (-not (Get-Command zip    -ErrorAction SilentlyContinue)) { choco install zip -y }'
     - 'dotnet --version'
     - 'New-Item -ItemType Directory -Force -Path ".nuget\packages" | Out-Null'
   script:
     - 'Write-Host "Compilando $env:SERVICE_SLUG..."'
     - 'dotnet restore "$env:PROJECT_PATH"'
-    - 'dotnet build   "$env:PROJECT_PATH" -c Release --no-restore'
+
+    # ====== VERSIONADO DEL ASSEMBLY ======
+    # Si hay tag -> usa el tag; si no -> 0.0.<pipeline_iid>  (queda en AssemblyVersion)
+    - '$releaseVersion = if ($env:CI_COMMIT_TAG) { $env:CI_COMMIT_TAG } else { "0.0.$($env:CI_PIPELINE_IID)" }'
+    # InformationalVersion incluye el short SHA (visible en tu /health)
+    - '$infoVersion = "$releaseVersion+$($env:CI_COMMIT_SHORT_SHA)"'
+    - 'Write-Host "Versiones -> Version=$releaseVersion  InformationalVersion=$infoVersion"'
+
+    # Build con propiedades de versión (publish hará --no-build)
+    - 'dotnet build "$env:PROJECT_PATH" -c Release --no-restore `
+        -p:Version=$releaseVersion `
+        -p:InformationalVersion="$infoVersion"'
+
+    # Empaquetado
     - '$outDir = "publish\$env:SERVICE_SLUG"'
     - 'if (Test-Path $outDir) { Remove-Item $outDir -Recurse -Force }'
     - 'dotnet publish "$env:PROJECT_PATH" -c Release -o $outDir --no-build'
@@ -78,6 +91,21 @@ cache:
     - 'Write-Host "Desplegando $env:SERVICE_SLUG a $env:FUNCTION_APP_NAME..."'
     - 'if (-not (Test-Path "publish\$env:SERVICE_SLUG.zip")) { throw "No existe publish\$env:SERVICE_SLUG.zip. Corre el build primero." }'
     - 'az functionapp deployment source config-zip -g "$env:AZURE_RESOURCE_GROUP" -n "$env:FUNCTION_APP_NAME" --src "publish\$env:SERVICE_SLUG.zip" --timeout 1800'
+
+    # ====== METADATOS DE DESPLIEGUE PARA /health ======
+    - '$releaseVersion = if ($env:CI_COMMIT_TAG) { $env:CI_COMMIT_TAG } else { "0.0.$($env:CI_PIPELINE_IID)" }'
+    - '$deployedAt = [DateTimeOffset]::UtcNow.ToString("o")'
+    - '$settings = @('
+    - '  "DEPLOYED_AT=$deployedAt",'
+    - '  "BUILD_VERSION=$releaseVersion",'
+    - '  "GIT_SHA=$env:CI_COMMIT_SHORT_SHA",'
+    - '  "PIPELINE_ID=$env:CI_PIPELINE_ID",'
+    - '  "PIPELINE_URL=$env:CI_PIPELINE_URL",'
+    - '  "BRANCH=$env:CI_COMMIT_REF_NAME"'
+    - ')'
+    # Solo añadimos la flag si VIENE desde CI (no pisamos Portal)
+    - 'if ($env:HEALTHCHECK_INCLUDE_DEPLOY_INFO -and $env:HEALTHCHECK_INCLUDE_DEPLOY_INFO.Trim() -ne "") { $settings += "HEALTHCHECK_INCLUDE_DEPLOY_INFO=$env:HEALTHCHECK_INCLUDE_DEPLOY_INFO" }'
+    - 'az functionapp config appsettings set -g "$env:AZURE_RESOURCE_GROUP" -n "$env:FUNCTION_APP_NAME" --settings $settings | Out-Null'
 
 # ==============================
 # Jobs de BUILD
