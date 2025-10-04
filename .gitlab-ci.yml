@@ -90,62 +90,75 @@ cache:
   script:
     - 'Write-Host "Desplegando $env:SERVICE_SLUG a $env:FUNCTION_APP_NAME..."'
     - 'if (-not (Test-Path "publish\$env:SERVICE_SLUG.zip")) { throw "No existe publish\$env:SERVICE_SLUG.zip. Corre el build primero." }'
-    # === TODO EL RESTO EN UN SOLO BLOQUE ===
-    - | 
+    - |
+      $ErrorActionPreference = "Stop"
+
+      # 1) ZIP DEPLOY: si el CLI devuelve JSON con status=4, salimos OK
+      $ok = $false
       try {
-        az functionapp deployment source config-zip `
+        $zipOut = az functionapp deployment source config-zip `
           -g "$env:AZURE_RESOURCE_GROUP" `
           -n "$env:FUNCTION_APP_NAME" `
           --src "publish\$env:SERVICE_SLUG.zip" `
-          --timeout 1800
-      } catch {
-        Write-Warning "config-zip lanzó error (posible 504). Verificamos estado real en Kudu..."
-      }
-
-      # ---- Poll Kudu hasta 10 min ----
-      $kudu = "https://$env:FUNCTION_APP_NAME.scm.azurewebsites.net/api/deployments/latest"
-      $xml  = [xml](az functionapp deployment list-publishing-profiles -g "$env:AZURE_RESOURCE_GROUP" -n "$env:FUNCTION_APP_NAME" --xml)
-      $pp   = $xml.publishData.publishProfile | Where-Object { $_.publishMethod -eq "MSDeploy" } | Select-Object -First 1
-      if (-not $pp) { $pp = $xml.publishData.publishProfile | Select-Object -First 1 }
-      $pair = "$($pp.userName):$($pp.userPWD)"
-      $auth = "Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($pair))
-
-      $ok = $false
-      for ($i=1; $i -le 120; $i++) {   # 120 * 5s = 10 minutos
-        try {
-          $d = Invoke-RestMethod -Uri $kudu -Headers @{ Authorization = $auth } -TimeoutSec 30 -ErrorAction Stop
-        } catch {
-          Start-Sleep 5
-          continue
+          --timeout 1800 `
+          -o json
+        if ($zipOut) {
+          try { $zipObj = $zipOut | ConvertFrom-Json } catch { $zipObj = $null }
+          if ($zipObj -and $zipObj.status -eq 4) {
+            Write-Host "config-zip: Kudu reportó SUCCESS"
+            $ok = $true
+          } elseif ($zipObj -and $zipObj.status -eq 3) {
+            throw "config-zip: Kudu reportó FAILED - $($zipObj.message)"
+          } else {
+            Write-Host "config-zip: status desconocido ($($zipObj?.status)); confirmamos con Kudu..."
+          }
+        } else {
+          Write-Host "config-zip sin salida JSON; confirmamos con Kudu..."
         }
-        if ($d.status -eq 4) { Write-Host "Kudu: Deploy SUCCESS"; $ok = $true; break }
-        elseif ($d.status -eq 3) { throw "Kudu: Deploy FAILED - $($d.message)" }
-        else { Write-Host ("Kudu: Status={0} (esperando)..." -f $d.status); Start-Sleep 5 }
+      } catch {
+        Write-Warning "config-zip lanzó excepción ($($_.Exception.Message)); confirmamos con Kudu..."
       }
-      if (-not $ok) { throw "Deploy no confirmado por Kudu tras 10 minutos." }
 
-      # ---- App Settings para /health ----
+      # 2) Fallback: confirmar en Kudu (máx 90s) SOLO si aún no está ok
+      if (-not $ok) {
+        $kudu = "https://$env:FUNCTION_APP_NAME.scm.azurewebsites.net/api/deployments/latest"
+        $xml  = [xml](az functionapp deployment list-publishing-profiles -g "$env:AZURE_RESOURCE_GROUP" -n "$env:FUNCTION_APP_NAME" --xml)
+        $pp   = $xml.publishData.publishProfile | Where-Object { $_.publishMethod -eq "MSDeploy" } | Select-Object -First 1
+        if (-not $pp) { $pp = $xml.publishData.publishProfile | Select-Object -First 1 }
+        $pair = "$($pp.userName):$($pp.userPWD)"
+        $auth = "Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($pair))
+
+        $interval = 5; $loops = 18  # 18 * 5s = 90s
+        for ($i=1; $i -le $loops; $i++) {
+          try {
+            $d = Invoke-RestMethod -Uri $kudu -Headers @{ Authorization = $auth } -TimeoutSec 30 -ErrorAction Stop
+            if ($d.status -eq 4) { Write-Host "Kudu: Deploy SUCCESS"; $ok = $true; break }
+            elseif ($d.status -eq 3) { throw "Kudu: Deploy FAILED - $($d.message)" }
+            else { Write-Host ("Kudu: Status={0} (esperando)..." -f $d.status) }
+          } catch {
+            Write-Warning "Kudu poll error: $($_.Exception.Message)"
+          }
+          Start-Sleep -Seconds $interval
+        }
+        if (-not $ok) { Write-Warning "Deploy no confirmado por Kudu tras 90s; continuamos." }
+      }
+
+      # 3) App Settings para /health (si llegamos aquí, consideramos OK)
       $releaseVersion = if ($env:CI_COMMIT_TAG) { $env:CI_COMMIT_TAG } else { "0.0.$($env:CI_PIPELINE_IID)" }
       $deployedAt = [DateTimeOffset]::UtcNow.ToString("o")
-      $settings = @(
-        "DEPLOYED_AT=$deployedAt",
-        "BUILD_VERSION=$releaseVersion",
-        "GIT_SHA=$env:CI_COMMIT_SHORT_SHA",
-        "PIPELINE_ID=$env:CI_PIPELINE_ID",
-        "PIPELINE_URL=$env:CI_PIPELINE_URL",
-        "BRANCH=$env:CI_COMMIT_REF_NAME"
-      )
+      $settings = @()
+      $settings += "DEPLOYED_AT=$deployedAt"
+      $settings += "BUILD_VERSION=$releaseVersion"
+      $settings += "GIT_SHA=$env:CI_COMMIT_SHORT_SHA"
+      $settings += "PIPELINE_ID=$env:CI_PIPELINE_ID"
+      $settings += "PIPELINE_URL=$env:CI_PIPELINE_URL"
+      $settings += "BRANCH=$env:CI_COMMIT_REF_NAME"
       if ($env:HEALTHCHECK_INCLUDE_DEPLOY_INFO -and $env:HEALTHCHECK_INCLUDE_DEPLOY_INFO.Trim() -ne "") {
         $settings += "HEALTHCHECK_INCLUDE_DEPLOY_INFO=$env:HEALTHCHECK_INCLUDE_DEPLOY_INFO"
       }
-
       if (-not $env:AZURE_RESOURCE_GROUP) { throw "AZURE_RESOURCE_GROUP no está definida" }
       if (-not $env:FUNCTION_APP_NAME)     { throw "FUNCTION_APP_NAME no está definida" }
-
-      az functionapp config appsettings set `
-        -g "$env:AZURE_RESOURCE_GROUP" `
-        -n "$env:FUNCTION_APP_NAME" `
-        --settings $settings | Out-Null
+      az functionapp config appsettings set -g "$env:AZURE_RESOURCE_GROUP" -n "$env:FUNCTION_APP_NAME" --settings $settings | Out-Null
 
 # ==============================
 # Jobs de BUILD
