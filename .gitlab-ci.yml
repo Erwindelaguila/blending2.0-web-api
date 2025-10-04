@@ -119,8 +119,8 @@ build-opt:
     PROJECT_PATH: "Function.Blending.Opt/Function.Blending.Opt.csproj"
   rules:
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
-      changes:
-        - Function.Blending.Opt/**/*
+      # changes:
+      #   - Function.Blending.Opt/**/*
 
 build-data:
   <<: *build_template
@@ -181,8 +181,8 @@ deploy-opt:
   needs: ["build-opt"]
   rules:
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
-      changes:
-        - Function.Blending.Opt/**/*
+      # changes:
+      #   - Function.Blending.Opt/**/*
 
 deploy-data:
   <<: *deploy_template
