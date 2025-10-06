@@ -32,6 +32,4 @@ public partial class Planta
     public bool Eliminado { get; set; }
 
     public virtual ICollection<CalEjecucion> CalEjecucion { get; set; } = new List<CalEjecucion>();
-
-    public virtual ICollection<LogEjecucion> LogEjecucion { get; set; } = new List<LogEjecucion>();
 }

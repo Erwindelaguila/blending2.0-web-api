@@ -1,5 +1,6 @@
 using System;
 using Function.Blending.Opt.Domain.Abstractions.Models.Catalogs;
+using Function.Blending.Opt.Domain.ValueObjects;
 using Function.Blending.Opt.Domain.ValueObjects.Ids;
 
 namespace Function.Blending.Opt.Domain.Entities;
@@ -8,7 +9,6 @@ public sealed class LogEjecucion
 {
   public EjecucionId Id { get; set; }
 
-  public PlantaId PlantaId { get; private set; }
   public EstadoId EstadoId { get; private set; }
 
   public string? Codigo { get; set; }
@@ -22,4 +22,9 @@ public sealed class LogEjecucion
 
   public LogEjecucion() { }
   public LogEjecucion(EjecucionId id) => Id = id;
+
+  public LogInpInfo? Info { get; set; }
+  public LogInpOferta? Oferta { get; set; }
+  public LogInpFiltro? Filtro { get; set; }
+  public IReadOnlyList<LogOutContenedor>? Contenedores { get; set; }
 }

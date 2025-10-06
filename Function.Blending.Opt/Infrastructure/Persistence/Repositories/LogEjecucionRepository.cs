@@ -24,7 +24,6 @@ public sealed class LogEjecucionRepository(
 ) : ILogEjecucionRepository
 {
   public async Task<DE.LogEjecucion?> StartAsync(
-    Guid plantaId,
     Guid estadoInicialId,
     string? mensaje,
     Guid creadoPorId,
@@ -38,7 +37,6 @@ public sealed class LogEjecucionRepository(
     var model = new EF.LogEjecucion
     {
       Id = id,
-      PlantaId = plantaId,
       EstadoId = estadoInicialId,
       Codigo = codeGen.MakeTemp(),
       Mensaje = mensaje,
@@ -114,17 +112,17 @@ public sealed class LogEjecucionRepository(
     DateTime? creadoDelUtc, 
     DateTime? creadoAlUtc, 
     Guid? estadoId, 
-    Guid? plantaId, 
     string? codigo, 
+    string? contrato,
     CancellationToken ct
   )
   {
     page = page < 1 ? 1 : page;
     pageSize = pageSize < 1 ? 1 : pageSize > 200 ? 200 : pageSize;
 
-    var baseQuery = db.Set<EF.LogEjecucion>().AsNoTracking();
+    var baseQuery = db.Set<EF.LogEjecucion>().Include(x => x.LogInpInfo).AsNoTracking();
 
-    var filtered = LogEjecucionHistoryQuery.ApplyFilters(baseQuery, confirmado, creadoDelUtc, creadoAlUtc, estadoId, plantaId, codigo);
+    var filtered = LogEjecucionHistoryQuery.ApplyFilters(baseQuery, confirmado, creadoDelUtc, creadoAlUtc, estadoId, codigo, contrato);
 
     var ordered = LogEjecucionHistoryQuery.ApplyOrdering(filtered, sortBy, sortDir);
 
@@ -140,7 +138,10 @@ public sealed class LogEjecucionRepository(
       var dict = await estados.GetByIdsAsync(estadoIds, ct);
       foreach (var it in items)
         if (dict.TryGetValue(it.EstadoId, out var est) && est is not null)
+        { 
           it.EstadoNombre = est.Nombre;
+          it.EstadoColor = est.Color;
+        }
     }
 
     return (items, total);

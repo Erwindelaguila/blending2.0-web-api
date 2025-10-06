@@ -1,5 +1,6 @@
 using Function.Blending.Opt.Domain.Abstractions.Models.Catalogs;
 using Function.Blending.Opt.Domain.ValueObjects;
+using Function.Blending.Opt.Domain.ReadModels;
 using Function.Blending.Opt.Domain.ValueObjects.Ids;
 using System;
 
@@ -30,7 +31,10 @@ public sealed class CalEjecucion
   /// </summary>
   public EstadoCalidadSnapshot? Estado { get; set; }
 
+  public CalInpFiltro? Filtro { get; set; }
+  public IReadOnlyList<CalInpParametroItemRm>? Parametros { get; set; }
   public IReadOnlyList<CalOutResumen>? Resumenes { get; set; }
+  public IReadOnlyList<CalOutDetalle>? Detalles { get; set; }
 
   public CalEjecucion() { }
   public CalEjecucion(EjecucionId id) => Id = id;

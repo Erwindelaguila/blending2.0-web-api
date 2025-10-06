@@ -1,10 +1,10 @@
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
 using Function.Blending.Core.Application.LineaProduccion.DTOs;
 using Function.Blending.Core.Application.LineaProduccion.Queries;
-using Function.Blending.Core.Infrastructure.Services;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -17,18 +17,16 @@ public class GetAllLineasProduccionFunction
 {
     private readonly IMediator _mediator;
     private readonly ILogger<GetAllLineasProduccionFunction> _logger;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
     public GetAllLineasProduccionFunction(
         IMediator mediator, 
-        ILogger<GetAllLineasProduccionFunction> logger,
-        IAuthorizationHeaderExtractor headerExtractor)
+        ILogger<GetAllLineasProduccionFunction> logger)
     {
         _mediator = mediator;
         _logger = logger;
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador,Logistica")]
     [Function(FunctionNames.LineaProduccion.GetAll)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Production.LineaProduccionBase)] HttpRequestData req)
@@ -37,14 +35,6 @@ public class GetAllLineasProduccionFunction
         
         try
         {
-         
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             
             _logger.LogInformation("GetAllLineasProduccion called with query: {QueryString}", req.Url.Query);
@@ -53,7 +43,7 @@ public class GetAllLineasProduccionFunction
             if (query["activo"] == "true")
             {
                 _logger.LogInformation("Returning active lineas produccion for combo");
-                var activasResult = await _mediator.Send(new GetAllLineasProduccionActivasQuery(req), cts.Token);
+                var activasResult = await _mediator.Send(new GetAllLineasProduccionActivasQuery(), cts.Token);
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Success(activasResult, "Líneas de producción activas obtenidas correctamente"));
             }
             
@@ -70,7 +60,7 @@ public class GetAllLineasProduccionFunction
             
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var result = await _mediator.Send(new GetAllLineasProduccionQuery(page, size, filtersToApply, req), cts.Token);
+            var result = await _mediator.Send(new GetAllLineasProduccionQuery(page, size, filtersToApply), cts.Token);
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<PagedResponse<LineaProduccionDTO>>.Success(result, "Líneas de producción obtenidas correctamente"));
         }
@@ -107,10 +97,6 @@ public class GetAllLineasProduccionFunction
                 500
             ));
         }
-        finally
-        {
 
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

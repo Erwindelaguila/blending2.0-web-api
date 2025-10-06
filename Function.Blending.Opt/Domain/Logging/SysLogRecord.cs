@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Function.Blending.Opt.Domain.Logging;
+﻿namespace Function.Blending.Opt.Domain.Logging;
 
 /// <summary>
 /// Payload “plano” de un registro a persistir en dbo.SysLog.
@@ -16,6 +14,7 @@ public sealed record SysLogRecord(
   string? Message,
   string? StackTrace,
   string? ExtraInfo,
+  string? TraceParentId,
   Guid? RequestInvocationId,
   Guid? FunctionInvocationId,
   Guid? ExceptionGroupId,

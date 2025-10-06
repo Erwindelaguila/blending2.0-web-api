@@ -1,10 +1,11 @@
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Application.Calidad.Queries;
-using Function.Blending.Core.Infrastructure.Services;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -15,29 +16,19 @@ namespace Function.Blending.Core.Functions.Calidad;
 public class GetCalidadByIdFunction
 {
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public GetCalidadByIdFunction(
-        IMediator mediator,
-        IAuthorizationHeaderExtractor headerExtractor)
+    public GetCalidadByIdFunction(IMediator mediator)
     {
         _mediator = mediator;
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador")]
     [Function(FunctionNames.Calidad.GetById)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Production.CalidadGetById)] HttpRequestData req)
     {
         try
         {
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             var idString = query["id"];
             
@@ -50,7 +41,7 @@ public class GetCalidadByIdFunction
                 ));
             }
 
-            var queryRequest = new GetCalidadByIdQuery(calidadId, req);
+            var queryRequest = new GetCalidadByIdQuery(calidadId);
             var result = await _mediator.Send(queryRequest);
 
             if (result == null)
@@ -79,10 +70,6 @@ public class GetCalidadByIdFunction
                 500
             ));
         }
-        finally
-        {
            
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

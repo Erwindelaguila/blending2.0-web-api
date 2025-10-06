@@ -1,10 +1,11 @@
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using Function.Blending.Core.Application.Planta.DTOs;
 using Function.Blending.Core.Application.Planta.Queries;
-using Function.Blending.Core.Infrastructure.Services;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -17,29 +18,20 @@ public class GetAllPlantasFunction
 {
     private readonly IMediator _mediator;
     private readonly ILogger<GetAllPlantasFunction> _logger;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
-    public GetAllPlantasFunction(IMediator mediator, ILogger<GetAllPlantasFunction> logger, IAuthorizationHeaderExtractor headerExtractor)
+    public GetAllPlantasFunction(IMediator mediator, ILogger<GetAllPlantasFunction> logger)
     {
         _mediator = mediator;
         _logger = logger;
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador,Calidad")]
     [Function(FunctionNames.Planta.GetAll)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Planta.Base)] HttpRequestData req)
     {
         try
         {
-            
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             
             // Log para debug - ver qué parámetros llegan
@@ -72,7 +64,7 @@ public class GetAllPlantasFunction
             // Solo enviar filtros si al menos uno está activo
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var queryRequest = new GetAllPlantasQuery(page, size, filtersToApply, esHarina, req);
+            var queryRequest = new GetAllPlantasQuery(page, size, filtersToApply, esHarina);
             var result = await _mediator.Send(queryRequest);
 
             if (esHarina)
@@ -107,10 +99,6 @@ public class GetAllPlantasFunction
                 500
             ));
         }
-        finally
-        {
             
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

@@ -29,8 +29,7 @@ public class UpdateAppParamCommand : BaseCommand<object>
         bool? isInternal,
         bool? isVisible,
         bool? isDisableable,
-        bool? isRemovable,
-        object requestContext) : base(requestContext)
+        bool? isRemovable)
     {
         Key = key;
         NewKey = newKey;

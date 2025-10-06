@@ -17,11 +17,15 @@ public partial class SysLog
 
     public Guid? UserId { get; set; }
 
+    public DateTime DateTime { get; set; }
+
     public string? Message { get; set; }
 
     public string? StackTrace { get; set; }
 
     public string? ExtraInfo { get; set; }
+
+    public string? TraceParentId { get; set; }
 
     public Guid? RequestInvocationId { get; set; }
 

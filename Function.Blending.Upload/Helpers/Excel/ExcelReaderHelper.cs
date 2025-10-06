@@ -134,6 +134,20 @@ public static class ExcelReaderHelper
             throw new InvalidOperationException($"No se encontró la hoja '{config.SheetName}' en el archivo Excel.");
         
         var contrato = worksheet.Cell(config.Contrato).GetString();
+        var pedidoVentas = worksheet.Cell(config.PedidoVenta).GetString();
+        var fechaCarguio = worksheet.Cell(config.FechaCarguio).GetString();
+        var plantaCodigo = worksheet.Cell(config.PlantaCodigo).GetString(); 
+        var plantaDescripcion = worksheet.Cell(config.PlantaDescripcion).GetString();
+        var almacenCodigo = worksheet.Cell(config.AlmacenCodigo).GetString();
+        var almacenDescripcion = worksheet.Cell(config.AlmacenDescripcion).GetString();
+        var cliente = worksheet.Cell(config.Cliente).GetString();
+        var asistente = worksheet.Cell(config.Asistente).GetString();
+        var supervisora = worksheet.Cell(config.Supervisora).GetString();
+        var paisDestino = worksheet.Cell(config.PaisDestino).GetString();
+        var cantidadRuma = worksheet.Cell(config.CantidadRuma).GetString();
+        var unidadMedidaRuma = worksheet.Cell(config.UnidadMedidaRuma).GetString();
+        var numeroMovimientos = worksheet.Cell(config.NumeroMovimientos).GetString();
+        
 
         foreach (var prop in config.Demanda.Fijos.GetType().GetProperties())
         {
@@ -200,8 +214,20 @@ public static class ExcelReaderHelper
             Demanda = rowDto.Demanda,
             Oferta = ofertaDict,
             Contrato = contrato,
+            NumeroMovimientos = numeroMovimientos,
+            PedidoVenta = pedidoVentas,
+            FechaCarguio = fechaCarguio,
+            PlantaCodigo = plantaCodigo,
+            PlantaDescripcion = plantaDescripcion,
+            AlmacenCodigo = almacenCodigo,
+            AlmacenDescripcion = almacenDescripcion,
+            Cliente = cliente,
+            Asistente = asistente,
+            Supervisora = supervisora,
+            PaisDestino = paisDestino,
+            CantidadRuma = cantidadRuma,
+            UnidadMedidaRuma = unidadMedidaRuma,
             PesoContenedores = pesoContendoresValue
-            
         };
 
         return Task.FromResult(finalObject);

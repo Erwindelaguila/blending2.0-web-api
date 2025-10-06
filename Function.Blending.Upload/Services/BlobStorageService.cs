@@ -50,7 +50,7 @@ namespace Function.Blending.Upload.Services;
             var blobClient = _containerClient.GetBlobClient(fileName);
             await blobClient.UploadAsync(memoryStream, overwrite: true);
                 
-            var expiresAt = DateTimeOffset.UtcNow.AddHours(1);
+            var expiresAt = DateTimeOffset.UtcNow.AddYears(20);
 
             // Crear SAS Token (válido por 1 hora)
             var sasBuilder = new BlobSasBuilder 
@@ -58,7 +58,7 @@ namespace Function.Blending.Upload.Services;
                 BlobContainerName = _containerName,
                 BlobName = fileName,
                 Resource = "b",
-                ExpiresOn = DateTimeOffset.UtcNow.AddHours(1)
+                ExpiresOn = DateTimeOffset.UtcNow.AddYears(20)
             };
             
             sasBuilder.SetPermissions(BlobSasPermissions.Read);

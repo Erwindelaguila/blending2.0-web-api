@@ -7,7 +7,7 @@ public class GetAgregadoByIdQuery : BaseQuery<AgregadoDTO?>
 {
     public Guid Id { get; }
 
-    public GetAgregadoByIdQuery(Guid id, object requestContext) : base(requestContext)
+    public GetAgregadoByIdQuery(Guid id)
     {
         Id = id;
     }

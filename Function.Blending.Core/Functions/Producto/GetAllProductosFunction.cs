@@ -3,8 +3,9 @@ using Function.Blending.Core.Application.Producto.Queries;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Producto.DTOs;
-using Function.Blending.Core.Infrastructure.Services;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
+
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -18,18 +19,16 @@ public class GetAllProductosFunction
 {
     private readonly ILogger<GetAllProductosFunction> _logger;
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
     public GetAllProductosFunction(
         ILogger<GetAllProductosFunction> logger,
-        IMediator mediator,
-        IAuthorizationHeaderExtractor headerExtractor)
+        IMediator mediator)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-        _headerExtractor = headerExtractor ?? throw new ArgumentNullException(nameof(headerExtractor));
     }
 
+    [RequireScopes("Administrador")]
     [Function(FunctionNames.Producto.GetAll)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Production.ProductoBase)] HttpRequestData req)
@@ -37,20 +36,6 @@ public class GetAllProductosFunction
         try
         {
             _logger.LogInformation("GetAllProductosFunction procesando...");
-
-     
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-                _logger.LogDebug("Contexto JWT establecido correctamente");
-            }
-            else
-            {
-                _logger.LogWarning("No se pudo extraer token JWT del request");
-       
-            }
 
             var query = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
 
@@ -99,10 +84,6 @@ public class GetAllProductosFunction
                 500
             ));
         }
-        finally
-        {
 
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

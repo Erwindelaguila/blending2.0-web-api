@@ -4,10 +4,11 @@ using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using Function.Blending.Core.Application.Parametro.Commands;
 using Function.Blending.Core.Application.Parametro.DTOs;
-using Function.Blending.Core.Infrastructure.Services;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -18,29 +19,19 @@ namespace Function.Blending.Core.Functions.Parametro;
 public class UpdateParametroFunction
 {
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
-    public UpdateParametroFunction(
-        IMediator mediator,
-        IAuthorizationHeaderExtractor headerExtractor)
+
+    public UpdateParametroFunction(IMediator mediator)
     {
         _mediator = mediator;
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador")]
     [Function(FunctionNames.Parametro.Update)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Put, Route = ApiRoutes.Core.Parametro.GetById)] HttpRequestData req)
     {
         try
         {
-          
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             var body = await req.ReadAsStringAsync();
             if (string.IsNullOrEmpty(body))
             {
@@ -79,8 +70,7 @@ public class UpdateParametroFunction
                 dto.Codigo,
                 dto.Nombre,
                 dto.Descripcion,
-                dto.Activo,
-                req
+                dto.Activo
             );
 
             var result = await _mediator.Send(command);
@@ -89,10 +79,15 @@ public class UpdateParametroFunction
         }
         catch (ValidationException ex)
         {
-            var validationErrors = ex.Errors.Select(e => new { Field = e.PropertyName, Error = e.ErrorMessage });
+            var errors = ex.Errors.Select(e => new { Campo = e.PropertyName, Error = e.ErrorMessage }).ToList();
+            
+            var errorSummary = errors.Count == 1 
+                ? errors.First().Error
+                : $"Se encontraron {errors.Count} errores de validación";
+            
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
-                validationErrors,
-                "Errores de validación",
+                errors,
+                errorSummary,
                 400
             ));
         }
@@ -128,10 +123,6 @@ public class UpdateParametroFunction
                 500
             ));
         }
-        finally
-        {
         
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

@@ -1,7 +1,4 @@
-﻿using System.Runtime.ConstrainedExecution;
-using System.Security.Policy;
-
-namespace Function.Blending.Opt.Shared.Constants;
+﻿namespace Function.Blending.Opt.Shared.Constants;
 
 public static partial class ConfigurationKeys
 {
@@ -14,5 +11,7 @@ public static partial class ConfigurationKeys
     public const string WindowsTimeZoneId = "Time_WindowsTimeZoneId";
     // Id de zona horaria específica para IANA
     public const string IanaTimeZoneId = "Time_IanaTimeZoneId";
+    // Fuerza a lanzar excepción si la zona horaria no es válida o no se encuentra
+    public const string EnforceValidTimeZone = "Time_EnforceValidTimeZone";
   }
 }

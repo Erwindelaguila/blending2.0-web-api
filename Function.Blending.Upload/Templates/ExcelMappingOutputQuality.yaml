@@ -73,7 +73,7 @@ detalle:
 
   sheetName: "Detalle Mezcla"
   startRow: 1
-
+  
   fijos:
     grupo:
       header: "grupo"
@@ -99,7 +99,7 @@ detalle:
       header: "Descripción del Material"
       column: "F"
       dataType: "string"
-    centroUbicación:
+    centroUbicacion:
       header: "Centro Ubicación"
       column: "G"
       dataType: "string"

@@ -12,5 +12,5 @@ public sealed class EstadoLogisticaOptions
   public bool ExposeColor { get; set; } = false;
 
   /// <summary>Clave (prop name) en AuxProp para el color (ej. "color").</summary>
-  public string? ColorPropClave { get; set; }
+  public string ColorPropClave { get; set; } = "color";
 }

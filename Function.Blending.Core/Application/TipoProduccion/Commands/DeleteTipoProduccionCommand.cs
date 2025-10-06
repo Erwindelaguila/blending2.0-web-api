@@ -7,7 +7,7 @@ public class DeleteTipoProduccionCommand : BaseCommand<bool>
 {
     public Guid Id { get; }
 
-    public DeleteTipoProduccionCommand(Guid id, object requestContext) : base(requestContext)
+    public DeleteTipoProduccionCommand(Guid id)
     {
         Id = id;
     }

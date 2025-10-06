@@ -3,10 +3,11 @@ using FluentValidation;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using Function.Blending.Core.Application.Calidad.Commands;
 using Function.Blending.Core.Application.Calidad.DTOs;
-using Function.Blending.Core.Infrastructure.Services;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -16,30 +17,19 @@ namespace Function.Blending.Core.Functions.Calidad;
 public class CreateCalidadFunction
 {
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public CreateCalidadFunction(
-        IMediator mediator,
-        IAuthorizationHeaderExtractor headerExtractor) 
+    public CreateCalidadFunction(IMediator mediator) 
     {
         _mediator = mediator;
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador")]
     [Function(FunctionNames.Calidad.Create)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Post, Route = ApiRoutes.Core.Production.CalidadBase)] HttpRequestData req)
     {
         try
         {
-      
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             var body = await req.ReadAsStringAsync();
 
             if (string.IsNullOrEmpty(body))
@@ -70,8 +60,7 @@ public class CreateCalidadFunction
                 dto.CodigoMaterial,
                 dto.Descripcion,
                 dto.NoConforme,
-                dto.Activo,
-                req
+                dto.Activo
             );
 
             var result = await _mediator.Send(command);
@@ -80,10 +69,15 @@ public class CreateCalidadFunction
         }
         catch (ValidationException ex)
         {
-            var errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }).ToList();
+            var errors = ex.Errors.Select(e => new { Campo = e.PropertyName, Error = e.ErrorMessage }).ToList();
+            
+            var errorSummary = errors.Count == 1 
+                ? errors.First().Error
+                : $"Se encontraron {errors.Count} errores de validación";
+            
             return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
                 errors,
-                "Validación fallida. Por favor, revise los campos.",
+                errorSummary,
                 400
             ));
         }
@@ -110,10 +104,6 @@ public class CreateCalidadFunction
                 null,
                 500
             ));
-        }
-        finally
-        {
-            AuthorizationService.ClearCurrentContext();
         }
     }
 }

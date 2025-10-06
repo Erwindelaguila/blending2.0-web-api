@@ -1,16 +1,17 @@
-﻿using System.Collections.Concurrent;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using Function.Blending.Opt.Shared.Constants;
+﻿using Function.Blending.Opt.Shared.Constants;
 using Function.Blending.Opt.Shared.Security;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using System.Collections.Concurrent;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace Function.Blending.Opt.Functions.Support.Security;
 
-public sealed class JwtTokenValidationService(IConfiguration cfg) : ITokenValidationService
+public sealed class JwtTokenValidationService(IConfiguration cfg, ILogger<JwtTokenValidationService> logger) : ITokenValidationService
 {
   private static readonly ConcurrentDictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> _oidcManagers = new();
 
@@ -83,13 +84,17 @@ public sealed class JwtTokenValidationService(IConfiguration cfg) : ITokenValida
       var normalized = JwtClaimsFactory.CreateIdentity(jwt, opts);
       return normalized is null ? null : new ClaimsPrincipal(normalized);
     }
-    catch (SecurityTokenValidationException)
+    catch (SecurityTokenValidationException ex)
     {
+      // Error esperado → token inválido
+      logger.LogWarning(ex, "Token inválido en JwtTokenValidationService");
       return null;
     }
-    catch
+    catch (Exception ex)
     {
-      return null;
+      // Error inesperado → que lo capture el middleware (SysLogComposer)
+      logger.LogError(ex, "Error inesperado validando JWT");
+      throw;
     }
   }
 }

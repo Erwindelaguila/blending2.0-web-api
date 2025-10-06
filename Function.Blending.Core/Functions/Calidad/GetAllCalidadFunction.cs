@@ -1,10 +1,11 @@
 ﻿using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using Function.Blending.Core.Application.Calidad.DTOs;
 using Function.Blending.Core.Application.Calidad.Queries;
-using Function.Blending.Core.Infrastructure.Services;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -17,32 +18,22 @@ public class GetAllCalidadFunction
 {
     private readonly IMediator _mediator;
     private readonly ILogger<GetAllCalidadFunction> _logger;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor;
 
     public GetAllCalidadFunction(
         IMediator mediator, 
-        ILogger<GetAllCalidadFunction> logger,
-        IAuthorizationHeaderExtractor headerExtractor)
+        ILogger<GetAllCalidadFunction> logger)
     {
         _mediator = mediator;
         _logger = logger;
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador")]
     [Function(FunctionNames.Calidad.GetAll)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.Production.CalidadBase)] HttpRequestData req)
     {
         try
         {
-           
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             
             // Log para debug - ver qué parámetros llegan
@@ -63,7 +54,7 @@ public class GetAllCalidadFunction
             if (query["activo"] == "true")
             {
                 _logger.LogInformation("Returning active calidades for combo");
-                var activasResult = await _mediator.Send(new GetAllCalidadesActivasQuery(req));
+                var activasResult = await _mediator.Send(new GetAllCalidadesActivasQuery());
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<List<CalidadActivaDTO>>.Success(activasResult, "Calidades activas obtenidas correctamente"));
             }
             
@@ -84,7 +75,7 @@ public class GetAllCalidadFunction
             // Solo enviar filtros si al menos uno está activo
             var filtersToApply = QueryParameterHelper.HasActiveFilters(filters) ? filters : null;
 
-            var result = await _mediator.Send(new GetAllCalidadesQuery(page, size, filtersToApply, req , isGlobalConfig));
+            var result = await _mediator.Send(new GetAllCalidadesQuery(page, size, filtersToApply, isGlobalConfig));
 
             if (isGlobalConfig)
             {
@@ -119,10 +110,6 @@ public class GetAllCalidadFunction
                 500
             ));
         }
-        finally
-        {
           
-            AuthorizationService.ClearCurrentContext();
-        }
     }
 }

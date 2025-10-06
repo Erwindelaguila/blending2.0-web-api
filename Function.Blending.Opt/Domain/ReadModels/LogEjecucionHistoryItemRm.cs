@@ -13,7 +13,8 @@ public sealed record class LogEjecucionHistoryItemRm
   public bool? Confirmado { get; init; }
   public Guid EstadoId { get; init; }
   public string? EstadoNombre { get; set; } // se enriquece en el repo
-  public Guid PlantaId { get; init; }
+  public string? EstadoColor { get; set; } // se enriquece en el repo
+  public string? Contrato { get; set; } // se enriquece en el repo
   public DateTime CreadoEl { get; init; } // UTC
 
   public LogEjecucionHistoryItemRm() { }

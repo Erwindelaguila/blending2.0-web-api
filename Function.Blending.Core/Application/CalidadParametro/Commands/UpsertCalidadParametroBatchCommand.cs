@@ -1,5 +1,4 @@
 using Function.Blending.Core.Application.Common.Commands;
-using Microsoft.Azure.Functions.Worker.Http;
 
 namespace Function.Blending.Core.Application.CalidadParametro.Commands;
 
@@ -8,8 +7,7 @@ public class UpsertCalidadParametroBatchCommand : BaseCommand<int>
     public List<CalidadParametroCambio> Cambios { get; set; } = new();
 
     public UpsertCalidadParametroBatchCommand(
-        List<CalidadParametroCambio> cambios,
-        HttpRequestData requestContext) : base(requestContext)
+        List<CalidadParametroCambio> cambios)
     {
         Cambios = cambios ?? new List<CalidadParametroCambio>();
     }

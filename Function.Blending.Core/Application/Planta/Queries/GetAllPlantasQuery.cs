@@ -1,6 +1,5 @@
 using Function.Blending.Core.Application.Planta.DTOs;
 using Function.Blending.Core.Application.Common.Queries;
-using Microsoft.Azure.Functions.Worker.Http;
 
 namespace Function.Blending.Core.Application.Planta.Queries;
 
@@ -11,7 +10,7 @@ public class GetAllPlantasQuery : BaseQuery<PlantaResponseDTO>
     public PlantaFilterDTO? Filters { get; }
     public bool IsHarina { get; }
 
-    public GetAllPlantasQuery(int page, int size, PlantaFilterDTO? filters = null, bool isHarina = false, HttpRequestData? requestContext = null) : base(requestContext!)
+    public GetAllPlantasQuery(int page, int size, PlantaFilterDTO? filters = null, bool isHarina = false)
     {
         Page = page;
         Size = size;

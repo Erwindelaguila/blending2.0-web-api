@@ -1,9 +1,6 @@
 using Function.Blending.Opt.Domain.Entities;
 using Function.Blending.Opt.Domain.ReadModels;
 using Function.Blending.Opt.Domain.ValueObjects;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Function.Blending.Opt.Domain.Abstractions.Repositories
 {
@@ -20,13 +17,12 @@ namespace Function.Blending.Opt.Domain.Abstractions.Repositories
       DateTime? creadoDelUtc,
       DateTime? creadoAlUtc,
       Guid? estadoId,
-      Guid? plantaId,
       string? codigo,
+      string? contrato,
       CancellationToken ct
     );
 
     Task<LogEjecucion?> StartAsync(
-      Guid plantaId,
       Guid estadoInicialId,
       string? mensaje,
       Guid creadoPorId,

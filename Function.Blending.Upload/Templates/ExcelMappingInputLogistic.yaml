@@ -2,6 +2,20 @@ version: 1.0
 
 sheetName: "REPORTE"
 contrato: "D7"
+pedidoVenta: "D8"
+fechaCarguio: "D9"
+plantaCodigo : "D10"
+plantaDescripcion : "E10"
+almacenCodigo: "D11"
+almacenDescripcion: "E11"
+cliente: "M7"
+asistente: "M8"
+supervisora: "M9"
+paisDestino: "M10"
+cantidadRuma: "M11"
+unidadMedidaRuma: "M12"
+numeroMovimientos: "M13"
+
 startRowOferta: 21
 columCantidadSacos : "F"
 

@@ -1,4 +1,5 @@
-﻿using Function.Blending.Upload.Helpers.Parsed;
+﻿using System.Globalization;
+using Function.Blending.Upload.Helpers.Parsed;
 using Function.Blending.Upload.Infrastructure.Config;
 using Function.Blending.Upload.Infrastructure.Config.Input;
 using Function.Blending.Upload.Models;
@@ -63,7 +64,38 @@ public static class MapperLogisticHelper
 
         result.Contrato = row.Contrato;
         result.PesoContenedores = row.PesoContenedores;
-
+        result.PedidoVenta = row.PedidoVenta;
+        result.FechaCarguio = ConvertirAFormatoIsoUtc(row.FechaCarguio);
+        result.PlantaCodigo = row.PlantaCodigo;
+        result.PlantaDescripcion = row.PlantaDescripcion;
+        result.AlmacenCodigo = row.AlmacenCodigo;
+        result.AlmacenDescripcion = row.AlmacenDescripcion;
+        result.Cliente = row.Cliente;
+        result.Asistente = row.Asistente;
+        result.Supervisora = row.Supervisora;
+        result.PaisDestino = row.PaisDestino;
+        result.CantidadRuma = row.CantidadRuma;
+        result.UnidadMedidaRuma = row.UnidadMedidaRuma;
+        result.NumeroMovimientos = row.NumeroMovimientos;
         return result;
     }
+    
+    public static string ConvertirAFormatoIsoUtc(string fechaTexto)
+    {
+        if (string.IsNullOrWhiteSpace(fechaTexto))
+            return string.Empty;
+        // Parsear el string dd.MM.yyyy
+        DateTime fecha = DateTime.ParseExact(
+            fechaTexto,
+            "dd.MM.yyyy",
+            CultureInfo.InvariantCulture
+        );
+
+        // Dejar solo la parte de la fecha y hora 00:00:00
+        fecha = fecha.Date;
+
+        // Retornar en formato ISO 8601 UTC
+        return fecha.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'");
+    }
+    
 }

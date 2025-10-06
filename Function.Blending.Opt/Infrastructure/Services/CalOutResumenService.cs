@@ -4,7 +4,13 @@ using Function.Blending.Opt.Domain.ValueObjects;
 
 namespace Function.Blending.Opt.Infrastructure.Services;
 
-public sealed class CalOutResumenService(ICalOutResumenRepository repo) : ICalOutResumenService
+public sealed class CalOutResumenService(ICalEjecucionOutputRepository repo) : ICalEjecucionOutputService
 {
-  public Task<IReadOnlyList<CalOutResumen>> GetAllByExcecutionAsync(Guid ejecucionId, CancellationToken ct) => repo.GetAllByExcecutionAsync(ejecucionId, ct);
+  public Task<IReadOnlyList<CalOutResumen>> GetSummariesByExcecutionAsync(Guid executionId, CancellationToken ct) => repo.GetSummariesByExcecutionAsync(executionId, ct);
+
+  public async Task<IReadOnlyList<CalOutResumen>> GetDeepSummariesByExcecutionAsync(Guid executionId, CancellationToken ct) => await repo.GetDeepSummariesByExcecutionAsync(executionId, ct);
+
+  public async Task<IReadOnlyList<CalOutDetalle>> GetDetailsByExcecutionAsync(Guid executionId, CancellationToken ct) => await repo.GetDetailsByExcecutionAsync(executionId, ct);
+
+  public async Task<IReadOnlyList<CalOutDetalle>> GetDeepDetailsByExcecutionAsync(Guid executionId, CancellationToken ct) => await repo.GetDeepDetailsByExcecutionAsync(executionId, ct);
 }

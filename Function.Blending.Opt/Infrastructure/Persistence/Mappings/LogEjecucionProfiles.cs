@@ -10,16 +10,22 @@ public sealed class LogEjecucionProfiles : Profile
 {
   public LogEjecucionProfiles()
   {
-    // EF → Dominio (detalle)
+    // EF → Dominio (ById)
     CreateMap<Ef.LogEjecucion, Dom.LogEjecucion>()
+      .ForMember(d => d.Id, o => o.MapFrom(s => new V.EjecucionId(s.Id)))
+      .ForMember(d => d.EstadoId, o => o.MapFrom(s => new V.EstadoId(s.EstadoId)))
       .ForMember(d => d.Estado, cfg => cfg.Ignore())
       .ForMember(d => d.EstadoNombre, cfg => cfg.Ignore())
-      .ForMember(d => d.Id, o => o.MapFrom(s => new V.EjecucionId(s.Id)))
-      .ForMember(d => d.PlantaId, o => o.MapFrom(s => new V.PlantaId(s.PlantaId)))
-      .ForMember(d => d.EstadoId, o => o.MapFrom(s => new V.EstadoId(s.EstadoId)));
+      .ForMember(d => d.Info, o => o.MapFrom(s => s.LogInpInfo))
+      .ForMember(d => d.Oferta, o => o.MapFrom(s => s.LogInpOferta))
+      .ForMember(d => d.Filtro, o => o.MapFrom(s => s.LogInpFiltro))
+      .ForMember(d => d.Contenedores, o => o.MapFrom(s => s.LogOutContenedor));
 
     // EF → ReadModel (history)
     CreateMap<Ef.LogEjecucion, Rm.LogEjecucionHistoryItemRm>()
-      .ForMember(d => d.EstadoNombre, cfg => cfg.Ignore());
+      //.ForMember(d => d.Contrato, cfg => cfg.Ignore())
+      .ForMember(d => d.Contrato, o => o.MapFrom(s => s.LogInpInfo != null? s.LogInpInfo.Contrato : null))
+      .ForMember(d => d.EstadoNombre, cfg => cfg.Ignore())
+      .ForMember(d => d.EstadoColor, cfg => cfg.Ignore());
   }
 }

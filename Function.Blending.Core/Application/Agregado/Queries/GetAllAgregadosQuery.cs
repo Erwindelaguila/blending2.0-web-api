@@ -14,8 +14,7 @@ public class GetAllAgregadosQuery : BaseQuery<PagedResponse<AgregadoDTO>>
     public GetAllAgregadosQuery(
         int page, 
         int size, 
-        AgregadoFilterDTO? filters,
-        object requestContext) : base(requestContext)
+        AgregadoFilterDTO? filters)
     {
         Page = page;
         Size = size;

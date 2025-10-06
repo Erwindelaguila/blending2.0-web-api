@@ -3,9 +3,10 @@ using Function.Blending.Core.Application.Common.Exceptions;
 using Function.Blending.Core.Application.Common.Helpers;
 using Function.Blending.Core.Application.Common.Wrappers;
 using Function.Blending.Core.Application.Constants;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Authorization;
+
 using Function.Blending.Core.Application.Calidad.Commands;
-using Function.Blending.Core.Infrastructure.Services;
+
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -15,16 +16,13 @@ namespace Function.Blending.Core.Functions.Calidad;
 public class DeleteCalidadFunction
 {
     private readonly IMediator _mediator;
-    private readonly IAuthorizationHeaderExtractor _headerExtractor; 
 
-    public DeleteCalidadFunction(
-        IMediator mediator,
-        IAuthorizationHeaderExtractor headerExtractor)
+    public DeleteCalidadFunction(IMediator mediator)
     {
         _mediator = mediator;
-        _headerExtractor = headerExtractor;
     }
 
+    [RequireScopes("Administrador")]
     [Function(FunctionNames.Calidad.Delete)]
     public async Task<HttpResponseData> Run(
         [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Delete, Route = ApiRoutes.Core.Production.CalidadBase + "/{id}")] HttpRequestData req,
@@ -32,13 +30,6 @@ public class DeleteCalidadFunction
     {
         try
         {
-            var jwtToken = _headerExtractor.ExtractJwtToken(req);
-            if (!string.IsNullOrEmpty(jwtToken))
-            {
-                AuthorizationService.SetCurrentJwtToken(jwtToken);
-                AuthorizationService.SetCurrentRequestData(req);
-            }
-
             if (!Guid.TryParse(id, out var calidadId))
             {
                 return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
@@ -48,7 +39,7 @@ public class DeleteCalidadFunction
                 ));
             }
 
-            var command = new DeleteCalidadCommand(calidadId, req);
+            var command = new DeleteCalidadCommand(calidadId);
             var result = await _mediator.Send(command);
 
             if (!result)
@@ -84,10 +75,6 @@ public class DeleteCalidadFunction
                 null,
                 500
             ));
-        }
-        finally
-        {
-            AuthorizationService.ClearCurrentContext();
         }
     }
 }

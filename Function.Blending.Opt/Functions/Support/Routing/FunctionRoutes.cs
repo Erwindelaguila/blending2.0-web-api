@@ -17,6 +17,9 @@ public static class FunctionRoutes
     public const string GetById = $"{ApiBase}quality/executions/{{id:guid}}";
     public const string History = $"{ApiBase}quality/executions/history";
     public const string ChangeAccepted = $"{ApiBase}quality/executions/{{id:guid}}/accept/change";
+    public const string GetParameters = $"{ApiBase}quality/executions/{{id:guid}}/parameters";
+    public const string GetInputById = $"{ApiBase}quality/executions/{{id:guid}}/input";
+    public const string GetOutputById = $"{ApiBase}quality/executions/{{id:guid}}/output";
   }
 
   public static class Logistics
@@ -26,5 +29,7 @@ public static class FunctionRoutes
     public const string GetById = $"{ApiBase}logistics/executions/{{id:guid}}";
     public const string History = $"{ApiBase}logistics/executions/history";
     public const string ToggleConfirmed = $"{ApiBase}logistics/executions/{{id:guid}}/confirmed/toggle";
+    public const string GetInputById = $"{ApiBase}logistics/executions/{{id:guid}}/input";
+    public const string GetOutputById = $"{ApiBase}logistics/executions/{{id:guid}}/output";
   }
 }

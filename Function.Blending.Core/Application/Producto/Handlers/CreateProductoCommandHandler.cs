@@ -1,5 +1,9 @@
 using Function.Blending.Core.Application.Interfaces.Repositories;
-using Function.Blending.Core.Application.Interfaces.Services;
+using Function.Blending.Core.Functions.Support.Execution;
+using Function.Blending.Core.Shared.Constants;
+using Function.Blending.Core.Shared.Extensions;
+using System.Security.Claims;
+
 using Function.Blending.Core.Application.Producto.Commands;
 using Function.Blending.Core.Application.Producto.DTOs;
 using Function.Blending.Core.Application.Common.Exceptions;
@@ -14,27 +18,23 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
     private readonly IProductoRepository _productoRepository;
     private readonly ICalidadRepository _calidadRepository;
     private readonly ITipoProduccionRepository _tipoProduccionRepository;
-    private readonly IAuthorizationService _authorizationService;
+    private readonly IFunctionContextAccessor _functionContextAccessor;
     
     public CreateProductoCommandHandler(
         IProductoRepository productoRepository,
         ICalidadRepository calidadRepository,
         ITipoProduccionRepository tipoProduccionRepository,
-        IAuthorizationService authorizationService)
+        IFunctionContextAccessor functionContextAccessor)
     {
         _productoRepository = productoRepository ?? throw new ArgumentNullException(nameof(productoRepository));
         _calidadRepository = calidadRepository ?? throw new ArgumentNullException(nameof(calidadRepository));
         _tipoProduccionRepository = tipoProduccionRepository ?? throw new ArgumentNullException(nameof(tipoProduccionRepository));
-        _authorizationService = authorizationService ?? throw new ArgumentNullException(nameof(authorizationService));
+        _functionContextAccessor = functionContextAccessor;
     }
 
     public async Task<ProductoDTO> Handle(CreateProductoCommand request, CancellationToken cancellationToken)
     {
-        var currentUserIdString = _authorizationService.GetCurrentUserId();
-        if (!Guid.TryParse(currentUserIdString, out var currentUserId))
-        {
-            throw new UnauthorizedAccessException("ID de usuario inválido en headers");
-        }
+        var currentUserId = GetCurrentUserId();
 
         if (await _productoRepository.ExistsActiveCodigoAsync(request.Codigo))
         {
@@ -84,5 +84,29 @@ public class CreateProductoCommandHandler : IRequestHandler<CreateProductoComman
         if (tipoProduccion.Activo == false)
             throw new BusinessRuleException($"No se puede crear/activar el Producto porque el Tipo de Producción '{tipoProduccion.Nombre}' está inactivo.", 
                 "TIPO_PRODUCCION_INACTIVE");
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        try
+        {
+            var context = _functionContextAccessor.Current;
+            if (context?.Items.TryGetValue(MiscellaneousConstants.Principal, out var principalObj) == true &&
+                principalObj is ClaimsPrincipal principal)
+            {
+                var userIdString = principal.GetUserId();
+                if (!string.IsNullOrEmpty(userIdString) && Guid.TryParse(userIdString, out var userId))
+                {
+                    return userId;
+                }
+            }
+        }
+        catch
+        {
+            // Si hay error obteniendo el usuario, usar fallback
+        }
+        
+        // Fallback: usuario del sistema
+        return Guid.Parse("00000000-0000-0000-0000-000000000001");
     }
 }

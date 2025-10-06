@@ -25,7 +25,16 @@ public sealed class GetLogEjecucionByIdFunction(
       FunctionContext fctx,  // ← necesitamos el context para el writer
       Guid id)
   {
-    var result = await mediator.Send(new GetLogEjecucionByIdQuery(id));
+    var qs = req.GetQuery();
+
+    var expand = qs.GetEntries(
+      key: "expand",
+      allowed: ["input", "output"],
+      synonyms: new Dictionary<string, string> { ["in"] = "input", ["out"] = "output" },
+      separators: [',', ';', '|']
+    );
+
+    var result = await mediator.Send(new GetLogEjecucionByIdQuery(id, expand));
 
     if (!result.IsSuccess || result.Value is null)
     {
