@@ -36,7 +36,7 @@ var host = new HostBuilder()
         services.AddScoped<ITokenClaimExtractor, TokenClaimExtractor>();
         services.AddScoped<IAuthorizationHeaderExtractor, AuthorizationHeaderExtractor>();
         services.AddScoped<IHttpResponseService, HttpResponseService>();
-        services.AddScoped<ITokenService, BasicTokenService>();
+        services.AddScoped<ITokenService, AzureAdTokenService>();
         services.AddScoped<IAzureAppConfigService, AzureAppConfigService>();
 
         // Registro de servicios de aplicación

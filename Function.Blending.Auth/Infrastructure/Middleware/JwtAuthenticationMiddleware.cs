@@ -39,13 +39,27 @@ namespace Function.Blending.Auth.Infrastructure.Middleware
                 var requestData = await context.GetHttpRequestDataAsync();
                 if (requestData != null)
                 {
+                    // Verificar si la función actual está exenta de autenticación
+                    if (IsExemptFromAuthentication(context))
+                    {
+                        _logger.LogDebug("Función {FunctionName} exenta de autenticación", 
+                            context.FunctionDefinition.Name);
+                        await next(context);
+                        return;
+                    }
+
                     var authResult = await AuthenticateRequestAsync(requestData);
                     
                     if (!authResult.IsAuthenticated)
                     {
+                        _logger.LogWarning("Autenticación falló para función {FunctionName}: {ErrorMessage}", 
+                            context.FunctionDefinition.Name, authResult.ErrorMessage);
                         await SetUnauthorizedResponseAsync(context, authResult.ErrorMessage);
                         return;
                     }
+
+                    _logger.LogDebug("Usuario autenticado exitosamente para función {FunctionName}", 
+                        context.FunctionDefinition.Name);
 
            
                     if (authResult.Claims != null)
@@ -131,6 +145,19 @@ namespace Function.Blending.Auth.Infrastructure.Middleware
                 Name = principal.FindFirst(JwtClaimTypes.Name)?.Value,
                 Groups = principal.FindAll(JwtClaimTypes.Groups).Select(c => c.Value).ToList()
             };
+        }
+
+        private bool IsExemptFromAuthentication(FunctionContext context)
+        {
+            // Lista de funciones que no requieren autenticación
+            var exemptFunctions = new HashSet<string>
+            {
+                "HealthCheck", 
+                "Ping",
+                // Agregar otras funciones públicas según sea necesario
+            };
+
+            return exemptFunctions.Contains(context.FunctionDefinition.Name);
         }
     }
 
