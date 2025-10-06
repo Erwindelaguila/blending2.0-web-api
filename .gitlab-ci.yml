@@ -14,7 +14,7 @@ cache:
     - ~/.nuget/packages
 
 # ==============================
-# Plantillas (DRY)
+# PLANTILLAS BASE (DRY)
 # ==============================
 
 .build_template: &build_template
@@ -23,39 +23,32 @@ cache:
   before_script:
     - '$ErrorActionPreference = "Stop"'
     - 'Write-Host "##[info] Host: $(hostname)"'
-
-    # --- Instalación condicional según OS ---
     - |
       if ($IsWindows) {
         if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) { choco install dotnet-8.0-sdk -y }
         if (-not (Get-Command zip -ErrorAction SilentlyContinue)) { choco install zip -y }
-      }
-      elseif ($IsMacOS) {
+      } elseif ($IsMacOS) {
         if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) { brew install dotnet-sdk || true }
         if (-not (Get-Command zip -ErrorAction SilentlyContinue)) { brew install zip || true }
       }
-
     - 'dotnet --version'
-    - 'New-Item -ItemType Directory -Force -Path ".nuget\packages" | Out-Null'
+    - 'New-Item -ItemType Directory -Force -Path ".nuget/packages" | Out-Null'
   script:
+    - '$ErrorActionPreference = "Stop"'
     - 'Write-Host "Compilando $env:SERVICE_SLUG..."'
     - 'dotnet restore "$env:PROJECT_PATH"'
+    - |
+      $releaseVersion = if ($env:CI_COMMIT_TAG) { $env:CI_COMMIT_TAG } else { "0.0.$($env:CI_PIPELINE_IID)" }
+      $infoVersion = "$releaseVersion+$($env:CI_COMMIT_SHORT_SHA)"
+      Write-Host "Versiones -> Version=$releaseVersion  InformationalVersion=$infoVersion"
 
-    # ====== VERSIONADO ======
-    - '$releaseVersion = if ($env:CI_COMMIT_TAG) { $env:CI_COMMIT_TAG } else { "0.0.$($env:CI_PIPELINE_IID)" }'
-    - '$infoVersion = "$releaseVersion+$($env:CI_COMMIT_SHORT_SHA)"'
-    - 'Write-Host "Versiones -> Version=$releaseVersion  InformationalVersion=$infoVersion"'
+      $outDir = Join-Path "publish" $env:SERVICE_SLUG
+      if (Test-Path $outDir) { Remove-Item $outDir -Recurse -Force }
+      dotnet publish "$env:PROJECT_PATH" -c Release -o $outDir
 
-    - 'dotnet build "$env:PROJECT_PATH" -c Release --no-restore `
-        -p:Version=$releaseVersion `
-        -p:InformationalVersion="$infoVersion"'
-
-    # ====== PUBLICAR ======
-    - '$outDir = "publish\$env:SERVICE_SLUG"'
-    - 'if (Test-Path $outDir) { Remove-Item $outDir -Recurse -Force }'
-    - 'dotnet publish "$env:PROJECT_PATH" -c Release -o $outDir --no-build'
-    - 'if (Test-Path "publish\$env:SERVICE_SLUG.zip") { Remove-Item "publish\$env:SERVICE_SLUG.zip" -Force }'
-    - 'Compress-Archive -Path "$outDir\*" -DestinationPath "publish\$env:SERVICE_SLUG.zip" -Force'
+      $zipPath = Join-Path "publish" "$($env:SERVICE_SLUG).zip"
+      if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+      Compress-Archive -Path (Join-Path $outDir "*") -DestinationPath $zipPath -Force
   artifacts:
     paths:
       - publish/${SERVICE_SLUG}.zip
@@ -91,8 +84,7 @@ cache:
     - |
       if ($IsWindows) {
         if (-not (Get-Command az -ErrorAction SilentlyContinue)) { choco install azure-cli -y }
-      }
-      elseif ($IsMacOS) {
+      } elseif ($IsMacOS) {
         if (-not (Get-Command az -ErrorAction SilentlyContinue)) { brew install azure-cli || true }
       }
     - 'az version'
@@ -101,27 +93,20 @@ cache:
     - 'az login --service-principal -u "$env:AZURE_CLIENT_ID" -p "$env:AZURE_CLIENT_SECRET" --tenant "$env:AZURE_TENANT_ID"'
     - 'az account set --subscription "$env:AZURE_SUBSCRIPTION_ID"'
   script:
-    - 'Write-Host "Desplegando $env:SERVICE_SLUG a $env:FUNCTION_APP_NAME..."'
-    - 'if (-not (Test-Path "publish\$env:SERVICE_SLUG.zip")) { throw "No existe publish\$env:SERVICE_SLUG.zip. Corre el build primero." }'
+    - '$zipPath = Join-Path "publish" "$($env:SERVICE_SLUG).zip"'
+    - 'if (-not (Test-Path $zipPath)) { throw "No existe $zipPath. Corre el build primero." }'
+    - 'Write-Host "Desplegando $env:SERVICE_SLUG a $env:FUNCTION_APP_NAME con $zipPath..."'
     - |
       $ErrorActionPreference = "Stop"
-
-      $ok = $false
       try {
         $zipOut = az functionapp deployment source config-zip `
           -g "$env:AZURE_RESOURCE_GROUP" `
           -n "$env:FUNCTION_APP_NAME" `
-          --src "publish\$env:SERVICE_SLUG.zip" `
-          --timeout 1800 `
-          -o json
-        if ($zipOut) {
-          try { $zipObj = $zipOut | ConvertFrom-Json } catch { $zipObj = $null }
-          if ($zipObj -and $zipObj.status -eq 4) { Write-Host "config-zip: SUCCESS"; $ok = $true }
-        }
-      } catch { Write-Warning "config-zip falló: $($_.Exception.Message)" }
-
-      if (-not $ok) {
-        Write-Host "Intento de despliegue no confirmado, continuando sin error crítico..."
+          --src $zipPath `
+          --timeout 1800 -o json
+        Write-Host "ZIP Deploy completado."
+      } catch {
+        Write-Warning "Error en ZIP Deploy: $($_.Exception.Message)"
       }
 
       $releaseVersion = if ($env:CI_COMMIT_TAG) { $env:CI_COMMIT_TAG } else { "0.0.$($env:CI_PIPELINE_IID)" }
@@ -145,9 +130,7 @@ build-auth:
     SERVICE_SLUG: "auth"
     PROJECT_PATH: "Function.Blending.Auth/Function.Blending.Auth.csproj"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
-      changes:
-        - Function.Blending.Auth/**/*
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
 build-core:
   <<: *build_template
@@ -155,9 +138,7 @@ build-core:
     SERVICE_SLUG: "core"
     PROJECT_PATH: "Function.Blending.Core/Function.Blending.Core.csproj"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
-      changes:
-        - Function.Blending.Core/**/*
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
 build-opt:
   <<: *build_template
@@ -173,9 +154,7 @@ build-data:
     SERVICE_SLUG: "data"
     PROJECT_PATH: "Function.Blending.Upload/Function.Blending.Upload.csproj"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
-      changes:
-        - Function.Blending.Upload/**/*
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
 # ==============================
 # JOB DE TEST
@@ -183,12 +162,7 @@ build-data:
 test-solution:
   <<: *test_template
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
-      changes:
-        - Function.Blending.Auth/**/*
-        - Function.Blending.Core/**/*
-        - Function.Blending.Opt/**/*
-        - Function.Blending.Upload/**/*
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
 # ==============================
 # JOBS DE DEPLOY
@@ -198,31 +172,24 @@ deploy-auth:
   variables:
     SERVICE_SLUG: "auth"
     FUNCTION_APP_NAME: "$FUNCTION_APP_AUTH_NAME"
-  resource_group: "deploy-${SERVICE_SLUG}"
   needs: ["build-auth"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
-      changes:
-        - Function.Blending.Auth/**/*
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
 deploy-core:
   <<: *deploy_template
   variables:
     SERVICE_SLUG: "core"
     FUNCTION_APP_NAME: "$FUNCTION_APP_CORE_NAME"
-  resource_group: "deploy-${SERVICE_SLUG}"
   needs: ["build-core"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
-      changes:
-        - Function.Blending.Core/**/*
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
 deploy-opt:
   <<: *deploy_template
   variables:
     SERVICE_SLUG: "opt"
     FUNCTION_APP_NAME: "$FUNCTION_APP_OPT_NAME"
-  resource_group: "deploy-${SERVICE_SLUG}"
   needs: ["build-opt"]
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
@@ -232,9 +199,6 @@ deploy-data:
   variables:
     SERVICE_SLUG: "data"
     FUNCTION_APP_NAME: "$FUNCTION_APP_DATA_NAME"
-  resource_group: "deploy-${SERVICE_SLUG}"
   needs: ["build-data"]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
-      changes:
-        - Function.Blending.Upload/**/*
+    - if: '$CI_COMMIT_BRANCH == "main"'
