@@ -4,12 +4,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MediatR;
+using System.Linq;
 using System.Reflection;
 using Function.Blending.Auth.Application.Interfaces.Services;
 using Function.Blending.Auth.Infrastructure.Services;
 using Function.Blending.Auth.Infrastructure.Middleware;
 
 Console.WriteLine("=== INICIO PROGRAMA AZURE FUNCTIONS ===");
+Console.WriteLine($"🏗️ Assembly: {Assembly.GetExecutingAssembly().FullName}");
+Console.WriteLine($"🔍 Functions Assembly Location: {Assembly.GetExecutingAssembly().Location}");
 
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication(builder =>
@@ -48,7 +51,9 @@ var host = new HostBuilder()
         Console.WriteLine("📚 Registrando MediatR...");
         services.AddMediatR(cfg =>
         {
-            cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+            var assembly = Assembly.GetExecutingAssembly();
+            Console.WriteLine($"🔍 Registrando MediatR desde assembly: {assembly.FullName}");
+            cfg.RegisterServicesFromAssembly(assembly);
         });
 
             Console.WriteLine("🏗️ Registrando servicios de infraestructura...");
@@ -81,8 +86,22 @@ var host = new HostBuilder()
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
         
-            Console.WriteLine("✅ Todos los servicios configurados correctamente");
-            //Deploy v10.3.0 - AZURE CONFIG DIAGNOSTICS
+        Console.WriteLine("🔍 Verificando funciones en el assembly...");
+        var types = Assembly.GetExecutingAssembly().GetTypes();
+        var functionTypes = types.Where(t => t.GetMethods().Any(m => m.GetCustomAttribute<FunctionAttribute>() != null)).ToArray();
+        Console.WriteLine($"📊 Tipos con funciones encontrados: {functionTypes.Length}");
+        foreach (var type in functionTypes)
+        {
+            var functionMethods = type.GetMethods().Where(m => m.GetCustomAttribute<FunctionAttribute>() != null);
+            foreach (var method in functionMethods)
+            {
+                var functionAttr = method.GetCustomAttribute<FunctionAttribute>();
+                Console.WriteLine($"⚡ Función encontrada: {type.Name}.{method.Name} -> {functionAttr?.Name}");
+            }
+        }
+            
+        Console.WriteLine("✅ Todos los servicios configurados correctamente");
+        //Deploy v10.4.0 - FUNCTION DISCOVERY FIX
         }
         catch (Exception ex)
         {
