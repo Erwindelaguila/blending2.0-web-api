@@ -27,9 +27,9 @@ namespace Function.Blending.Auth.Infrastructure.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _claimExtractor = claimExtractor ?? throw new ArgumentNullException(nameof(claimExtractor));
             
-            // Configuración desde settings
-            var tenantId = configuration["AzureAd:TenantId"] ?? throw new InvalidOperationException("AzureAd:TenantId no configurado");
-            var clientId = configuration["AzureAd:ClientId"] ?? throw new InvalidOperationException("AzureAd:ClientId no configurado");
+            // Configuración desde settings (usando formato Azure Portal)
+            var tenantId = configuration["AzureAd__TenantId"] ?? configuration["AzureAd:TenantId"] ?? throw new InvalidOperationException("AzureAd TenantId no configurado");
+            var clientId = configuration["AzureAd__ClientId"] ?? configuration["AzureAd:ClientId"] ?? throw new InvalidOperationException("AzureAd ClientId no configurado");
             
             _azureAdConfig = new AzureAdConfiguration
             {
@@ -39,7 +39,7 @@ namespace Function.Blending.Auth.Infrastructure.Services
             
             // Permitir o no validación offline (fallback). Por defecto, deshabilitado en Producción.
             var env = configuration["Environment"] ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
-            var allowOfflineSetting = configuration["AzureAd:AllowOfflineValidation"];
+            var allowOfflineSetting = configuration["AzureAd__AllowOfflineValidation"] ?? configuration["AzureAd:AllowOfflineValidation"];
             if (!string.IsNullOrEmpty(allowOfflineSetting) && bool.TryParse(allowOfflineSetting, out var allowOfflineFlag))
             {
                 _allowOfflineValidation = allowOfflineFlag;
@@ -50,7 +50,7 @@ namespace Function.Blending.Auth.Infrastructure.Services
             }
             
             // Configurar el manager para obtener las claves públicas de Azure AD usando Authority de configuración
-            var authority = configuration["AzureAd:Authority"] ?? $"https://login.microsoftonline.com/{tenantId}";
+            var authority = configuration["AzureAd__Authority"] ?? configuration["AzureAd:Authority"] ?? $"https://login.microsoftonline.com/{tenantId}";
             _configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
                 $"{authority}/.well-known/openid-configuration",
                 new OpenIdConnectConfigurationRetriever());
