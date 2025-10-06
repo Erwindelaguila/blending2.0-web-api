@@ -112,7 +112,7 @@ var host = new HostBuilder()
     })
     .Build();
 
-Console.WriteLine("🎯 Iniciando Azure Functions Host...");
+Console.WriteLine("🎯 Iniciando Azure Functions Host...!");
 try
 {
     host.Run();
