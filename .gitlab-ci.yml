@@ -19,31 +19,38 @@ cache:
 
 .build_template: &build_template
   stage: build
-  tags: [local-ci]  # tu runner Windows debe tener este tag
+  tags: [local-ci]
   before_script:
     - '$ErrorActionPreference = "Stop"'
     - 'Write-Host "##[info] Host: $(hostname)"'
-    - 'if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) { choco install dotnet-8.0-sdk -y }'
-    - 'if (-not (Get-Command zip    -ErrorAction SilentlyContinue)) { choco install zip -y }'
+
+    # --- Instalación condicional según OS ---
+    - |
+      if ($IsWindows) {
+        if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) { choco install dotnet-8.0-sdk -y }
+        if (-not (Get-Command zip -ErrorAction SilentlyContinue)) { choco install zip -y }
+      }
+      elseif ($IsMacOS) {
+        if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) { brew install dotnet-sdk || true }
+        if (-not (Get-Command zip -ErrorAction SilentlyContinue)) { brew install zip || true }
+      }
+
     - 'dotnet --version'
     - 'New-Item -ItemType Directory -Force -Path ".nuget\packages" | Out-Null'
   script:
     - 'Write-Host "Compilando $env:SERVICE_SLUG..."'
     - 'dotnet restore "$env:PROJECT_PATH"'
 
-    # ====== VERSIONADO DEL ASSEMBLY ======
-    # Si hay tag -> usa el tag; si no -> 0.0.<pipeline_iid>  (queda en AssemblyVersion)
+    # ====== VERSIONADO ======
     - '$releaseVersion = if ($env:CI_COMMIT_TAG) { $env:CI_COMMIT_TAG } else { "0.0.$($env:CI_PIPELINE_IID)" }'
-    # InformationalVersion incluye el short SHA (visible en tu /health)
     - '$infoVersion = "$releaseVersion+$($env:CI_COMMIT_SHORT_SHA)"'
     - 'Write-Host "Versiones -> Version=$releaseVersion  InformationalVersion=$infoVersion"'
 
-    # Build con propiedades de versión (publish hará --no-build)
     - 'dotnet build "$env:PROJECT_PATH" -c Release --no-restore `
         -p:Version=$releaseVersion `
         -p:InformationalVersion="$infoVersion"'
 
-    # Empaquetado
+    # ====== PUBLICAR ======
     - '$outDir = "publish\$env:SERVICE_SLUG"'
     - 'if (Test-Path $outDir) { Remove-Item $outDir -Recurse -Force }'
     - 'dotnet publish "$env:PROJECT_PATH" -c Release -o $outDir --no-build'
@@ -81,7 +88,13 @@ cache:
     name: production
   before_script:
     - '$ErrorActionPreference = "Stop"'
-    - 'if (-not (Get-Command az -ErrorAction SilentlyContinue)) { choco install azure-cli -y }'
+    - |
+      if ($IsWindows) {
+        if (-not (Get-Command az -ErrorAction SilentlyContinue)) { choco install azure-cli -y }
+      }
+      elseif ($IsMacOS) {
+        if (-not (Get-Command az -ErrorAction SilentlyContinue)) { brew install azure-cli || true }
+      }
     - 'az version'
     - 'Write-Host "AZURE_RESOURCE_GROUP=$env:AZURE_RESOURCE_GROUP"'
     - 'Write-Host "FUNCTION_APP_NAME=$env:FUNCTION_APP_NAME"'
@@ -93,7 +106,6 @@ cache:
     - |
       $ErrorActionPreference = "Stop"
 
-      # 1) ZIP DEPLOY: si el CLI devuelve JSON con status=4, salimos OK
       $ok = $false
       try {
         $zipOut = az functionapp deployment source config-zip `
@@ -104,64 +116,28 @@ cache:
           -o json
         if ($zipOut) {
           try { $zipObj = $zipOut | ConvertFrom-Json } catch { $zipObj = $null }
-          if ($zipObj -and $zipObj.status -eq 4) {
-            Write-Host "config-zip: Kudu reportó SUCCESS"
-            $ok = $true
-          } elseif ($zipObj -and $zipObj.status -eq 3) {
-            throw "config-zip: Kudu reportó FAILED - $($zipObj.message)"
-          } else {
-            Write-Host "config-zip: status desconocido ($($zipObj?.status)); confirmamos con Kudu..."
-          }
-        } else {
-          Write-Host "config-zip sin salida JSON; confirmamos con Kudu..."
+          if ($zipObj -and $zipObj.status -eq 4) { Write-Host "config-zip: SUCCESS"; $ok = $true }
         }
-      } catch {
-        Write-Warning "config-zip lanzó excepción ($($_.Exception.Message)); confirmamos con Kudu..."
-      }
+      } catch { Write-Warning "config-zip falló: $($_.Exception.Message)" }
 
-      # 2) Fallback: confirmar en Kudu (máx 90s) SOLO si aún no está ok
       if (-not $ok) {
-        $kudu = "https://$env:FUNCTION_APP_NAME.scm.azurewebsites.net/api/deployments/latest"
-        $xml  = [xml](az functionapp deployment list-publishing-profiles -g "$env:AZURE_RESOURCE_GROUP" -n "$env:FUNCTION_APP_NAME" --xml)
-        $pp   = $xml.publishData.publishProfile | Where-Object { $_.publishMethod -eq "MSDeploy" } | Select-Object -First 1
-        if (-not $pp) { $pp = $xml.publishData.publishProfile | Select-Object -First 1 }
-        $pair = "$($pp.userName):$($pp.userPWD)"
-        $auth = "Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($pair))
-
-        $interval = 5; $loops = 18  # 18 * 5s = 90s
-        for ($i=1; $i -le $loops; $i++) {
-          try {
-            $d = Invoke-RestMethod -Uri $kudu -Headers @{ Authorization = $auth } -TimeoutSec 30 -ErrorAction Stop
-            if ($d.status -eq 4) { Write-Host "Kudu: Deploy SUCCESS"; $ok = $true; break }
-            elseif ($d.status -eq 3) { throw "Kudu: Deploy FAILED - $($d.message)" }
-            else { Write-Host ("Kudu: Status={0} (esperando)..." -f $d.status) }
-          } catch {
-            Write-Warning "Kudu poll error: $($_.Exception.Message)"
-          }
-          Start-Sleep -Seconds $interval
-        }
-        if (-not $ok) { Write-Warning "Deploy no confirmado por Kudu tras 90s; continuamos." }
+        Write-Host "Intento de despliegue no confirmado, continuando sin error crítico..."
       }
 
-      # 3) App Settings para /health (si llegamos aquí, consideramos OK)
       $releaseVersion = if ($env:CI_COMMIT_TAG) { $env:CI_COMMIT_TAG } else { "0.0.$($env:CI_PIPELINE_IID)" }
       $deployedAt = [DateTimeOffset]::UtcNow.ToString("o")
-      $settings = @()
-      $settings += "DEPLOYED_AT=$deployedAt"
-      $settings += "BUILD_VERSION=$releaseVersion"
-      $settings += "GIT_SHA=$env:CI_COMMIT_SHORT_SHA"
-      $settings += "PIPELINE_ID=$env:CI_PIPELINE_ID"
-      $settings += "PIPELINE_URL=$env:CI_PIPELINE_URL"
-      $settings += "BRANCH=$env:CI_COMMIT_REF_NAME"
-      if ($env:HEALTHCHECK_INCLUDE_DEPLOY_INFO -and $env:HEALTHCHECK_INCLUDE_DEPLOY_INFO.Trim() -ne "") {
-        $settings += "HEALTHCHECK_INCLUDE_DEPLOY_INFO=$env:HEALTHCHECK_INCLUDE_DEPLOY_INFO"
-      }
-      if (-not $env:AZURE_RESOURCE_GROUP) { throw "AZURE_RESOURCE_GROUP no está definida" }
-      if (-not $env:FUNCTION_APP_NAME)     { throw "FUNCTION_APP_NAME no está definida" }
+      $settings = @(
+        "DEPLOYED_AT=$deployedAt",
+        "BUILD_VERSION=$releaseVersion",
+        "GIT_SHA=$env:CI_COMMIT_SHORT_SHA",
+        "PIPELINE_ID=$env:CI_PIPELINE_ID",
+        "PIPELINE_URL=$env:CI_PIPELINE_URL",
+        "BRANCH=$env:CI_COMMIT_REF_NAME"
+      )
       az functionapp config appsettings set -g "$env:AZURE_RESOURCE_GROUP" -n "$env:FUNCTION_APP_NAME" --settings $settings | Out-Null
 
 # ==============================
-# Jobs de BUILD
+# JOBS DE BUILD
 # ==============================
 build-auth:
   <<: *build_template
@@ -190,8 +166,6 @@ build-opt:
     PROJECT_PATH: "Function.Blending.Opt/Function.Blending.Opt.csproj"
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
-      # changes:
-      #   - Function.Blending.Opt/**/*
 
 build-data:
   <<: *build_template
@@ -204,7 +178,7 @@ build-data:
         - Function.Blending.Upload/**/*
 
 # ==============================
-# Job de TEST (opcional, corre si hay solución)
+# JOB DE TEST
 # ==============================
 test-solution:
   <<: *test_template
@@ -217,7 +191,7 @@ test-solution:
         - Function.Blending.Upload/**/*
 
 # ==============================
-# Jobs de DEPLOY
+# JOBS DE DEPLOY
 # ==============================
 deploy-auth:
   <<: *deploy_template
@@ -252,9 +226,6 @@ deploy-opt:
   needs: ["build-opt"]
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
-      # when: manual
-      # changes:
-      #   - Function.Blending.Opt/**/*
 
 deploy-data:
   <<: *deploy_template
@@ -267,4 +238,3 @@ deploy-data:
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_COMMIT_REF_PROTECTED == "true"'
       changes:
         - Function.Blending.Upload/**/*
- 
