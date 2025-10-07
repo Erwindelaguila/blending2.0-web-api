@@ -36,7 +36,7 @@ namespace Function.Blending.Upload.Services;
             _containerClient.CreateIfNotExists(PublicAccessType.None);
         }
 
-        public async Task<BlobResultDto> UploadExcelAndGetLinkAsync(XLWorkbook workbook, string filePrefix )
+        public async Task<BlobResultDto<T>> UploadExcelAndGetLinkAsync<T>(XLWorkbook workbook, string filePrefix )
         {
             // Nombre del archivo con timestamp
             var fileName = $"{filePrefix}-{Guid.NewGuid()}-{DateTime.UtcNow:yyyyMMddHHmmss}.xlsx";
@@ -67,7 +67,7 @@ namespace Function.Blending.Upload.Services;
             
             var downloadUrl = $"{blobClient.Uri}?{sasToken}";
 
-            return new BlobResultDto
+            return new BlobResultDto<T>
             {
                 FileName = fileName,
                 DownloadUrl = downloadUrl,

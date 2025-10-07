@@ -5,8 +5,8 @@
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     "Environment": "Development",
     "SqlConnectionString": "Server=tcp:srv-db-eastus-blending2.database.windows.net,1433;Initial Catalog=db_blending2_prd;Persist Security Info=False;User ID=user_blending2;Password=CXaTHvrMFEZECOF8;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
-    "AzureAppConfigConnectionString": "Endpoint=https://tasaappconfig.azconfig.io;Id=wfcB;Secret=FEPAz2QQLdEiVQWUBTLiptAIp9L8Ty4Ad2BOwz8xDolB3w7HSjgGJQQJ99BHACLArgHyGpmDAAACAZACfaMx",
-  
+    "AzureAppConfigConnectionString": "Endpoint=https://acblending2.azconfig.io;Id=TLta;Secret=2hVQwWhskJVVJ35Ca9vD1WMXhJE9VlSelq0T7yKpQaAAXMDwRupo…,
+
 
     "Auth_DevBypass": "false",
     "Auth_DevGroups": "000000000000000000000000C48B7FA6,4770b5a4-d693-46b2-9e04-eb434d2a3c1b",
@@ -20,9 +20,9 @@
 
 
     // === ROLES DE NEGOCIO ===
-    "Auth_Allow_Administrador": "98b8eed2-ffcd-40fd-9979-39ee06253edf",
-    "Auth_Allow_Calidad": "ee48df9c-0dc1-4428-9bf2-55945b50a6be", 
-    "Auth_Allow_Logistica": "c706d3f6-10fa-4a1e-9274-364f60dd3c1f",
+    "Auth_Allow_Administrador": "fb2d63ba-d6c2-4b0f-8bea-8dbbffa51899",
+    "Auth_Allow_Calidad": "262c6df9-c3e5-4785-922b-0a9dd8a7ece",
+    "Auth_Allow_Logistica": "c0f64f45-72dc-4d8d-a1a8-c225c41a202d",
 
     // === Pipeline flags ===
     "Pipeline_EnableExceptionHandling": "true",
@@ -36,9 +36,10 @@
     
     //Refecias para estados de Calidad en rowTable
     "Id_Status_Quality" : "98066F2C-9B5D-46E4-A29E-C7D97F8F920C"
+    
   },
   "Host": {
     "CORS": "*",
     "CORS_SUPPORT_CREDENTIALS": true
   }
-}                                          
+}                    

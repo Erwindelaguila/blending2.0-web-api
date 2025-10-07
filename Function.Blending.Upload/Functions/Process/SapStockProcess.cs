@@ -43,7 +43,7 @@ public class SapStockProcess
         _excelQualityProcessorService = excelQualityProcessorService;
     }
 
-    public async Task<BlobResultDto> ExecuteAsync(HttpRequestData req)
+    public async Task<BlobResultDto<List<ExcelExtractQualityDto>>> ExecuteAsync(HttpRequestData req)
     {
         var query = HttpUtility.ParseQueryString(req.Url.Query);
 
@@ -66,14 +66,15 @@ public class SapStockProcess
                 throw new ArgumentNullException("Template_Directory no está configurado."),
                 _configuration["Template_SapOutput"] ??
                 throw new ArgumentNullException("Template_SapOutput no está configurado."));
-        
+
         ExcelWriteSapService.Execute(config, parsedJson, workbook);
-        
+
         var fileBytes = await MultipartFormDataHelper.ToByteArrayAsync(workbook);
 
         var resultList = await _excelQualityProcessorService.ExecuteAsync(fileBytes, req);
 
-        var blobResult = await _blobStorageService.UploadExcelAndGetLinkAsync(workbook, "sap-stock");
+        var blobResult =
+            await _blobStorageService.UploadExcelAndGetLinkAsync<List<ExcelExtractQualityDto>>(workbook, "sap-stock");
 
         blobResult.DataExcel = resultList;
 

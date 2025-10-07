@@ -61,6 +61,7 @@ public class ApiRoutes
         public static class AuxRow
         {
             public const string StatusQuality = "core/auxrow/statusquality";
+            public const string StatusLogistic = "core/auxrow/statuslogistic";
         }
     }
 }

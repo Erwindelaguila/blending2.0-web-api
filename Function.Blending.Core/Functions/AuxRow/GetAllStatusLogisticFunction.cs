@@ -7,31 +7,29 @@ using Function.Blending.Core.Functions.Support.Authorization;
 using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.Logging;
 
 namespace Function.Blending.Core.Functions.AuxRow;
 
-public class GetAllStatusQualityFunction
+public class GetAllStatusLogisticFunction
 {
     private readonly IMediator _mediator;
 
-    public GetAllStatusQualityFunction(IMediator mediator)
+    public GetAllStatusLogisticFunction(IMediator mediator)
     {
         _mediator = mediator;
     }
 
     [RequireScopes("Administrador,Calidad,Logistica")]
-    [Function(FunctionNames.AuxRow.GetAllStatusQuality)]
+    [Function(nameof(GetAllStatusLogisticFunction))]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.AuxRow.StatusQuality)]
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Get, Route = ApiRoutes.Core.AuxRow.StatusLogistic)]
         HttpRequestData req)
     {
         try
         {
-            var queryRequest = new GetAllStatusQualityQuery();
+            var queryRequest = new GetAllStatusLogisticQuery();
 
             var result = await _mediator.Send(queryRequest);
-            
             return await HttpResponseHelper.WriteBaseResponseAsync(req,
                 BaseResponse<List<StatusRowDTO>>.Success(result ?? new List<StatusRowDTO>(),
                     "Estados de calidad obtenidos correctamente"));

@@ -24,10 +24,10 @@ demanda:
     pos: "B16"
     material: "C16"
     descripcion: "D16"
-    cantidadAsignadaToneladas : "J16"
-    uMVta : "K16"
-    cantidadAsignadaSacos: "L16"
-    uMAlmac: "M16"
+    cantidadAsignadaVenta : "J16"
+    unidadMedidaVenta : "K16"
+    cantidadAsignadaAlmacen: "L16"
+    unidadMedidaAlmacen: "M16"
     tolerancia: "N16"
   
   paramentrosCalidad:

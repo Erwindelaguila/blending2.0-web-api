@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using Function.Blending.Upload.Functions.Process;
 using Function.Blending.Upload.Functions.Support.Routing;
-using Function.Blending.Upload.Helpers;
 using Function.Blending.Upload.Helpers.Http;
 using Function.Blending.Upload.Models;
 using Function.Blending.Upload.Response;
@@ -16,11 +15,11 @@ public class UploadExcelLogisticsFuncion
     private readonly ILogger<UploadExcelLogisticsFuncion> _logger;
     private readonly UploadExcelLogisticProcess _uploadExcelLogisticProcess;
 
-    public UploadExcelLogisticsFuncion(ILogger<UploadExcelLogisticsFuncion> logger, UploadExcelLogisticProcess uploadExcelLogisticProcess)
+    public UploadExcelLogisticsFuncion(ILogger<UploadExcelLogisticsFuncion> logger,
+        UploadExcelLogisticProcess uploadExcelLogisticProcess)
     {
         _logger = logger;
         _uploadExcelLogisticProcess = uploadExcelLogisticProcess;
-       
     }
 
     [Function(nameof(UploadExcelLogisticsFuncion))]
@@ -35,7 +34,8 @@ public class UploadExcelLogisticsFuncion
             var dataParced = await _uploadExcelLogisticProcess.ExecuteAsync(req);
 
             return await HttpResponseHelper.WriteBaseResponseAsync(req,
-                BaseResponse<ExcelExtractLogisticDto>.Success(dataParced, "Archivo procesado correctamente."));
+                BaseResponse<BlobResultDto<ExcelExtractLogisticDto>>.Success(dataParced,
+                    "Archivo procesado correctamente."));
         }
         catch (Exception ex)
         {
