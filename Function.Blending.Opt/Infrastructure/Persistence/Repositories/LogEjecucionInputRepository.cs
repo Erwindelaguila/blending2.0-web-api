@@ -24,16 +24,6 @@ public sealed class LogEjecucionInputRepository(
     return mapper.Map<VO.LogInpInfo>(info);
   }, ct);
 
-  public Task<LogInpOferta> GetOfertaByExecutionIdAsync(Guid executionId, CancellationToken ct) => WithDbAsync(async db =>
-  {
-    var oferta = await db.Set<EF.LogInpOferta>()
-                       .AsNoTracking()
-                       .Include(x => x.LogInpOfeParametro)
-                       .Where(x => x.EjecucionId == executionId)
-                       .FirstOrDefaultAsync(ct);
-    return mapper.Map<LogInpOferta>(oferta);
-  }, ct);
-
   public Task<LogInpFiltro> GetFiltroByExecutionIdAsync(Guid executionId, CancellationToken ct) => WithDbAsync(async db =>
   {
     var filtro = await db.Set<EF.LogInpFiltro>()
@@ -44,5 +34,26 @@ public sealed class LogEjecucionInputRepository(
                        .Where(x => x.EjecucionId == executionId)
                        .FirstOrDefaultAsync(ct);
     return mapper.Map<LogInpFiltro>(filtro);
+  }, ct);
+
+  public Task<LogInpDemanda> GetDemandaByExecutionIdAsync(Guid executionId, CancellationToken ct) => WithDbAsync(async db =>
+  {
+    var demanda = await db.Set<EF.LogInpDemanda>()
+                       .AsNoTracking()
+                       .Include(x => x.LogInpDemParametro)
+                       .Where(x => x.EjecucionId == executionId)
+                       .FirstOrDefaultAsync(ct);
+    return mapper.Map<LogInpDemanda>(demanda);
+  }, ct);
+
+  public Task<IReadOnlyList<LogInpOferta>> GetOfertaByExecutionIdAsync(Guid executionId, CancellationToken ct) => WithDbAsync(async db =>
+  {
+    var oferta = await db.Set<EF.LogInpOferta>()
+                       .AsNoTracking()
+                       .Include(x => x.LogInpOfeParametro)
+                       .Include(x => x.LogInpOfeOtros)
+                       .Where(x => x.EjecucionId == executionId)
+                       .ToListAsync(ct);
+    return mapper.Map<IReadOnlyList<LogInpOferta>>(oferta);
   }, ct);
 }

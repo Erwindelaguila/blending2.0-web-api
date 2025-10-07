@@ -67,8 +67,7 @@ public sealed class StartCalEjecucionFunction(IMediator mediator, IProblemDetail
     }
 
     // 4) 201 + Location → GetById
-    var location =
-        req.BuildLocation(FunctionRoutes.Quality.GetById.Replace("{id:guid}", result.Value.Id.ToString()));
+    var location = req.BuildLocation(FunctionRoutes.Quality.GetById.Replace("{id:guid}", result.Value.Id.ToString()));
     var res = req.CreateResponse(HttpStatusCode.Created);
     res.Headers.Add("Location", location.ToString());
     await res.WriteJsonAsync(ApiResponse<StartCalEjecucionResponse>.Of(result.Value));

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq.Expressions;
 
 // Aliases
 using E = Function.Blending.Opt.Infrastructure.Persistence.Models;
@@ -8,6 +7,9 @@ namespace Function.Blending.Opt.Infrastructure.Persistence.Repositories.Internal
 
 internal static class CalEjecucionHistoryQuery
 {
+  // Expresión traducible por EF (maneja nulls sin usar '!')
+  private static readonly Expression<Func<E.CalEjecucion, string>> EstadoNombreOrEmptyExpr = x => (x.Estado != null ? x.Estado.Nombre : null) ?? "";
+
   public static IQueryable<E.CalEjecucion> ApplyFilters(
     IQueryable<E.CalEjecucion> q,
     DateTime? creadoDelUtc,
@@ -30,10 +32,7 @@ internal static class CalEjecucionHistoryQuery
     return q;
   }
 
-  public static IOrderedQueryable<E.CalEjecucion> ApplyOrdering(
-    IQueryable<E.CalEjecucion> q,
-    string? sortBy,
-    string? sortDir)
+  public static IOrderedQueryable<E.CalEjecucion> ApplyOrdering(IQueryable<E.CalEjecucion> q, string? sortBy, string? sortDir)
   {
     var by = (sortBy ?? "creadoEl").Trim().ToLowerInvariant();
     var desc = !string.Equals(sortDir, "asc", StringComparison.OrdinalIgnoreCase);
@@ -41,7 +40,7 @@ internal static class CalEjecucionHistoryQuery
     return by switch
     {
       "codigo" => desc ? q.OrderByDescending(x => x.Codigo) : q.OrderBy(x => x.Codigo),
-      "estadoid" => desc ? q.OrderByDescending(x => x.EstadoId) : q.OrderBy(x => x.EstadoId),
+      "estado" => desc ? q.OrderByDescending(EstadoNombreOrEmptyExpr) : q.OrderBy(EstadoNombreOrEmptyExpr),
       "plantaid" => desc ? q.OrderByDescending(x => x.PlantaId) : q.OrderBy(x => x.PlantaId),
       _ => desc ? q.OrderByDescending(x => x.CreadoEl) : q.OrderBy(x => x.CreadoEl),
     };

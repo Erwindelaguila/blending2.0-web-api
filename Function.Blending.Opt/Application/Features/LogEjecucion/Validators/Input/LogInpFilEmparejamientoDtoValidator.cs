@@ -8,8 +8,7 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Validators.Inp
     public LogInpFilEmparejamientoDtoValidator()
     {
       RuleFor(x => x.Grupo).NotEmpty();
-      RuleFor(x => x.ParametroId).NotEmpty();
-      // Valor puede ser negativo/0 según negocio, no se fuerza aquí.
+      RuleFor(x => x.CodigoParametro).NotEmpty();
     }
   }
 }

@@ -13,7 +13,7 @@ public sealed record LogInpInfo(
   string Asistente,
   string Supervisora,
   string PaisDestino,
-  int CantidadRuma,
+  decimal CantidadRuma,
   string UnidadMedidaRuma,
   int NumeroMovimientos
 );

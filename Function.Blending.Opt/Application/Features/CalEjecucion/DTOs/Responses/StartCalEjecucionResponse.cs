@@ -9,6 +9,5 @@ public sealed class StartCalEjecucionResponse
   public string Codigo { get; init; } = string.Empty;
   public DateTime CreadoEl { get; init; } // UTC
 
-  // Anidado (nuevo)
   public EstadoResponse? Estado { get; init; }
 }

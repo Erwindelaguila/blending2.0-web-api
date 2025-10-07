@@ -2,7 +2,7 @@
 
 public sealed record LogInpFiltro
 {
-  public int PesoContenedor { get; init; }
+  public decimal PesoContenedor { get; init; }
   public bool ActualizarCapacidad { get; init; }
   public string? Parametros { get; init; }
   public bool? HabilitarDivision { get; init; }

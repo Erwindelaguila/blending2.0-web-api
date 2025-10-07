@@ -25,6 +25,10 @@ public partial class CalEjecucion
 
     public long Secuencial { get; set; }
 
+    public string? NombreArchivo { get; set; }
+
+    public string? UrlArchivo { get; set; }
+
     public virtual CalInpFiltro? CalInpFiltro { get; set; }
 
     public virtual ICollection<CalInpParametro> CalInpParametro { get; set; } = new List<CalInpParametro>();

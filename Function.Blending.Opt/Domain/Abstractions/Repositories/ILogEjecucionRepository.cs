@@ -25,10 +25,13 @@ namespace Function.Blending.Opt.Domain.Abstractions.Repositories
     Task<LogEjecucion?> StartAsync(
       Guid estadoInicialId,
       string? mensaje,
+      string? nombreArchivo,
+      string? urlArchivo,
       Guid creadoPorId,
       LogInpInfo? info,
       LogInpFiltro? filtro,
-      LogInpOferta? oferta,
+      LogInpDemanda? demanda,
+      IReadOnlyList<LogInpOferta>? oferta,
       CancellationToken ct = default);
     
     Task<LogEjecucion?> SetEstadoAsync(Guid id, Guid nuevoEstadoId, Guid modificadoPorId, CancellationToken ct);

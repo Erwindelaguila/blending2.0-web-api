@@ -1,16 +1,23 @@
-﻿using System.Collections.Generic;
-
-namespace Function.Blending.Opt.Domain.ValueObjects;
+﻿namespace Function.Blending.Opt.Domain.ValueObjects;
 public sealed record LogInpOferta(
   Guid? Id = default,
   Guid? EjecucionId = default,
+  string? Ruma = null,
   int? Posicion = null,
-  string? Material = null,
-  string? Descripcion = null,
-  int? CantidadAsignadaVenta = null,
-  string? UnidadMedidaVenta = null,
-  int? CantidadAsignadaAlmacen = null,
+  string? DescripcionMaterial = null,
+  string? DescripcionCentro = null,
+  decimal? CantidadAsignadaAlmacen = null,
   string? UnidadMedidaAlmacen = null,
-  decimal? Tolerancia = null,
-  IReadOnlyList<LogInpOfeParametro>? Parametros = null
+  string? FechaContabilizacion = null,
+  string? FechaFabricacion = null,
+  decimal? CantidadAsignadaVenta = null,
+  string? UnidadMedidaVenta = null,
+  string? FechaAnalisisQuimico = null,
+  string? FechaVencimientoQuimico = null,
+  string? FechaAnalisisMicrobiologico = null,
+  string? FechaVencimientoMicrobiologico = null,
+  string? TipoAlmacen = null,
+  string? UbicacionAlmacen = null,
+  IReadOnlyList<LogInpOfeParametro>? Parametros = null,
+  IReadOnlyList<LogInpOfeOtros>? Otros = null
 );

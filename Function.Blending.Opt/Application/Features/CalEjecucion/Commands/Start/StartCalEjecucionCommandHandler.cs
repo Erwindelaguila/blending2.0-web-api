@@ -47,6 +47,8 @@ public sealed class StartCalEjecucionCommandHandler(
       request.Start.PlantaId,
       estadoInicialId,
       request.Start.Mensaje,
+      request.Start.NombreArchivo,
+      request.Start.UrlArchivo,
       request.CreadoPorId,
       filtroVo,
       parametrosVo,

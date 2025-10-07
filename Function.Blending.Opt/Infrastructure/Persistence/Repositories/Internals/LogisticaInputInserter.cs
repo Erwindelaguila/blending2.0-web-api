@@ -1,11 +1,5 @@
 ﻿using AutoMapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Function.Blending.Opt.Infrastructure.Persistence.Mappings;
-
 using Ef = Function.Blending.Opt.Infrastructure.Persistence.Models;
 using Vo = Function.Blending.Opt.Domain.ValueObjects;
 
@@ -19,7 +13,9 @@ internal static class LogisticaInputInserter
     Guid ejecucionId,
     Vo.LogInpInfo? info,
     Vo.LogInpFiltro? filtro,
-    Vo.LogInpOferta? oferta,
+    Vo.LogInpDemanda? demanda,
+    IReadOnlyList<Vo.LogInpOferta>? oferta,
+    Guid creadoPorId,
     CancellationToken ct)
   {
     // INFO (1:1)
@@ -56,25 +52,52 @@ internal static class LogisticaInputInserter
       await db.SaveChangesAsync(ct);
     }
 
-    // OFERTA (1:1) + hijos
-    if (oferta is not null)
+    // DEMANDA (1:1) + hijos
+    if (demanda is not null)
     {
-      var rowOferta = mapper.Map<Ef.LogInpOferta>(oferta, opt => opt.UseExecutionId(ejecucionId));
-      db.Set<Ef.LogInpOferta>().Add(rowOferta);
+      var rowDemanda = mapper.Map<Ef.LogInpDemanda>(demanda, opt => opt.UseExecutionId(ejecucionId));
+      db.Set<Ef.LogInpDemanda>().Add(rowDemanda);
       await db.SaveChangesAsync(ct);
 
-      if (oferta.Parametros is { Count: > 0 })
+      if (demanda.Parametros is { Count: > 0 })
       {
-        var normalized = oferta.Parametros
+        var normalized = demanda.Parametros
           .GroupBy(p => p.CodigoParametro)
           .Select(g => g.Last())
           .ToList();
 
-        var hijos = mapper.Map<List<Ef.LogInpOfeParametro>>(normalized, opt => opt.UseParentId(rowOferta.Id));
-        db.Set<Ef.LogInpOfeParametro>().AddRange(hijos);
+        var hijos = mapper.Map<List<Ef.LogInpDemParametro>>(normalized, opt => opt.UseParentId(rowDemanda.Id));
+        db.Set<Ef.LogInpDemParametro>().AddRange(hijos);
       }
 
       await db.SaveChangesAsync(ct);
+    }
+
+    // OFERTA (1:1) + hijos
+    if (oferta is not null)
+    {
+      if (oferta is { Count: > 0 })
+      {
+        var efOferta = mapper.Map<List<Ef.LogInpOferta>>(oferta, opt => opt.UseExecutionId(ejecucionId).UseUserId(creadoPorId));
+        db.Set<Ef.LogInpOferta>().AddRange(efOferta);
+        await db.SaveChangesAsync(ct); // genera Ids
+
+        for (int i = 0; i < oferta.Count; i++)
+        {
+          var src = oferta[i];
+          if (src.Parametros is not { Count: > 0 }) continue;
+
+          var parentId = efOferta[i].Id;
+          var efParametros = mapper.Map<List<Ef.LogInpOfeParametro>>(src.Parametros, opt => opt.UseParentId(parentId));
+          var efOtros = mapper.Map<List<Ef.LogInpOfeOtros>>(src.Otros, opt => opt.UseParentId(parentId));
+
+          db.Set<Ef.LogInpOfeParametro>().AddRange(efParametros);
+          db.Set<Ef.LogInpOfeOtros>().AddRange(efOtros);
+        }
+
+        if (db.ChangeTracker.HasChanges())
+          await db.SaveChangesAsync(ct);
+      }
     }
   }
 }

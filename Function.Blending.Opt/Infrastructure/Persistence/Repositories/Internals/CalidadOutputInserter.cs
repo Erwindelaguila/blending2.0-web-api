@@ -21,8 +21,7 @@ internal static class CalidadOutputInserter
     IReadOnlyList<VO.CalOutResumen> resumenes,
     CancellationToken ct)
   {
-    var efResumenes = mapper.Map<List<E.CalOutResumen>>(resumenes,
-      opt => opt.UseExecutionId(ejecucionId).UseUserId(userId));
+    var efResumenes = mapper.Map<List<E.CalOutResumen>>(resumenes, opt => opt.UseExecutionId(ejecucionId).UseUserId(userId));
 
     db.Set<E.CalOutResumen>().AddRange(efResumenes);
     await db.SaveChangesAsync(ct); // genera Ids
@@ -33,11 +32,11 @@ internal static class CalidadOutputInserter
       if (src.Parametros is not { Count: > 0 }) continue;
 
       var parentId = efResumenes[i].Id;
-      var childs = mapper.Map<List<E.CalOutResParametro>>(src.Parametros,
-        opt => opt.UseParentId(parentId));
+      var childs = mapper.Map<List<E.CalOutResParametro>>(src.Parametros, opt => opt.UseParentId(parentId));
 
       db.Set<E.CalOutResParametro>().AddRange(childs);
     }
+
     if (db.ChangeTracker.HasChanges())
       await db.SaveChangesAsync(ct);
   }

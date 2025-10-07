@@ -29,15 +29,21 @@ public partial class LogEjecucion
 
     public long Secuencial { get; set; }
 
+    public string? NombreArchivo { get; set; }
+
+    public string? UrlArchivo { get; set; }
+
     public virtual LogEjecucion? Asociado { get; set; }
 
     public virtual ICollection<LogEjecucion> InverseAsociado { get; set; } = new List<LogEjecucion>();
+
+    public virtual LogInpDemanda? LogInpDemanda { get; set; }
 
     public virtual LogInpFiltro? LogInpFiltro { get; set; }
 
     public virtual LogInpInfo? LogInpInfo { get; set; }
 
-    public virtual LogInpOferta? LogInpOferta { get; set; }
+    public virtual ICollection<LogInpOferta> LogInpOferta { get; set; } = new List<LogInpOferta>();
 
     public virtual ICollection<LogOutContenedor> LogOutContenedor { get; set; } = new List<LogOutContenedor>();
 }

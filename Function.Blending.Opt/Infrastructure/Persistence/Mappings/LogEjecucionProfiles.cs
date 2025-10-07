@@ -17,13 +17,13 @@ public sealed class LogEjecucionProfiles : Profile
       .ForMember(d => d.Estado, cfg => cfg.Ignore())
       .ForMember(d => d.EstadoNombre, cfg => cfg.Ignore())
       .ForMember(d => d.Info, o => o.MapFrom(s => s.LogInpInfo))
-      .ForMember(d => d.Oferta, o => o.MapFrom(s => s.LogInpOferta))
       .ForMember(d => d.Filtro, o => o.MapFrom(s => s.LogInpFiltro))
+      .ForMember(d => d.Demanda, o => o.MapFrom(s => s.LogInpDemanda))
+      .ForMember(d => d.Oferta, o => o.MapFrom(s => s.LogInpOferta))
       .ForMember(d => d.Contenedores, o => o.MapFrom(s => s.LogOutContenedor));
 
     // EF → ReadModel (history)
     CreateMap<Ef.LogEjecucion, Rm.LogEjecucionHistoryItemRm>()
-      //.ForMember(d => d.Contrato, cfg => cfg.Ignore())
       .ForMember(d => d.Contrato, o => o.MapFrom(s => s.LogInpInfo != null? s.LogInpInfo.Contrato : null))
       .ForMember(d => d.EstadoNombre, cfg => cfg.Ignore())
       .ForMember(d => d.EstadoColor, cfg => cfg.Ignore());

@@ -13,12 +13,14 @@ public sealed class LogEjecucionResponse
   public Guid Id { get; init; }
   public string Codigo { get; init; } = default!;
   public bool? Confirmado { get; init; }
+  public string? Mensaje { get; init; }
   public DateTime CreadoEl { get; init; }
 
   public EstadoResponse? Estado { get; init; }
 
   public LogInpInfoDto? Info { get; set; }
-  public LogInpOfertaDto? Oferta { get; set; }
   public LogInpFiltroDto? Filtro { get; set; }
+  public LogInpDemandaDto? Demanda { get; set; }
+  public IReadOnlyList<LogInpOfertaDto>? Oferta { get; set; }
   public IReadOnlyList<LogOutContenedorDto>? Contenedores { get; set; }
 }

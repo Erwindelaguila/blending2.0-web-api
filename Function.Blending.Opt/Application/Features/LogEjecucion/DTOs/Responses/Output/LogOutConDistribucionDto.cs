@@ -8,5 +8,5 @@ public sealed record LogOutConDistribucionDto
 
   public string Ruma { get; init; } = null!;
 
-  public int Valor { get; init; }
+  public decimal Valor { get; init; }
 }

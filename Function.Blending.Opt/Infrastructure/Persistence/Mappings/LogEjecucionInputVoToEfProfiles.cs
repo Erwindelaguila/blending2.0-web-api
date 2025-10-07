@@ -38,19 +38,36 @@ namespace Function.Blending.Opt.Infrastructure.Persistence.Mappings
       CreateMap<Vo.LogInpFilEmparejamiento, Ef.LogInpFilEmparejamiento>()
         .ForMember(d => d.Id, o => o.MapFrom(_ => Guid.NewGuid()))
         .ForMember(d => d.FiltroId, o => o.MapFrom((_, __, ___, ctx) => ctx.GetParentId()))
-        .ForMember(d => d.ParametroId, o => o.MapFrom(s => (Guid)s.ParametroId)) // VO Id tipado -> Guid
-        .ForMember(d => d.Filtro, o => o.Ignore())     // navegación
-        .ForMember(d => d.Parametro, o => o.Ignore());    // navegación, si existe en tu EF
+        .ForMember(d => d.Filtro, o => o.Ignore());     // navegación
 
-      // === Oferta (1:1 con Ejecucion) ===
+      // === Demanda (1:1 con Ejecucion) ===
+      CreateMap<Vo.LogInpDemanda, Ef.LogInpDemanda>()
+        .ForMember(d => d.Id, o => o.MapFrom(_ => Guid.NewGuid()))
+        .ForMember(d => d.EjecucionId, o => o.MapFrom((_, __, ___, ctx) => ctx.GetExecutionId()))
+        .ForMember(d => d.Ejecucion, o => o.Ignore()) // navegación
+        .ForMember(d => d.LogInpDemParametro, o => o.Ignore()); // hijos se insertan aparte
+
+      // === Hijos de Demanda ===
+      CreateMap<Vo.LogInpDemParametro, Ef.LogInpDemParametro>()
+        .ForMember(d => d.Id, o => o.MapFrom(_ => Guid.NewGuid()))
+        .ForMember(d => d.DemandaId, o => o.MapFrom((_, __, ___, ctx) => ctx.GetParentId()))
+        .ForMember(d => d.Demanda, o => o.Ignore()); // navegación
+
+      // === Oferta (1:n con Ejecucion) ===
       CreateMap<Vo.LogInpOferta, Ef.LogInpOferta>()
         .ForMember(d => d.Id, o => o.MapFrom(_ => Guid.NewGuid()))
         .ForMember(d => d.EjecucionId, o => o.MapFrom((_, __, ___, ctx) => ctx.GetExecutionId()))
         .ForMember(d => d.Ejecucion, o => o.Ignore()) // navegación
-        .ForMember(d => d.LogInpOfeParametro, o => o.Ignore()); // hijos se insertan aparte
+        .ForMember(d => d.LogInpOfeParametro, o => o.Ignore()) // hijos se insertan aparte
+        .ForMember(d => d.LogInpOfeOtros, o => o.Ignore()); // hijos se insertan aparte
 
       // === Hijos de Oferta ===
       CreateMap<Vo.LogInpOfeParametro, Ef.LogInpOfeParametro>()
+        .ForMember(d => d.Id, o => o.MapFrom(_ => Guid.NewGuid()))
+        .ForMember(d => d.OfertaId, o => o.MapFrom((_, __, ___, ctx) => ctx.GetParentId()))
+        .ForMember(d => d.Oferta, o => o.Ignore()); // navegación
+      
+      CreateMap<Vo.LogInpOfeOtros, Ef.LogInpOfeOtros>()
         .ForMember(d => d.Id, o => o.MapFrom(_ => Guid.NewGuid()))
         .ForMember(d => d.OfertaId, o => o.MapFrom((_, __, ___, ctx) => ctx.GetParentId()))
         .ForMember(d => d.Oferta, o => o.Ignore()); // navegación

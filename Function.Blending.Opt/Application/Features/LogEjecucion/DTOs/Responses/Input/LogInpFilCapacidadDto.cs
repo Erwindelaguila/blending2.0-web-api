@@ -2,6 +2,6 @@
 
 public sealed record LogInpFilCapacidadDto
 {
-  public int Cantidad { get; init; }
-  public int Capacidad { get; init; }
+  public decimal Cantidad { get; init; }
+  public decimal Capacidad { get; init; }
 }

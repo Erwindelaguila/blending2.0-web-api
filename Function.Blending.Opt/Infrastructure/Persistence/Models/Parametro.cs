@@ -32,6 +32,4 @@ public partial class Parametro
     public virtual ICollection<CalInpParametro> CalInpParametro { get; set; } = new List<CalInpParametro>();
 
     public virtual ICollection<CalidadParametro> CalidadParametro { get; set; } = new List<CalidadParametro>();
-
-    public virtual ICollection<LogInpFilEmparejamiento> LogInpFilEmparejamiento { get; set; } = new List<LogInpFilEmparejamiento>();
 }
