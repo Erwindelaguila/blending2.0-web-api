@@ -1,16 +1,23 @@
 using AutoMapper;
 using Function.Blending.Opt.Application.Common.Paging;
 using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Responses;
+using Function.Blending.Opt.Application.Support.Meta;
+using Function.Blending.Opt.Application.Support.Time;
 using Function.Blending.Opt.Domain.Abstractions.Repositories;
+using Function.Blending.Opt.Domain.Abstractions.Services;
 using Function.Blending.Opt.Shared.Results;
 using MediatR;
 
 namespace Function.Blending.Opt.Application.Features.CalEjecucion.Queries.GetHistory;
 
-public sealed class GetCalEjecucionHistoryQueryHandler(ICalEjecucionRepository repo, IMapper mapper)
-  : IRequestHandler<GetCalEjecucionHistoryQuery, Result<PageResponse<CalEjecucionHistoryItemResponse>>>
+public sealed class GetCalEjecucionHistoryQueryHandler(
+  ICalEjecucionRepository repo,
+  ITimeZoneService tz,
+  ITimeZoneResolver tzResolver, 
+  IMapper mapper
+) : IRequestHandler<GetCalEjecucionHistoryQuery, Result<WithMeta<PageResponse<CalEjecucionHistoryItemResponse>, DateConversionMeta>>>
 {
-  public async Task<Result<PageResponse<CalEjecucionHistoryItemResponse>>> Handle(GetCalEjecucionHistoryQuery request, CancellationToken ct)
+  public async Task<Result<WithMeta<PageResponse<CalEjecucionHistoryItemResponse>, DateConversionMeta>>> Handle(GetCalEjecucionHistoryQuery request, CancellationToken ct)
   {
     var (items, total) = await repo.GetHistoryAsync(
       request.Page,
@@ -29,7 +36,8 @@ public sealed class GetCalEjecucionHistoryQueryHandler(ICalEjecucionRepository r
 
     var pageResp = PageResponse<CalEjecucionHistoryItemResponse>.Of(dtoItems, request.Page, request.PageSize, total);
 
-    return Result<PageResponse<CalEjecucionHistoryItemResponse>>.Ok(pageResp);
+    var payload = DateConversionComposer.Wrap(pageResp, request.ConvertDates, request.TzId, tz, tzResolver);
+    return Result<WithMeta<PageResponse<CalEjecucionHistoryItemResponse>, DateConversionMeta>>.Ok(payload);
   }
 
 }

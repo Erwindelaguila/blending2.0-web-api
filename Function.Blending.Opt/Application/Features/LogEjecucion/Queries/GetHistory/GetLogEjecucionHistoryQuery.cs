@@ -1,5 +1,6 @@
 using Function.Blending.Opt.Application.Common.Paging;
 using Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Responses;
+using Function.Blending.Opt.Application.Support.Meta;
 using Function.Blending.Opt.Shared.Results;
 using MediatR;
 
@@ -15,5 +16,7 @@ public sealed record GetLogEjecucionHistoryQuery(
   DateTime? CreadoAlUtc,
   Guid? EstadoId,
   string? Codigo,
-  string? Contrato
-) : IRequest<Result<PageResponse<LogEjecucionHistoryItemResponse>>>;
+  string? Contrato,
+  bool ConvertDates,
+  string? TzId
+) : IRequest<Result<WithMeta<PageResponse<LogEjecucionHistoryItemResponse>, DateConversionMeta>>>;

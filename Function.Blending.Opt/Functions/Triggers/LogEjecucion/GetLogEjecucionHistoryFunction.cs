@@ -43,8 +43,10 @@ public sealed class GetLogEjecucionHistoryFunction(
     var codigo = qs.GetStringOrNull("codigo");
     var contrato = qs.GetStringOrNull("contrato");
 
+    var (convertDates, tzId) = DateConversionRequestOptions.From(req);
+
     var result = await mediator.Send(
-      new GetLogEjecucionHistoryQuery(page, pageSize, sortBy, sortDir, confirmado, creadoDelUtc, creadoAlUtc, estadoId, codigo, contrato));
+      new GetLogEjecucionHistoryQuery(page, pageSize, sortBy, sortDir, confirmado, creadoDelUtc, creadoAlUtc, estadoId, codigo, contrato, convertDates, tzId));
 
     if (!result.IsSuccess)
     {
@@ -74,13 +76,13 @@ public sealed class GetLogEjecucionHistoryFunction(
     }
 
     var pr = result.Value!;
-    var data = pr.Items;
+    var data = pr.Data.Items;
     var meta = new
     {
-      page = pr.Page,
-      pageSize = pr.PageSize,
-      total = pr.Total,
-      totalPages = pr.TotalPages,
+      page = pr.Data.Page,
+      pageSize = pr.Data.PageSize,
+      total = pr.Data.Total,
+      totalPages = pr.Data.TotalPages,
       sortBy = sortBy ?? "creadoEl",
       sortDir = string.Equals(sortDir, CriteriaConstants.Sorting.Ascending, StringComparison.OrdinalIgnoreCase) ? CriteriaConstants.Sorting.Ascending : CriteriaConstants.Sorting.Descending,
       requestedBy = ctx.Username,
@@ -91,7 +93,8 @@ public sealed class GetLogEjecucionHistoryFunction(
         estadoId,
         confirmado,
         codigo
-      }
+      },
+      conversion = pr.Meta
     };
 
     return await req.OkAsync(data, meta);

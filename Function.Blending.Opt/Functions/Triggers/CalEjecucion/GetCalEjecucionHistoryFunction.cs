@@ -41,7 +41,9 @@ public sealed class GetCalEjecucionHistoryFunction(
 
     var codigo = qs.GetStringOrNull("codigo");
 
-    var result = await mediator.Send(new GetCalEjecucionHistoryQuery(page, pageSize, sortBy, sortDir, creadoDelUtc, creadoAlUtc, estadoId, plantaId, codigo));
+    var (convertDates, tzId) = DateConversionRequestOptions.From(req);
+
+    var result = await mediator.Send(new GetCalEjecucionHistoryQuery(page, pageSize, sortBy, sortDir, creadoDelUtc, creadoAlUtc, estadoId, plantaId, codigo, convertDates, tzId));
 
     // Nota: tu handler siempre devuelve Ok(); mantenemos la rama por consistencia
     if (!result.IsSuccess)
@@ -72,13 +74,13 @@ public sealed class GetCalEjecucionHistoryFunction(
     }
 
     var pr = result.Value!;
-    var data = pr.Items;
+    var data = pr.Data.Items;
     var meta = new
     {
-      page = pr.Page,
-      pageSize = pr.PageSize,
-      total = pr.Total,
-      totalPages = pr.TotalPages,
+      page = pr.Data.Page,
+      pageSize = pr.Data.PageSize,
+      total = pr.Data.Total,
+      totalPages = pr.Data.TotalPages,
       sortBy = (sortBy ?? "creadoEl"),
       sortDir = string.Equals(sortDir, CriteriaConstants.Sorting.Ascending, StringComparison.OrdinalIgnoreCase) ? CriteriaConstants.Sorting.Ascending : CriteriaConstants.Sorting.Descending,
       requestedBy = ctx.Username,
@@ -89,7 +91,8 @@ public sealed class GetCalEjecucionHistoryFunction(
         estadoId,
         plantaId,
         codigo
-      }
+      },
+      conversion = pr.Meta
     };
 
     return await req.OkAsync(data, meta);

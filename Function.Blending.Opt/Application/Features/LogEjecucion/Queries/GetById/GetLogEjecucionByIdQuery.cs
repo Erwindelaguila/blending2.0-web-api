@@ -8,7 +8,7 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Queries.GetByI
 // agrega convertDates y tzId
 public sealed record GetLogEjecucionByIdQuery(
   Guid Id,
-  IReadOnlyCollection<string> expand,
+  IReadOnlyCollection<string> Expand,
   bool ConvertDates,
   string? TzId
 ) : IRequest<Result<WithMeta<LogEjecucionResponse, DateConversionMeta>>>;
