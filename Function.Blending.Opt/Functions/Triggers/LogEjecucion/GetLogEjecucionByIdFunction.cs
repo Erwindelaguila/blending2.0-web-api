@@ -38,7 +38,7 @@ public sealed class GetLogEjecucionByIdFunction(
 
     var result = await mediator.Send(new GetLogEjecucionByIdQuery(id, expand, convertDates, tzId));
 
-    if (!result.IsSuccess || result.Value is null)
+    if (!result.IsSuccess || result.Value is null || result.Value.Data is null)
     {
       return await problem.CreateAsync(
         fctx, req, HttpStatusCode.NotFound,
@@ -54,14 +54,6 @@ public sealed class GetLogEjecucionByIdFunction(
 
     var payload = result.Value;
     // data + meta del handler
-    return await req.OkAsync(payload.Data, new
-    {
-      conversion = new
-      {
-        converted = payload.Meta.Converted,
-        timeZoneId = payload.Meta.EffectiveTimeZoneId,
-        overrideApplied = payload.Meta.OverrideApplied
-      }
-    });
+    return await req.OkAsync(payload.Data, new { conversion = payload.Meta });
   }
 }

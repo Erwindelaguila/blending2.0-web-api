@@ -1,11 +1,12 @@
 ﻿using AutoMapper;
 using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Responses;
+using Function.Blending.Opt.Application.Support.Meta;
+using Function.Blending.Opt.Application.Support.Time;
 using Function.Blending.Opt.Domain.Abstractions.Models.Catalogs;
 using Function.Blending.Opt.Domain.Abstractions.Repositories;
 using Function.Blending.Opt.Domain.Abstractions.Services;
 using Function.Blending.Opt.Shared.Results;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Function.Blending.Opt.Application.Features.CalEjecucion.Queries.GetInputById;
 
@@ -13,14 +14,16 @@ public sealed class GetCalEjecucionInputByIdQueryHandler(
     ICalEjecucionRepository repo,
     ICalEjecucionInputService inputService,
     IEstadoCalidadCatalogService estadosService,
+    ITimeZoneService tz,
+    ITimeZoneResolver tzResolver,
     IMapper mapper
-  ) : IRequestHandler<GetCalEjecucionInputByIdQuery, Result<CalEjecucionResponse>>
+  ) : IRequestHandler<GetCalEjecucionInputByIdQuery, Result<WithMeta<CalEjecucionResponse, DateConversionMeta>>>
 {
-  public async Task<Result<CalEjecucionResponse>> Handle(GetCalEjecucionInputByIdQuery request, CancellationToken ct)
+  public async Task<Result<WithMeta<CalEjecucionResponse, DateConversionMeta>>> Handle(GetCalEjecucionInputByIdQuery request, CancellationToken ct)
   {
     var entity = await repo.GetByIdAsync(request.Id, ct);
     if (entity is null)
-      return Result<CalEjecucionResponse>.Fail($"Execution '{request.Id}' not found.");
+      return Result<WithMeta<CalEjecucionResponse, DateConversionMeta>>.Fail($"Execution '{request.Id}' not found.");
 
     // Disparar en paralelo (sin await todavía)
     var filtroTask = inputService.GetFilterByExecutionIdAsync(entity.Id, ct);
@@ -35,6 +38,7 @@ public sealed class GetCalEjecucionInputByIdQueryHandler(
     entity.Estado ??= await estadoTask;
 
     var dto = mapper.Map<CalEjecucionResponse>(entity);
-    return Result<CalEjecucionResponse>.Ok(dto);
+    var payload = DateConversionComposer.Wrap(dto, request.ConvertDates, request.TzId, tz, tzResolver);
+    return Result<WithMeta<CalEjecucionResponse, DateConversionMeta>>.Ok(payload);
   }
 }

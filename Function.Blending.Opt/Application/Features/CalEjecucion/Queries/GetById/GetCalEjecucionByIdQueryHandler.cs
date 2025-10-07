@@ -1,5 +1,7 @@
 using AutoMapper;
 using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Responses;
+using Function.Blending.Opt.Application.Support.Meta;
+using Function.Blending.Opt.Application.Support.Time;
 using Function.Blending.Opt.Domain.Abstractions.Models.Catalogs;
 using Function.Blending.Opt.Domain.Abstractions.Repositories;
 using Function.Blending.Opt.Domain.Abstractions.Services;
@@ -13,14 +15,16 @@ public sealed class GetCalEjecucionByIdQueryHandler(
     ICalEjecucionInputService inputService,
     ICalEjecucionOutputService outputService,
     IEstadoCalidadCatalogService estadosService,
+    ITimeZoneService tz,
+    ITimeZoneResolver tzResolver,
     IMapper mapper
-  ) : IRequestHandler<GetCalEjecucionByIdQuery, Result<CalEjecucionResponse>>
+  ) : IRequestHandler<GetCalEjecucionByIdQuery, Result<WithMeta<CalEjecucionResponse, DateConversionMeta>>>
 {
-  public async Task<Result<CalEjecucionResponse>> Handle(GetCalEjecucionByIdQuery request, CancellationToken ct)
+  public async Task<Result<WithMeta<CalEjecucionResponse, DateConversionMeta>>> Handle(GetCalEjecucionByIdQuery request, CancellationToken ct)
   {
     var entity = await repo.GetByIdAsync(request.Id, ct);
     if (entity is null)
-      return Result<CalEjecucionResponse>.Fail($"Execution '{request.Id}' not found.");
+      return Result<WithMeta<CalEjecucionResponse, DateConversionMeta>>.Fail($"Execution '{request.Id}' not found.");
 
     // Dispara la carga de Estado (evita IO si ya viene cargado)
     var estadoTask = entity.Estado is not null ? Task.FromResult((EstadoCalidadSnapshot?)entity.Estado) : estadosService.GetByIdAsync(entity.EstadoId, ct);
@@ -28,16 +32,18 @@ public sealed class GetCalEjecucionByIdQueryHandler(
     // Fan-out paralelo según expand
     var tasks = new List<Task> { estadoTask };
 
-    if (request.expand.Contains("input")) tasks.Add(LoadInputAsync(entity, inputService, ct));
+    if (request.Expand.Contains("input")) tasks.Add(LoadInputAsync(entity, inputService, ct));
 
-    if (request.expand.Contains("output")) tasks.Add(LoadOutputAsync(entity, outputService, ct));
+    if (request.Expand.Contains("output")) tasks.Add(LoadOutputAsync(entity, outputService, ct));
 
     await Task.WhenAll(tasks); // si algo falla, lo manejará el middleware
 
     entity.Estado ??= await estadoTask; // completar si faltaba
 
     var dto = mapper.Map<CalEjecucionResponse>(entity);
-    return Result<CalEjecucionResponse>.Ok(dto);
+
+    var payload = DateConversionComposer.Wrap(dto, request.ConvertDates, request.TzId, tz, tzResolver);
+    return Result<WithMeta<CalEjecucionResponse, DateConversionMeta>>.Ok(payload);
   }
 
   static async Task LoadInputAsync(Domain.Entities.CalEjecucion entity, ICalEjecucionInputService inputService, CancellationToken ct)

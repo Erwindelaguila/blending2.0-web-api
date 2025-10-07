@@ -25,9 +25,11 @@ public sealed class GetLogEjecucionInputByIdFunction(
       FunctionContext fctx,  // ← necesitamos el context para el writer
       Guid id)
   {
-    var result = await mediator.Send(new GetLogEjecucionInputByIdQuery(id));
+    var (convertDates, tzId) = DateConversionRequestOptions.From(req);
 
-    if (!result.IsSuccess || result.Value is null)
+    var result = await mediator.Send(new GetLogEjecucionInputByIdQuery(id, convertDates, tzId));
+
+    if (!result.IsSuccess || result.Value is null || result.Value.Data is null)
     {
       return await problem.CreateAsync(
         fctx,
@@ -43,6 +45,6 @@ public sealed class GetLogEjecucionInputByIdFunction(
         });
     }
 
-    return await req.OkAsync(result.Value);
+    return await req.OkAsync(result.Value.Data, new { conversion = result.Value.Meta });
   }
 }

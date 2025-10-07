@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Responses;
+using Function.Blending.Opt.Application.Support.Meta;
+using Function.Blending.Opt.Application.Support.Time;
 using Function.Blending.Opt.Domain.Abstractions.Models.Catalogs;
 using Function.Blending.Opt.Domain.Abstractions.Repositories;
 using Function.Blending.Opt.Domain.Abstractions.Services;
@@ -12,14 +14,16 @@ public sealed class GetLogEjecucionInputByIdQueryHandler(
     ILogEjecucionRepository repo,
     ILogEjecucionInputService inputService,
     IEstadoLogisticaCatalogService estadosService,
+    ITimeZoneService tz,
+    ITimeZoneResolver tzResolver,
     IMapper mapper
-  ) : IRequestHandler<GetLogEjecucionInputByIdQuery, Result<LogEjecucionResponse>>
+  ) : IRequestHandler<GetLogEjecucionInputByIdQuery, Result<WithMeta<LogEjecucionResponse, DateConversionMeta>>>
 {
-  public async Task<Result<LogEjecucionResponse>> Handle(GetLogEjecucionInputByIdQuery request, CancellationToken ct)
+  public async Task<Result<WithMeta<LogEjecucionResponse, DateConversionMeta>>> Handle(GetLogEjecucionInputByIdQuery request, CancellationToken ct)
   {
     var entity = await repo.GetByIdAsync(request.Id, ct);
     if (entity is null)
-      return Result<LogEjecucionResponse>.Fail($"Execution '{request.Id}' not found.");
+      return Result<WithMeta<LogEjecucionResponse, DateConversionMeta>>.Fail($"Execution '{request.Id}' not found.");
 
     // Disparar en paralelo (sin await todavía)
     var infoTask = inputService.GetInfoByExecutionIdAsync(entity.Id, ct);
@@ -36,6 +40,8 @@ public sealed class GetLogEjecucionInputByIdQueryHandler(
     entity.Estado ??= await estadoTask;
 
     var dto = mapper.Map<LogEjecucionResponse>(entity);
-    return Result<LogEjecucionResponse>.Ok(dto);
+
+    var payload = DateConversionComposer.Wrap(dto, request.ConvertDates, request.TzId, tz, tzResolver);
+    return Result<WithMeta<LogEjecucionResponse, DateConversionMeta>>.Ok(payload);
   }
 }

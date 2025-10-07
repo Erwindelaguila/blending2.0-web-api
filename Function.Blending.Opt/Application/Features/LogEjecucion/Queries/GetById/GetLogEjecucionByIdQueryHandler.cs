@@ -32,27 +32,16 @@ public sealed class GetLogEjecucionByIdQueryHandler(
 
     var tasks = new List<Task> { estadoTask };
 
-    if (request.expand.Contains("input")) tasks.Add(LoadInputAsync(entity, inputService, ct));
-    if (request.expand.Contains("output")) tasks.Add(LoadOutputAsync(entity, outputService, ct));
+    if (request.Expand.Contains("input")) tasks.Add(LoadInputAsync(entity, inputService, ct));
+    if (request.Expand.Contains("output")) tasks.Add(LoadOutputAsync(entity, outputService, ct));
 
     await Task.WhenAll(tasks);
     entity.Estado ??= await estadoTask;
 
     var dto = mapper.Map<LogEjecucionResponse>(entity);
 
-    // === Conversión y meta dentro del handler ===
-    TimeZoneInfo? tzOverride = request.ConvertDates ? tzResolver.TryResolve(request.TzId) : null;
-
-    if (request.ConvertDates)
-      DateTimeGraphLocalizer.ConvertUtcToLocal(dto, tz, tzOverride);
-
-    var meta = new DateConversionMeta(
-      Converted: request.ConvertDates,
-      EffectiveTimeZoneId: (tzOverride ?? TimeZoneInfo.FindSystemTimeZoneById(tz.CurrentTimeZoneId)).Id,
-      OverrideApplied: tzOverride is not null
-    );
-
-    return Result<WithMeta<LogEjecucionResponse, DateConversionMeta>>.Ok(new(dto, meta));
+    var payload = DateConversionComposer.Wrap(dto, request.ConvertDates, request.TzId, tz, tzResolver);
+    return Result<WithMeta<LogEjecucionResponse, DateConversionMeta>>.Ok(payload);
   }
 
   static async Task LoadInputAsync(Domain.Entities.LogEjecucion entity, ILogEjecucionInputService inputService, CancellationToken ct)
