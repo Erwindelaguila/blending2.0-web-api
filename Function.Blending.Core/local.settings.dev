@@ -5,7 +5,8 @@
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     "Environment": "Development",
     "SqlConnectionString": "Server=tcp:srv-db-eastus-blending2.database.windows.net,1433;Initial Catalog=db_blending2_prd;Persist Security Info=False;User ID=user_blending2;Password=CXaTHvrMFEZECOF8;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
-    "AzureAppConfigConnectionString": "Endpoint=https://acblending2.azconfig.io;Id=TLta;Secret=2hVQwWhskJVVJ35Ca9vD1WMXhJE9VlSelq0T7yKpQaAAXMDwRupo…,
+    
+    "AzureAppConfigConnectionString": "Endpoint=https://acblending2.azconfig.io;Id=TLta;Secret=2hVQwWhskJVVJ35Ca9vD1WMXhJE9VlSelq0T7yKpQaAAXMDwRupoJQQJ99BGACYeBjFcffA4AAACAZAC3EOg",
 
 
     "Auth_DevBypass": "false",
@@ -35,8 +36,10 @@
     "Time_IanaTimeZoneId": "America/Lima",
     
     //Refecias para estados de Calidad en rowTable
-    "Id_Status_Quality" : "98066F2C-9B5D-46E4-A29E-C7D97F8F920C"
-    
+    "Id_Status_Quality" : "98066F2C-9B5D-46E4-A29E-C7D97F8F920C",
+
+    //Refecias para estados de logistica en rowTable
+    "Id_Status_Logistic" : "4E38D655-602E-452B-8A06-1A014247342B"
   },
   "Host": {
     "CORS": "*",
