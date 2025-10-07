@@ -19,8 +19,8 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Validators.Inp
       RuleFor(x => x.CantidadAsignadaVenta).GreaterThanOrEqualTo(0);
       RuleFor(x => x.CantidadAsignadaAlmacen).GreaterThanOrEqualTo(0);
 
-      RuleFor(x => x.FechaContabilizacion).NotEmpty().MaximumLength(10);
-      RuleFor(x => x.FechaFabricacion).NotEmpty().MaximumLength(10);
+      RuleFor(x => x.FechaContabilizacion).NotEmpty().MaximumLength(100);
+      RuleFor(x => x.FechaFabricacion).NotEmpty().MaximumLength(100);
 
       RuleFor(x => x.FechaAnalisisQuimico).MaximumLength(10);
       RuleFor(x => x.FechaVencimientoQuimico).MaximumLength(10);
