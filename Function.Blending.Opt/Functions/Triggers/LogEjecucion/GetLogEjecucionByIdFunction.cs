@@ -22,7 +22,7 @@ public sealed class GetLogEjecucionByIdFunction(
   public async Task<HttpResponseData> Run(
       [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = FunctionRoutes.Logistics.GetById)]
       HttpRequestData req,
-      FunctionContext fctx,  // ← necesitamos el context para el writer
+      FunctionContext fctx,
       Guid id)
   {
     var qs = req.GetQuery();
@@ -34,14 +34,14 @@ public sealed class GetLogEjecucionByIdFunction(
       separators: [',', ';', '|']
     );
 
-    var result = await mediator.Send(new GetLogEjecucionByIdQuery(id, expand));
+    var (convertDates, tzId) = DateConversionRequestOptions.From(req);
+
+    var result = await mediator.Send(new GetLogEjecucionByIdQuery(id, expand, convertDates, tzId));
 
     if (!result.IsSuccess || result.Value is null)
     {
       return await problem.CreateAsync(
-        fctx,
-        req,
-        HttpStatusCode.NotFound,
+        fctx, req, HttpStatusCode.NotFound,
         type: "urn:blending:error:logistica:not-found",
         title: "Not Found",
         detail: "Execution not found",
@@ -52,6 +52,16 @@ public sealed class GetLogEjecucionByIdFunction(
         });
     }
 
-    return await req.OkAsync(result.Value);
+    var payload = result.Value;
+    // data + meta del handler
+    return await req.OkAsync(payload.Data, new
+    {
+      conversion = new
+      {
+        converted = payload.Meta.Converted,
+        timeZoneId = payload.Meta.EffectiveTimeZoneId,
+        overrideApplied = payload.Meta.OverrideApplied
+      }
+    });
   }
 }
