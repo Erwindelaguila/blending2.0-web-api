@@ -29,11 +29,6 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
       {
         RuleFor(x => x.Start.Oferta!).SetValidator(new LogInpOfertaListValidator());
       });
-
-      When(x => x.Model is not null, () =>
-      {
-        RuleFor(x => x.Model!).SetValidator(new LogisticaModelPayloadValidator());
-      });
     }
   }
 }

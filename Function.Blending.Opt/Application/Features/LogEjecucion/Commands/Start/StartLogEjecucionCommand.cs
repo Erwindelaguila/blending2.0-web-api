@@ -9,5 +9,4 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
 public sealed partial record StartLogEjecucionCommand(Guid CreadoPorId) : IRequest<Result<StartLogEjecucionResponse>>
 {
   public LogisticaStartPayload Start { get; init; } = null!;
-  public LogisticaModelPayload Model { get; init; } = null!;
 }

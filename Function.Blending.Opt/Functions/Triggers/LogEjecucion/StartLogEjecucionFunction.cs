@@ -48,17 +48,7 @@ namespace Function.Blending.Opt.Functions.Triggers.LogEjecucion
       }
 
       // 3) Command con inputs (profundo)
-      var cmd = new StartLogEjecucionCommand(creadoPorId)
-      {
-        Start = dto.Start,
-        //Start = new(dto.Start.Mensaje, dto.Start.NombreArchivo, dto.Start.UrlArchivo)
-        //{
-        //  Info = dto.Start.Info,
-        //  Filtro = dto.Start.Filtro,
-        //  Oferta = dto.Start.Oferta
-        //},
-        Model = dto.Model
-      };
+      var cmd = new StartLogEjecucionCommand(creadoPorId) { Start = dto.Start };
 
       var result = await mediator.Send(cmd);
 

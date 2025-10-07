@@ -13,7 +13,7 @@ public static class AppParamDefaults
   {
     public const string QualityExecutionFormat = "CAL{0:D6}";
     public const string LogisticExecutionFormat = "LOG{0:D6}";
-    public const decimal LogisticaNumeroMovimientos = 3;
+    public const int LogisticaNumeroMovimientos = 3;
     public const string LogisticaValorDivision = "40";
   }
 }
