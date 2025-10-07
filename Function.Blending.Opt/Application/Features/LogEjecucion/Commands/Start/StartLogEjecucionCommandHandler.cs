@@ -33,7 +33,8 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
       // 2) DTO -> VO
       VO.LogInpInfo? infoVo = mapper.Map<VO.LogInpInfo?>(request.Start.Info);
       VO.LogInpFiltro? filtroVo = mapper.Map<VO.LogInpFiltro?>(request.Start.Filtro);
-      VO.LogInpOferta? ofertaVo = mapper.Map<VO.LogInpOferta?>(request.Start.Oferta);
+      VO.LogInpDemanda? demandaVo = mapper.Map<VO.LogInpDemanda?>(request.Start.Demanda);
+      IReadOnlyList<VO.LogInpOferta>? ofertaVo = mapper.Map<IReadOnlyList<VO.LogInpOferta>?>(request.Start.Oferta);
 
       if (filtroVo is not null) 
       {
@@ -45,9 +46,12 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
       var entity = await repo.StartAsync(
         estadoInicialId,
         request.Start.Mensaje,
+        request.Start.NombreArchivo,
+        request.Start.UrlArchivo,
         request.CreadoPorId,
         infoVo,
         filtroVo,
+        demandaVo,
         ofertaVo,
         ct
       );

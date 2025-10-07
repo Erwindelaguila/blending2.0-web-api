@@ -7,17 +7,26 @@ public sealed class LogisticaModelPayloadValidator : AbstractValidator<Logistica
 {
   public LogisticaModelPayloadValidator()
   {
-    RuleFor(x => x.Objetivo).NotNull();
-    RuleFor(x => x.Objetivo.Cantidad).GreaterThan(0);
-
-    RuleFor(x => x.Oferta).NotNull()
-        .Must(x => x.Count > 0).WithMessage("Se requiere al menos un lote de oferta.");
-
-    RuleForEach(x => x.Oferta).ChildRules(of =>
+    When(x => x.Demanda is not null, () =>
     {
-      of.RuleFor(o => o.Lote).NotEmpty();
-      of.RuleFor(o => o.CantidadAsignada).GreaterThanOrEqualTo(0);
-      of.RuleFor(o => o.Parametros).NotNull();
+      RuleFor(x => x.Demanda).NotNull();
+      RuleFor(x => x.Demanda!.Cantidad).GreaterThan(0);
+      RuleFor(x => x.Demanda!.Parametros).NotNull()
+        .Must(x => x.Count > 0).WithMessage("Se requiere al menos un elemento de parámetros de demanda.");
+    });
+
+    When(x => x.Demanda is not null, () =>
+    {
+      RuleFor(x => x.Oferta).NotNull()
+        .Must(x => x!.Count > 0).WithMessage("Se requiere al menos un lote de oferta.");
+
+      RuleForEach(x => x.Oferta).ChildRules(of =>
+      {
+        of.RuleFor(o => o.Lote).NotEmpty();
+        of.RuleFor(o => o.CantidadAsignada).GreaterThanOrEqualTo(0);
+        of.RuleFor(o => o.Parametros).NotNull()
+          .Must(x => x.Count > 0).WithMessage("Se requiere al menos un elemento de parámetros de oferta.");
+      });
     });
 
     RuleFor(x => x.Contenedores).NotNull();

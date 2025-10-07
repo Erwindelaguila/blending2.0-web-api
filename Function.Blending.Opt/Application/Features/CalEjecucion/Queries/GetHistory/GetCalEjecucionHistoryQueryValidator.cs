@@ -6,7 +6,7 @@ namespace Function.Blending.Opt.Application.Features.CalEjecucion.Queries.GetHis
 
 public sealed class GetCalEjecucionHistoryQueryValidator : AbstractValidator<GetCalEjecucionHistoryQuery>
 {
-  private static readonly string[] AllowedSortBy = new[] { "creadoEl", "codigo", "estadoId", "plantaId" };
+  private static readonly string[] AllowedSortBy = new[] { "creadoEl", "codigo", "estado", "plantaId" };
 
   public GetCalEjecucionHistoryQueryValidator()
   {

@@ -20,6 +20,8 @@ public sealed class CalEjecucion
 
   public string? Codigo { get; set; }
   public string? Mensaje { get; set; }
+  public string? NombreArchivo { get; set; }
+  public string? UrlArchivo { get; set; }
   public DateTime CreadoEl { get; set; } // UTC
 
   /// <summary>Nombre legible del estado (AuxRow.Nombre) correspondiente a EstadoId.</summary>

@@ -1,2 +1,2 @@
 ﻿namespace Function.Blending.Opt.Domain.ValueObjects;
-public sealed record LogInpFilCapacidad(int Cantidad, int Capacidad);
+public sealed record LogInpFilCapacidad(decimal Cantidad, decimal Capacidad);

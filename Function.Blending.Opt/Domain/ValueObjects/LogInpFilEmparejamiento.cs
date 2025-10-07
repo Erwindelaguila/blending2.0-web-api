@@ -5,7 +5,7 @@ namespace Function.Blending.Opt.Domain.ValueObjects
 {
   public sealed record LogInpFilEmparejamiento(
     string Grupo,
-    ParametroId ParametroId,
+    string CodigoParametro,
     decimal Valor
   );
 }

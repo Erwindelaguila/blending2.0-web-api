@@ -3,6 +3,6 @@
 public sealed record LogInpFilEmparejamientoDto
 {
   public string Grupo { get; init; } = default!;
-  public Guid ParametroId { get; init; }
+  public string CodigoParametro { get; init; } = default!;
   public decimal Valor { get; init; }
 }

@@ -4,7 +4,9 @@ namespace Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Requests.
 
 public sealed record CalidadStartPayload(
   Guid PlantaId,
-  string? Mensaje
+  string? Mensaje,
+  string? NombreArchivo,
+  string? UrlArchivo
 )
 {
   public CalInpFiltroDto? Filtro { get; init; }

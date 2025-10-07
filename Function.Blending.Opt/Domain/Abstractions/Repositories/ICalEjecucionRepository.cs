@@ -27,6 +27,8 @@ public interface ICalEjecucionRepository
     Guid plantaId,
     Guid estadoInicialId,
     string? mensaje,
+    string? nombreArchivo,
+    string? urlArchivo,
     Guid creadoPorId,
     CalInpFiltro? filtro = null,
     IReadOnlyList<CalInpParametro>? parametros = null,

@@ -20,9 +20,14 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
         RuleFor(x => x.Start.Filtro!).SetValidator(new LogInpFiltroDtoValidator());
       });
 
+      When(x => x.Start.Demanda is not null, () =>
+      {
+        RuleFor(x => x.Start.Demanda!).SetValidator(new LogInpDemandaDtoValidator());
+      });
+
       When(x => x.Start.Oferta is not null, () =>
       {
-        RuleFor(x => x.Start.Oferta!).SetValidator(new LogInpOfertaDtoValidator());
+        RuleFor(x => x.Start.Oferta!).SetValidator(new LogInpOfertaListValidator());
       });
 
       When(x => x.Model is not null, () =>

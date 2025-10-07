@@ -26,10 +26,13 @@ public sealed class LogEjecucionRepository(
   public async Task<DE.LogEjecucion?> StartAsync(
     Guid estadoInicialId,
     string? mensaje,
+    string? nombreArchivo,
+    string? urlArchivo,
     Guid creadoPorId,
     LogInpInfo? info,
     LogInpFiltro? filtro,
-    LogInpOferta? oferta,
+    LogInpDemanda? demanda,
+    IReadOnlyList<LogInpOferta>? oferta,
     CancellationToken ct = default)
   {
     var id = Guid.NewGuid();
@@ -40,6 +43,8 @@ public sealed class LogEjecucionRepository(
       EstadoId = estadoInicialId,
       Codigo = codeGen.MakeTemp(),
       Mensaje = mensaje,
+      NombreArchivo = nombreArchivo,
+      UrlArchivo = urlArchivo,
       CreadoEl = DateTime.UtcNow,
       CreadoPorId = creadoPorId,
       ModificadoEl = null,
@@ -66,7 +71,7 @@ public sealed class LogEjecucionRepository(
     await db.SaveChangesAsync(ct);
 
     // 3) Inputs profundos (Info/Filtro/Oferta + hijos) — mismo patrón que Calidad
-    await LogisticaInputInserter.InsertAsync(db, mapper, model.Id, info, filtro, oferta, ct);
+    await LogisticaInputInserter.InsertAsync(db, mapper, model.Id, info, filtro, demanda, oferta, creadoPorId, ct);
 
     // 4) Commit y map a Dominio
     await tx.CommitAsync(ct);

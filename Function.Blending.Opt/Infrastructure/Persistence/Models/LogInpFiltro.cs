@@ -9,7 +9,7 @@ public partial class LogInpFiltro
 
     public Guid EjecucionId { get; set; }
 
-    public int PesoContenedor { get; set; }
+    public decimal PesoContenedor { get; set; }
 
     public bool ActualizarCapacidad { get; set; }
 

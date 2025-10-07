@@ -31,7 +31,7 @@ public partial class LogInpInfo
 
     public string PaisDestino { get; set; } = null!;
 
-    public int CantidadRuma { get; set; }
+    public decimal CantidadRuma { get; set; }
 
     public string UnidadMedidaRuma { get; set; } = null!;
 

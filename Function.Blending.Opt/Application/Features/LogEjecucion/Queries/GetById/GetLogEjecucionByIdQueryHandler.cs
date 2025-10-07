@@ -43,14 +43,16 @@ public sealed class GetLogEjecucionByIdQueryHandler(
   static async Task LoadInputAsync(Domain.Entities.LogEjecucion entity, ILogEjecucionInputService inputService, CancellationToken ct)
   {
     var infoTask = inputService.GetInfoByExecutionIdAsync(entity.Id, ct);
-    var ofertaTask = inputService.GetOfertaByExecutionIdAsync(entity.Id, ct);
     var filtroTask = inputService.GetFiltroByExecutionIdAsync(entity.Id, ct);
+    var demandaTask = inputService.GetDemandaByExecutionIdAsync(entity.Id, ct);
+    var ofertaTask = inputService.GetOfertaByExecutionIdAsync(entity.Id, ct);
 
     await Task.WhenAll(infoTask, ofertaTask, filtroTask);
 
     entity.Info = await infoTask;
-    entity.Oferta = await ofertaTask;
     entity.Filtro = await filtroTask;
+    entity.Demanda = await demandaTask;
+    entity.Oferta = await ofertaTask;
   }
 
   static async Task LoadOutputAsync(Domain.Entities.LogEjecucion entity, ILogEjecucionOutputService outputService, CancellationToken ct)

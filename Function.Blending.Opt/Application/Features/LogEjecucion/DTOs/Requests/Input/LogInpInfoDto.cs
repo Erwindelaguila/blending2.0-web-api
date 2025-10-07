@@ -14,7 +14,7 @@ public sealed record LogInpInfoDto(
   string Asistente,
   string Supervisora,
   string PaisDestino,
-  int CantidadRuma,
+  decimal CantidadRuma,
   string UnidadMedidaRuma,
   int NumeroMovimientos
 );
