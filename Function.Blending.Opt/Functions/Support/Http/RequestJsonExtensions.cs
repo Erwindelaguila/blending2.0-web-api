@@ -14,7 +14,7 @@ public static class RequestJsonExtensions
     FunctionContext ctx,
     CancellationToken cancellationToken = default)
   {
-    if (ctx.Items.TryGetValue(HmacKeys.RawBodyItemsKey, out var rawObj) &&
+    if (ctx.Items.TryGetValue(HttpRequestDataKeys.RawBodyItemsKey, out var rawObj) &&
         rawObj is string raw &&
         !string.IsNullOrWhiteSpace(raw))
     {
@@ -38,7 +38,7 @@ public static class RequestJsonExtensions
     string? raw = null;
     try
     {
-      if (ctx.Items.TryGetValue(HmacKeys.RawBodyItemsKey, out var rawObj) && rawObj is string s)
+      if (ctx.Items.TryGetValue(HttpRequestDataKeys.RawBodyItemsKey, out var rawObj) && rawObj is string s)
         raw = s;
       else
         raw = await req.ReadAsStringAsync();

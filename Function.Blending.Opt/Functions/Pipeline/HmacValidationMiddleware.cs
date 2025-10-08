@@ -145,7 +145,7 @@ public sealed class HmacValidationMiddleware(
     }
 
     // === 4) OK → propagar datos útiles a la Function ===
-    context.Items[HmacKeys.RawBodyItemsKey] = rawBody;
+    context.Items[HttpRequestDataKeys.RawBodyItemsKey] = rawBody;
     context.Items[HmacKeys.HmacValidItemsKey] = true;
     context.Items[HmacKeys.HmacKeyIdItemsKey] = keyId;
 

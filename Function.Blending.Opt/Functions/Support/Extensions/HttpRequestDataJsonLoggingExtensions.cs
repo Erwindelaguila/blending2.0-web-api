@@ -1,6 +1,7 @@
 ﻿using Function.Blending.Opt.Domain.Abstractions.Services;
 using Function.Blending.Opt.Domain.Logging;
 using Function.Blending.Opt.Functions.Support.Execution;
+using Function.Blending.Opt.Functions.Support.Http;
 using Function.Blending.Opt.Functions.Support.Logging;   // SysLogComposer
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -25,12 +26,20 @@ public static class HttpRequestDataJsonLoggingExtensions
       [CallerFilePath] string? file = null)
   {
     var sourceType = ResolveSourceType(file) ?? typeof(HttpRequestDataJsonLoggingExtensions);
-    return req.TryReadJsonAsync<T>(async (ex, raw) =>
+
+    return req.TryReadFromJsonOrRawAsync<T>(fctx, async (ex, raw) =>
     {
       var composer = new SysLogComposer(requestContext, fctxAccessor, sourceType, caller);
       var record = composer.FromException(ex, level, raw);
       await syslog.WriteAsync(record, fctx.CancellationToken); // usa el token del FunctionContext
-    });
+    }, fctx.CancellationToken);
+
+    //return req.TryReadJsonAsync<T>(async (ex, raw) =>
+    //{
+    //  var composer = new SysLogComposer(requestContext, fctxAccessor, sourceType, caller);
+    //  var record = composer.FromException(ex, level, raw);
+    //  await syslog.WriteAsync(record, fctx.CancellationToken); // usa el token del FunctionContext
+    //});
   }
 
   private static Type? ResolveSourceType(string? callerFilePath)
