@@ -34,9 +34,11 @@ public sealed class GetCalEjecucionByIdFunction(
       separators: [',', ';', '|']
     );
 
-    var result = await mediator.Send(new GetCalEjecucionByIdQuery(id, expand));
+    var (convertDates, tzId) = DateConversionRequestOptions.From(req);
 
-    if (!result.IsSuccess || result.Value is null)
+    var result = await mediator.Send(new GetCalEjecucionByIdQuery(id, expand, convertDates, tzId));
+
+    if (!result.IsSuccess || result.Value is null || result.Value.Data is null)
     {
       return await problem.CreateAsync(
         fctx,
@@ -52,6 +54,8 @@ public sealed class GetCalEjecucionByIdFunction(
         });
     }
 
-    return await req.OkAsync(result.Value);
+    var payload = result.Value;
+    // data + meta del handler
+    return await req.OkAsync(payload.Data, new { conversion = payload.Meta });
   }
 }

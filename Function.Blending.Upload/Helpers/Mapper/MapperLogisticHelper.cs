@@ -19,10 +19,14 @@ public static class MapperLogisticHelper
             Pos = ParsedRowValidator.ObtenerEntero(row.Demanda.Fijos, nameof(config.Demanda.Fijos.Pos)) ?? 0,
             Material = ParsedRowValidator.ObtenerTexto(row.Demanda.Fijos, nameof(config.Demanda.Fijos.Material)) ?? string.Empty,
             Descripcion = ParsedRowValidator.ObtenerTexto(row.Demanda.Fijos, nameof(config.Demanda.Fijos.Descripcion)) ?? string.Empty,
-            CantidadAsignadaToneladas = ParsedRowValidator.ObtenerDouble(row.Demanda.Fijos, nameof(config.Demanda.Fijos.CantidadAsignadaToneladas)) ?? 0,
-            UMVta = ParsedRowValidator.ObtenerTexto(row.Demanda.Fijos, nameof(config.Demanda.Fijos.UMVta)) ?? string.Empty,
-            CantidadAsignadaSacos = ParsedRowValidator.ObtenerDouble(row.Demanda.Fijos, nameof(config.Demanda.Fijos.CantidadAsignadaSacos)) ?? 0,
-            UMAlmac = ParsedRowValidator.ObtenerTexto(row.Demanda.Fijos, nameof(config.Demanda.Fijos.UMAlmac)) ?? string.Empty,
+            
+            
+            CantidadAsignadaVenta = ParsedRowValidator.ObtenerDouble(row.Demanda.Fijos, nameof(config.Demanda.Fijos.CantidadAsignadaVenta)) ?? 0,
+            UnidadMedidaVenta = ParsedRowValidator.ObtenerTexto(row.Demanda.Fijos, nameof(config.Demanda.Fijos.UnidadMedidaVenta)) ?? string.Empty,
+            CantidadAsignadaAlmacen = ParsedRowValidator.ObtenerDouble(row.Demanda.Fijos, nameof(config.Demanda.Fijos.CantidadAsignadaAlmacen)) ?? 0,
+            UnidadMedidaAlmacen = ParsedRowValidator.ObtenerTexto(row.Demanda.Fijos, nameof(config.Demanda.Fijos.UnidadMedidaAlmacen)) ?? string.Empty,
+            
+            
             Tolerancia = ParsedRowValidator.ObtenerDouble(row.Demanda.Fijos, nameof(config.Demanda.Fijos.Tolerancia)) ?? 0,
         };
         result.Demanda.ParamentrosCalidad = row.Demanda.ParametrosCalidad ?? new();

@@ -2,6 +2,7 @@
   "IsEncrypted": false,
   "ConnectionStrings": {
     "BlendingDb": "Server=tcp:srv-db-eastus-blending2.database.windows.net,1433;Initial Catalog=db_blending2_prd;Persist Security Info=False;User ID=user_blending2;Password=CXaTHvrMFEZECOF8;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+    //"BlendingDb": "Server=localhost;Initial Catalog=db_blending2_v04;Persist Security Info=False;User ID=blending_user2_04;Password=db_blending2_v04_123!;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=False;Connection Timeout=30;"
   },
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
@@ -9,6 +10,7 @@
 
     // === DDBB ===
     "SqlConnectionString_BlendingDb": "Server=tcp:srv-db-eastus-blending2.database.windows.net,1433;Initial Catalog=db_blending2_prd;Persist Security Info=False;User ID=user_blending2;Password=CXaTHvrMFEZECOF8;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+    //"SqlConnectionString_BlendingDb": "Server=localhost;Initial Catalog=db_blending2_v04;Persist Security Info=False;User ID=blending_user2_04;Password=db_blending2_v04_123!;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=False;Connection Timeout=30;",
 
     // === Auth (CSV) ===
     "Auth_DevBypass": "false",
@@ -121,6 +123,11 @@
     "Security_Hmac_Resolver": "KeyVault",
     "Security_Hmac_VaultUrl": "https://kvblending2.vault.azure.net/",
     "Security_Hmac_CacheSeconds": "600",
+    "Security_Hmac_Fallback_Enable": "true",
+    //"Security_Hmac_Fallback_AllowList": "hmac-quality,hmac-logistics", //habilitar para multiples secretos separados por coma, si es que no se va a usar secretos por separado, es decir si no se va a usar "Security_Hmac_SecretsPrefix"
+    "Security_Hmac_Fallback_SecretsPrefix": "Security_Hmac_Fallback_Secrets__",
+    "Security_Hmac_Fallback_Secrets__quality-hmac": "CEJYMVnM88BfMGVlqlrc1Rz8IxH8KUDG4a57hx7vNYU=",
+    "Security_Hmac_Fallback_Secrets__logistics-hmac": "CEJYMVnM88BfMGVlqlrc1Rz8IxH8KUDG4a57hx7vNYU=",
     "Security_Hmac_TenantId": "b7e26f48-2292-4a14-a355-1aeb8489ae3d", // opcional, ayuda en multi-tenant
     "Security_Hmac_Credential_Mode": "Interactive", // usa CLI si existe; si no, abre login interactivo -> PROD: ManagedIdentity -> necesario(Security_Hmac_Credential_ClientId)
     "Security_Hmac_Credential_ClientId": "a3a4b98f-7daf-4fb6-ab90-2d7c1999356b", // <clientId-de-la-UAMI>
@@ -138,7 +145,7 @@
     "External_QualityModel_ApiKey": null,
 
     // ===== External - Logistica Model =====
-    //"External_QualityModel_BaseUrl": "https://app-blending2-modelo-logistica-prod.azurewebsites.net",
+    //"External_LogisticsModel_BaseUrl": "https://app-blending2-modelo-logistica-prod.azurewebsites.net",
     "External_LogisticsModel_BaseUrl": "http://localhost:5000",
     "External_LogisticsModel_StartPath": "/blending_contenedor",
     "External_LogisticsModel_TimeoutSeconds": "600",
@@ -148,6 +155,9 @@
     "Logging_Db_Enabled": "true",
     "Logging_Db_MinLevel": "error", // reservado (no usado ahora)
     "Logging_Db_SaveInfo": "false", // <= por defecto apagado
-    "Logging_Db_Problem4xxAs": "warning" // nivel para ProblemDetails 4xx
+    "Logging_Db_Problem4xxAs": "warning", // nivel para ProblemDetails 4xx
+
+    // ===== Deploy Info (for PROD) =====
+    "HEALTHCHECK_INCLUDE_DEPLOY_INFO": "true"
   }
 }

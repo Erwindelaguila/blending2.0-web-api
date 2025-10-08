@@ -40,10 +40,10 @@ public class DemandaFijas
     public int Pos { get; set; }
     public string Material { get; set; }
     public string Descripcion { get; set; }
-    public double CantidadAsignadaToneladas { get; set; }
-    public string UMVta { get; set; }
-    public double CantidadAsignadaSacos { get; set; }
-    public string UMAlmac { get; set; }
+    public double CantidadAsignadaVenta { get; set; }
+    public string UnidadMedidaVenta { get; set; }
+    public double CantidadAsignadaAlmacen { get; set; }
+    public string UnidadMedidaAlmacen { get; set; }
     public double Tolerancia { get; set; }
 }
 

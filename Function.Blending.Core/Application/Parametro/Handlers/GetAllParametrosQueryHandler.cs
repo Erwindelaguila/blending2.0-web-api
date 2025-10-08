@@ -8,7 +8,7 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.Parametro.Handlers;
 
-public class GetAllParametrosQueryHandler : IRequestHandler<GetAllParametrosQuery, PagedResponse<ParametroDTO>>
+public class GetAllParametrosQueryHandler : IRequestHandler<GetAllParametrosQuery, ParametroResponseDTO>
 {
     private readonly IParametroRepository _parametroRepository;
 
@@ -17,7 +17,7 @@ public class GetAllParametrosQueryHandler : IRequestHandler<GetAllParametrosQuer
         _parametroRepository = parametroRepository;
     }
 
-    public async Task<PagedResponse<ParametroDTO>> Handle(GetAllParametrosQuery request, CancellationToken cancellationToken)
+    public async Task<ParametroResponseDTO> Handle(GetAllParametrosQuery request, CancellationToken cancellationToken)
     {
         try
         {
@@ -25,54 +25,80 @@ public class GetAllParametrosQueryHandler : IRequestHandler<GetAllParametrosQuer
 
             var parametrosQuery = _parametroRepository.GetQueryable();
 
-            if (request.Filters != null)
+            if (request.UtilLogitic)
             {
-                parametrosQuery = parametrosQuery.ApplyCodigoFilter(
-                    request.Filters.Codigo,
-                    x => x.Codigo);
-
-                parametrosQuery = parametrosQuery.ApplyEstadoFilter(
-                    request.Filters.Estado,
-                    x => x.Activo);
-
-                if (request.Filters.FechaDesde.HasValue)
+                if (request.Filters != null)
                 {
-                    var start = request.Filters.FechaDesde.Value.Date;
-                    var end = start.AddDays(1);
-                    parametrosQuery = parametrosQuery.Where(x =>
-                        (x.CreadoEl >= start && x.CreadoEl < end) ||
-                        (x.ModificadoEl.HasValue && x.ModificadoEl.Value >= start && x.ModificadoEl.Value < end)
-                    );
+                    parametrosQuery = parametrosQuery.ApplyEstadoFilter(
+                        request.Filters.Estado,
+                        x => x.Activo);
                 }
+                var parametrosShort = parametrosQuery.Select(parametro => new ParametroShortDTO
+                {
+                    Id = parametro.Id,
+                    Codigo = parametro.Codigo,
+                }).ToList();
+
+                return new ParametroResponseDTO()
+                {
+                    ParametroShortList = parametrosShort,
+                };
+                
             }
-
-            parametrosQuery = request.Filters?.Estado switch
+            else
             {
-                "1" => parametrosQuery.OrderByDescending(x => x.Activo).ThenBy(x => x.CreadoEl),
-                "0" => parametrosQuery.OrderBy(x => x.Activo).ThenBy(x => x.CreadoEl),
-                _ => parametrosQuery.OrderBy(x => x.CreadoEl)
-            };
+                if (request.Filters != null)
+                {
+                    parametrosQuery = parametrosQuery.ApplyCodigoFilter(
+                        request.Filters.Codigo,
+                        x => x.Codigo);
 
-            var parametrosProjected = parametrosQuery.Select(parametro => new ParametroDTO
-            {
-                Id = parametro.Id,
-                Codigo = parametro.Codigo,
-                Nombre = parametro.Nombre,
-                Descripcion = parametro.Descripcion,
-                Activo = parametro.Activo,
-                CreadoPorId = parametro.CreadoPorId,
-                CreadoEl = parametro.CreadoEl,
-                ModificadoPorId = parametro.ModificadoPorId,
-                ModificadoEl = parametro.ModificadoEl
-            });
+                    parametrosQuery = parametrosQuery.ApplyEstadoFilter(
+                        request.Filters.Estado,
+                        x => x.Activo);
 
-            var pagedResult = await parametrosProjected.ToPagedResultAsync(request.Page, request.Size, cancellationToken);
-            return pagedResult.ToPagedResponse();
+                    if (request.Filters.FechaDesde.HasValue)
+                    {
+                        var start = request.Filters.FechaDesde.Value.Date;
+                        var end = start.AddDays(1);
+                        parametrosQuery = parametrosQuery.Where(x =>
+                            (x.CreadoEl >= start && x.CreadoEl < end) ||
+                            (x.ModificadoEl.HasValue && x.ModificadoEl.Value >= start && x.ModificadoEl.Value < end)
+                        );
+                    }
+                }
+
+                parametrosQuery = request.Filters?.Estado switch
+                {
+                    "1" => parametrosQuery.OrderByDescending(x => x.Activo).ThenBy(x => x.CreadoEl),
+                    "0" => parametrosQuery.OrderBy(x => x.Activo).ThenBy(x => x.CreadoEl),
+                    _ => parametrosQuery.OrderBy(x => x.CreadoEl)
+                };
+
+                var parametrosProjected = parametrosQuery.Select(parametro => new ParametroDTO
+                {
+                    Id = parametro.Id,
+                    Codigo = parametro.Codigo,
+                    Nombre = parametro.Nombre,
+                    Descripcion = parametro.Descripcion,
+                    Activo = parametro.Activo,
+                    CreadoPorId = parametro.CreadoPorId,
+                    CreadoEl = parametro.CreadoEl,
+                    ModificadoPorId = parametro.ModificadoPorId,
+                    ModificadoEl = parametro.ModificadoEl
+                });
+
+                var pagedResult = await parametrosProjected.ToPagedResultAsync(request.Page, request.Size, cancellationToken);
+                return new ParametroResponseDTO()
+                {
+                    ParametroPaginate = pagedResult.ToPagedResponse()
+                };
+            }
+            
         }
         catch (ArgumentException)
         {
             throw;
         }
     }
-
 }

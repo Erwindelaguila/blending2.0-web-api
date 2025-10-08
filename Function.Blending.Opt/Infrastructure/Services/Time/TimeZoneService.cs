@@ -28,6 +28,8 @@ public sealed class TimeZoneService : ITimeZoneService
 
     // Lazy: resolvemos cuando se use por primera vez (y ahí lanzamos si corresponde)
     _tzLazy = new Lazy<TimeZoneInfo>(() => ResolveOrThrow(_configuredId, _enforce, _logger));
+
+    _logger.LogInformation("TZ opts: TimeZoneId={Time}, Windows={Win}, IANA={Iana}, Enforce={Enf}", opt.Value.TimeZoneId, opt.Value.WindowsTimeZoneId, opt.Value.IanaTimeZoneId, _enforce);
   }
 
   public string CurrentTimeZoneId => _tzLazy.Value.Id;

@@ -11,6 +11,7 @@ public sealed class HmacOptions
 
   // Controlamos cómo autenticamos al SecretClient
   public HmacCredentialOptions Credential { get; set; } = new();
+  public HmacFallbackOptions Fallback { get; set; } = new();
 }
 
 public sealed class HmacCredentialOptions
@@ -25,4 +26,14 @@ public sealed class HmacCredentialOptions
 
   /// <summary>Fuerza tenant cuando aplica.</summary>
   public string? TenantId { get; set; }
+}
+
+public sealed class HmacFallbackOptions
+{
+  /// <summary>
+  public bool Enable { get; set; }
+
+  public string? AllowList { get; set; }
+
+  public string? SecretsPrefix { get; set; }
 }

@@ -8,6 +8,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 
+namespace Function.Blending.Upload.Functions.Triggers.Sap;
 
 public class GetSapStockFunction
 {
@@ -33,7 +34,7 @@ public class GetSapStockFunction
             var blobResult = await _sapStockProcess.ExecuteAsync(req);
             return await HttpResponseHelper.WriteBaseResponseAsync(
                 req,
-                BaseResponse<BlobResultDto>.Success(
+                BaseResponse<BlobResultDto<List<ExcelExtractQualityDto>>>.Success(
                     blobResult,
                     "Datos obtenidos correctamente")
             );

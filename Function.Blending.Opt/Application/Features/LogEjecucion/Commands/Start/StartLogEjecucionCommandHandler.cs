@@ -33,21 +33,30 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
       // 2) DTO -> VO
       VO.LogInpInfo? infoVo = mapper.Map<VO.LogInpInfo?>(request.Start.Info);
       VO.LogInpFiltro? filtroVo = mapper.Map<VO.LogInpFiltro?>(request.Start.Filtro);
-      VO.LogInpOferta? ofertaVo = mapper.Map<VO.LogInpOferta?>(request.Start.Oferta);
+      VO.LogInpDemanda? demandaVo = mapper.Map<VO.LogInpDemanda?>(request.Start.Demanda);
+      IReadOnlyList<VO.LogInpOferta>? ofertaVo = mapper.Map<IReadOnlyList<VO.LogInpOferta>?>(request.Start.Oferta);
 
-      if (filtroVo is not null) 
+      if (infoVo is not null)
+      {
+        infoVo.NumeroMovimientos = await GetNumeroMovimientosAsync(ct);
+      }
+
+      if (filtroVo is not null)
       {
         var division = await appParams.GetValueAsync(cfg[ConfigurationKeys.AppParam.Keys.Logistics.ValorDivision] ?? AppParamDefaults.Keys.LogisticaValorDivision, ct);
-        filtroVo.Division = division ?? AppParamDefaults.Values.LogisticaValorDivision; 
+        filtroVo.Division = division ?? AppParamDefaults.Values.LogisticaValorDivision;
       }
 
       // 3) Repo.Start      
       var entity = await repo.StartAsync(
         estadoInicialId,
         request.Start.Mensaje,
+        request.Start.NombreArchivo,
+        request.Start.UrlArchivo,
         request.CreadoPorId,
         infoVo,
         filtroVo,
+        demandaVo,
         ofertaVo,
         ct
       );
@@ -64,10 +73,11 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
       _ = bool.TryParse(cfg[ConfigurationKeys.ExternalServices.EnableLogisticsModel], out var enableLogisticsModel);
       if (enableLogisticsModel)
       {
-        var model = request.Model;
-        model.EjecucionId = entity.Id;
-        model.NroMovimientos = await GetNumeroMovimientosAsync(ct);
-        _ = modelStarter.StartAsync(model, CancellationToken.None); // NO await
+        // @TODO: Aun por definir el payload de la API Externa.
+        //var model = request.Model;
+        //model.EjecucionId = entity.Id;
+        //model.NroMovimientos = await GetNumeroMovimientosAsync(ct);
+        //_ = modelStarter.StartAsync(model, CancellationToken.None); // NO await
       }
 
       // 5) Domain -> DTO
@@ -75,10 +85,10 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
       return Result<StartLogEjecucionResponse>.Ok(dto);
     }
 
-    private async Task<decimal> GetNumeroMovimientosAsync(CancellationToken ct)
+    private async Task<int> GetNumeroMovimientosAsync(CancellationToken ct)
     {
       var numMovFromDb = await appParams.GetValueAsync(cfg[ConfigurationKeys.AppParam.Keys.Logistics.NumeroMovimientos] ?? AppParamDefaults.Keys.LogisticaNumeroMovimientos, ct);
-      _ = decimal.TryParse(numMovFromDb, out var numMov);
+      _ = int.TryParse(numMovFromDb, out var numMov);
       numMov = numMov > 0 ? numMov : AppParamDefaults.Values.LogisticaNumeroMovimientos;
       return numMov;
     }

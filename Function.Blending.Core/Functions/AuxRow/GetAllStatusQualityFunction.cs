@@ -33,7 +33,7 @@ public class GetAllStatusQualityFunction
             var result = await _mediator.Send(queryRequest);
             
             return await HttpResponseHelper.WriteBaseResponseAsync(req,
-                BaseResponse<List<StatusQualityDTO>>.Success(result ?? new List<StatusQualityDTO>(),
+                BaseResponse<List<StatusRowDTO>>.Success(result ?? new List<StatusRowDTO>(),
                     "Estados de calidad obtenidos correctamente"));
         }
         catch (Exception ex)

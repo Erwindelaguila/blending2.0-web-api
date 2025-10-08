@@ -11,9 +11,9 @@ public static partial class DependencyInjection
 {
   private static void ConfigureTime(IServiceCollection services, IConfiguration cfg)
   {
+    services.AddSingleton<ITimeZoneResolver, TimeZoneResolver>();
     services.AddSingleton<ITimeZoneService, TimeZoneService>();
 
-    // ===== Options (binding plano) =====
     services.AddOptions<TimeZoneOptions>()
       .Configure<IConfiguration>((opts, config) =>
       {
@@ -23,9 +23,11 @@ public static partial class DependencyInjection
         var rawIan = config[ConfigurationKeys.Time.IanaTimeZoneId];
 
         opts.EnforceValidTimeZone = bool.TryParse(rawEnf, out var g) && g;
-        opts.TimeZoneId = string.IsNullOrWhiteSpace(rawTim) ? rawTim : default;
-        opts.WindowsTimeZoneId = string.IsNullOrWhiteSpace(rawWin) ? rawWin : default;
-        opts.IanaTimeZoneId = string.IsNullOrWhiteSpace(rawIan) ? rawIan : default;
+
+        // Si hay valor -> asígnalo; si no, deja null
+        opts.TimeZoneId = string.IsNullOrWhiteSpace(rawTim) ? null : rawTim;
+        opts.WindowsTimeZoneId = string.IsNullOrWhiteSpace(rawWin) ? null : rawWin;
+        opts.IanaTimeZoneId = string.IsNullOrWhiteSpace(rawIan) ? null : rawIan;
       });
   }
 }

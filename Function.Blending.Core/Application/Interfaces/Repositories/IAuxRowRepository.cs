@@ -4,5 +4,5 @@ namespace Function.Blending.Core.Application.Interfaces.Repositories;
 
 public interface IAuxRowRepository
 {
-    Task<List<StatusQualityDTO>> GetStatusQualityAsync(Guid id);
+    Task<List<StatusRowDTO>> GetStatusQualityAsync(Guid id);
 }

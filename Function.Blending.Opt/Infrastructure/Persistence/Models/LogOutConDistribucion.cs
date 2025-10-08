@@ -11,7 +11,7 @@ public partial class LogOutConDistribucion
 
     public string Ruma { get; set; } = null!;
 
-    public int Valor { get; set; }
+    public decimal Valor { get; set; }
 
     public virtual LogOutContenedor Contenedor { get; set; } = null!;
 }

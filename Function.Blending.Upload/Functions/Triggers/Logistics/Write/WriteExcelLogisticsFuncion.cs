@@ -35,7 +35,7 @@ public class WriteExcelLogisticsFuncion
             var blobResult = await _writeExcelLogisticsProcess.ExecuteAsync(req);
             return await HttpResponseHelper.WriteBaseResponseAsync(
                 req,
-                BaseResponse<BlobResultDto>.Success(
+                BaseResponse<BlobResultDto<object>>.Success(
                     blobResult,
                     "Datos obtenidos correctamente")
             );

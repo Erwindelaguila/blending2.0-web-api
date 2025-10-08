@@ -4,6 +4,6 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Requests.
 
 public sealed record LogInpFilEmparejamientoDto(
   string Grupo,
-  Guid ParametroId,
+  string CodigoParametro,
   decimal Valor
 );

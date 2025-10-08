@@ -11,7 +11,7 @@ public sealed class CalInpFiltroDto
   public bool QuitarRumasPH { get; set; }
   public string? AgregarRumasSerie { get; set; }
   public bool ConsiderarCadmio { get; set; }
-  public DateTimeOffset? FechaCorte { get; set; }
+  public DateTime? FechaCorte { get; set; }
   public int? NumeroRuma { get; set; }
   public int? DivisionRuma { get; set; }
   public decimal ValorCadmioAlto { get; set; }

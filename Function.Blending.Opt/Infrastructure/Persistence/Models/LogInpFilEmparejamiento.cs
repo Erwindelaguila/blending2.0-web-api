@@ -11,11 +11,9 @@ public partial class LogInpFilEmparejamiento
 
     public string Grupo { get; set; } = null!;
 
-    public Guid ParametroId { get; set; }
+    public string CodigoParametro { get; set; } = null!;
 
     public decimal Valor { get; set; }
 
     public virtual LogInpFiltro Filtro { get; set; } = null!;
-
-    public virtual Parametro Parametro { get; set; } = null!;
 }

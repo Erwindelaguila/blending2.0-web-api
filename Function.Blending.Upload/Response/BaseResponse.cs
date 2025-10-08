@@ -4,7 +4,7 @@ public class BaseResponse<T>
 {
     public bool Succeeded { get; set; }
     public string? Message { get; set; }
-    public object Errors { get; set; }
+    public object? Errors { get; set; }
     public T? Data { get; set; }
     public int StatusCode { get; set; }
 
@@ -47,7 +47,7 @@ public class BaseResponse<T>
     }
 
     // Error múltiple
-    public static BaseResponse<T> Fail(object errors, string? message = null, int statusCode = 400)
+    public static BaseResponse<T> Fail(object? errors, string? message = null, int statusCode = 400)
     {
         return new BaseResponse<T>
         {

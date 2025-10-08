@@ -1,8 +1,13 @@
-using System;
-using MediatR;
 using Function.Blending.Opt.Application.Features.CalEjecucion.DTOs.Responses;
+using Function.Blending.Opt.Application.Support.Meta;
 using Function.Blending.Opt.Shared.Results;
+using MediatR;
 
 namespace Function.Blending.Opt.Application.Features.CalEjecucion.Queries.GetById;
 
-public sealed record GetCalEjecucionByIdQuery(Guid Id, HashSet<string> expand) : IRequest<Result<CalEjecucionResponse>>;
+public sealed record GetCalEjecucionByIdQuery(
+  Guid Id, 
+  HashSet<string> Expand,
+  bool ConvertDates,
+  string? TzId
+) : IRequest<Result<WithMeta<CalEjecucionResponse, DateConversionMeta>>>;

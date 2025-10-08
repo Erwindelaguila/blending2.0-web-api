@@ -13,7 +13,7 @@ public sealed record LogInpInfoDto
   public string Asistente { get; init; } = default!;
   public string Supervisora { get; init; } = default!;
   public string PaisDestino { get; init; } = default!;
-  public int CantidadRuma { get; init; }
+  public decimal CantidadRuma { get; init; }
   public string UnidadMedidaRuma { get; init; } = default!;
   public int NumeroMovimientos { get; init; }
 }

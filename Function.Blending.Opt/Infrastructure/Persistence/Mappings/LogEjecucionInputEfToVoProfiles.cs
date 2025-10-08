@@ -12,11 +12,19 @@ public sealed class LogEjecucionInputEfToVoProfiles : Profile
     // EF → Dominio (Info)
     CreateMap<EF.LogInpInfo, VO.LogInpInfo>();
 
+    // EF → Dominio (Demanda)
+    CreateMap<EF.LogInpDemanda, VO.LogInpDemanda>()
+      .ForMember(d => d.Parametros, o => o.MapFrom(s => s.LogInpDemParametro));
+
+    CreateMap<EF.LogInpDemParametro, VO.LogInpDemParametro>();
+
     // EF → Dominio (Oferta)
     CreateMap<EF.LogInpOferta, VO.LogInpOferta>()
-      .ForMember(d => d.Parametros, o => o.MapFrom(s => s.LogInpOfeParametro));
+      .ForMember(d => d.Parametros, o => o.MapFrom(s => s.LogInpOfeParametro))
+      .ForMember(d => d.Otros, o => o.MapFrom(s => s.LogInpOfeOtros));
 
     CreateMap<EF.LogInpOfeParametro, VO.LogInpOfeParametro>();
+    CreateMap<EF.LogInpOfeOtros, VO.LogInpOfeOtros>();
 
 
     // EF → Dominio (Filtro)
@@ -27,7 +35,6 @@ public sealed class LogEjecucionInputEfToVoProfiles : Profile
 
     CreateMap<EF.LogInpFilCapacidad, VO.LogInpFilCapacidad>();
     CreateMap<EF.LogInpFilDivision, VO.LogInpFilDivision>();
-    CreateMap<EF.LogInpFilEmparejamiento, VO.LogInpFilEmparejamiento>()
-      .ForMember(d => d.ParametroId, o => o.MapFrom(s => new ParametroId(s.ParametroId)));
+    CreateMap<EF.LogInpFilEmparejamiento, VO.LogInpFilEmparejamiento>();
   }
 }

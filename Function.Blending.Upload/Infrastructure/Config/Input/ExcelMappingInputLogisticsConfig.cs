@@ -37,10 +37,10 @@ public class DemandaColumnasFijasConfig
     public string Pos { get; set; }
     public string Material { get; set; }
     public string Descripcion { get; set; }
-    public string CantidadAsignadaToneladas { get; set; }
-    public string UMVta { get; set; }
-    public string CantidadAsignadaSacos { get; set; }
-    public string UMAlmac { get; set; }
+    public string CantidadAsignadaVenta { get; set; }
+    public string UnidadMedidaVenta { get; set; }
+    public string CantidadAsignadaAlmacen { get; set; }
+    public string UnidadMedidaAlmacen { get; set; }
     public string Tolerancia { get; set; }
 }
 

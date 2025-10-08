@@ -33,7 +33,7 @@ public class WriteExcelLogisticsProcess
         _configuration = configuration;
     }
 
-    public async Task<BlobResultDto> ExecuteAsync(HttpRequestData req)
+    public async Task<BlobResultDto<object>> ExecuteAsync(HttpRequestData req)
     {
         _logger.LogInformation($"Iniciando proceso de reporte de logistica .....");
         var body = await req.ReadAsStringAsync();
@@ -54,7 +54,9 @@ public class WriteExcelLogisticsProcess
 
         ExcelWriteContainersLogisticService.Execute(config, dataContHomogenizacion, workbook);
         ExcelWriteSapLogisticService.Execute(config, dataContHomogenizacion, workbook);
-        var blobResult = await _blobStorageService.UploadExcelAndGetLinkAsync(workbook, "logistic-report");
+        
+        
+        var blobResult = await _blobStorageService.UploadExcelAndGetLinkAsync<object>(workbook, "logistic-report");
         blobResult.DataExcel = null;
         _logger.LogInformation(
             $"Reporte de Excel de logistica guardado con exito con el nombre: {blobResult.FileName}");

@@ -16,11 +16,11 @@ public class AuxRowRepository : IAuxRowRepository
         _mapper = mapper;
     }
     
-    public async Task<List<StatusQualityDTO>> GetStatusQualityAsync(Guid id)
+    public async Task<List<StatusRowDTO>> GetStatusQualityAsync(Guid id)
     {
         return await _context.AuxRow
             .Where(c => c.TableId == id)
-            .Select(c => new StatusQualityDTO
+            .Select(c => new StatusRowDTO
             {
                 Id = c.Id,
                 Nombre = c.Nombre

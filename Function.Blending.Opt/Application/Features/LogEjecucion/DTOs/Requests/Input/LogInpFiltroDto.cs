@@ -3,7 +3,7 @@
 namespace Function.Blending.Opt.Application.Features.LogEjecucion.DTOs.Requests.Input
 {
   public sealed record LogInpFiltroDto(
-    int PesoContenedor,
+    decimal PesoContenedor,
     bool ActualizarCapacidad,
     string? Parametros,
     bool? HabilitarDivision,

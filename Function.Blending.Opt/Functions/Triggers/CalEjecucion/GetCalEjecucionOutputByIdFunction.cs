@@ -25,9 +25,11 @@ public sealed class GetCalEjecucionOutputByIdFunction(
       FunctionContext fctx,  // ← necesitamos el context para el writer
       Guid id)
   {
-    var result = await mediator.Send(new GetCalEjecucionOutputByIdQuery(id));
+    var (convertDates, tzId) = DateConversionRequestOptions.From(req);
 
-    if (!result.IsSuccess || result.Value is null)
+    var result = await mediator.Send(new GetCalEjecucionOutputByIdQuery(id, convertDates, tzId));
+
+    if (!result.IsSuccess || result.Value is null || result.Value.Data is null)
     {
       return await problem.CreateAsync(
         fctx,
@@ -43,6 +45,8 @@ public sealed class GetCalEjecucionOutputByIdFunction(
         });
     }
 
-    return await req.OkAsync(result.Value);
+    var payload = result.Value;
+    // data + meta del handler
+    return await req.OkAsync(payload.Data, new { conversion = payload.Meta });
   }
 }

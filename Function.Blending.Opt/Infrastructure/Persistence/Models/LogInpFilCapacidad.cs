@@ -9,9 +9,9 @@ public partial class LogInpFilCapacidad
 
     public Guid FiltroId { get; set; }
 
-    public int Cantidad { get; set; }
+    public decimal Cantidad { get; set; }
 
-    public int Capacidad { get; set; }
+    public decimal Capacidad { get; set; }
 
     public virtual LogInpFiltro Filtro { get; set; } = null!;
 }

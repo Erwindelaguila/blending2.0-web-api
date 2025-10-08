@@ -2,12 +2,12 @@
 {
   public sealed record LogInpFiltroDto
   {
-    public int PesoContenedor { get; init; }
+    public decimal PesoContenedor { get; init; }
     public bool ActualizarCapacidad { get; init; }
     public string? Parametros { get; init; }
     public bool? HabilitarDivision { get; init; }
     public string? Division { get; init; }
-    public int? TiempoEspera { get; init; }
+    public decimal? TiempoEspera { get; init; }
 
     // Colecciones: nombres en plural
     public IReadOnlyList<LogInpFilCapacidadDto>? Capacidades { get; init; }

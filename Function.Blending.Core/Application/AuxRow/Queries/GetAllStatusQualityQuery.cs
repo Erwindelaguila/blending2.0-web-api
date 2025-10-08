@@ -3,6 +3,6 @@ using MediatR;
 
 namespace Function.Blending.Core.Application.AuxRow.Queries;
 
-public class GetAllStatusQualityQuery : IRequest<List<StatusQualityDTO>>
+public class GetAllStatusQualityQuery : IRequest<List<StatusRowDTO>>
 {
 }

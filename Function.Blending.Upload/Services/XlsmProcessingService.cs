@@ -30,8 +30,7 @@ public class XlsmProcessingService<TConfig> where TConfig : class
     
     public async Task<ParsedRowLogisticDto> ProcesarArchivoLogistcAsync(byte[] fileBytes)
     {
-        var validateExcel = await ExcelValidateHelper.EnsureXlsxAsync(fileBytes);
-        using var stream = new MemoryStream(validateExcel);
+        using var stream = new MemoryStream(fileBytes);
         var config = ConfigHelper.CastConfig<ExcelMappingInputLogisticsConfig>(_config);
         return await ExcelReaderHelper.LeerFilasLoigisticDesdeExcelAsync(stream.ToArray(), config);
     }

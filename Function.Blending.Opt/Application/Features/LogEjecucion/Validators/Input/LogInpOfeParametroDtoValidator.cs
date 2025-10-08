@@ -8,7 +8,6 @@ namespace Function.Blending.Opt.Application.Features.LogEjecucion.Validators.Inp
     public LogInpOfeParametroDtoValidator()
     {
       RuleFor(x => x.CodigoParametro).NotEmpty().MaximumLength(20);
-      // Valor: decimal, no se impone signo aquí.
     }
   }
 }
