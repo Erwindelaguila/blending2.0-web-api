@@ -47,6 +47,13 @@ builder.Services.Configure<HmacOptions>(opts =>
     ClientId = builder.Configuration[ConfigurationKeys.Security.Hmac.Credential.ClientId],
     TenantId = builder.Configuration[ConfigurationKeys.Security.Hmac.Credential.TenantId] ?? builder.Configuration[ConfigurationKeys.Security.Hmac.TenantId]
   };
+
+  opts.Fallback = new HmacFallbackOptions
+  {
+    Enable = bool.TryParse(builder.Configuration[ConfigurationKeys.Security.Hmac.Fallback.Enable], out var e) && e,
+    AllowList = builder.Configuration[ConfigurationKeys.Security.Hmac.Fallback.AllowList],
+    SecretsPrefix = builder.Configuration[ConfigurationKeys.Security.Hmac.Fallback.SecretsPrefix]
+  };
 });
 
 builder.Services.AddSingleton<IKeyDecoder, KeyDecoder>();
