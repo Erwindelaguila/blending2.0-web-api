@@ -19,7 +19,7 @@ public class GetAllStatusQualityHandler : IRequestHandler<GetAllStatusQualityQue
 
     public async Task<List<StatusRowDTO>> Handle(GetAllStatusQualityQuery request, CancellationToken cancellationToken)
     {
-        // Usando el Id_Status_Quality del local.settings.dev
+        // Usando el Id_Status_Quality del local.settings.dev!
         var statusQualityId = Guid.Parse(_configuration["Id_Status_Quality"] ??
                                          throw new ArgumentNullException("Id_Status_Quality no está configurado."));
         return await _auxRowRepository.GetStatusQualityAsync(statusQualityId);
