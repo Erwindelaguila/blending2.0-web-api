@@ -171,6 +171,6 @@ builder.UseFunctionsPipeline(
 */
 
 
-//Deploy v5.0.0
+//Deploy v6.0.0
 
 host.Run();
