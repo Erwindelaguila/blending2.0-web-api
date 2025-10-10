@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "Function.Blending.Core": {
-      "commandName": "Project",
-      "commandLineArgs": "--port 7006",
-      "launchBrowser": false
-    }
-  }
-}
