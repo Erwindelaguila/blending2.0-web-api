@@ -1,0 +1,88 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<AzureFunctionsVersion>v4</AzureFunctionsVersion>
+		<OutputType>Exe</OutputType>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+		<!-- 🔹 Azure Functions Isolated Core -->
+		<PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.0.0" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.2" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.3.0" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.0.1" />
+		<PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="2.0.0" />
+
+		<!-- 🔹 Observabilidad / Telemetría -->
+		<PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />
+		<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
+
+		<!-- 🔹 Seguridad / Tokens -->
+		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
+		<PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.14.0" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+
+		<!-- 🔹 Validaciones -->
+		<PackageReference Include="FluentValidation" Version="12.0.0" />
+		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
+
+		<!-- 🔹 Azure SDKs -->
+		<PackageReference Include="Azure.Identity" Version="1.15.0" />
+		<PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.8.0" />
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.25.0" />
+
+		<!-- 🔹 Infraestructura / Utilidades -->
+		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+		<PackageReference Include="HttpMultipartParser" Version="9.0.0" />
+		<PackageReference Include="YamlDotNet" Version="16.3.0" />
+
+		<!-- 🔹 Manejo de Excel -->
+		<PackageReference Include="ClosedXML" Version="0.105.0" />
+		<PackageReference Include="NPOI" Version="2.7.4" />
+		
+	</ItemGroup>
+	<ItemGroup>
+		<None Remove="Templates\data_output.json" />
+		<None Remove="Templates\ExcelMappingInput.yaml" />
+		<None Remove="Templates\ExcelMappingInputLogistic.yaml" />
+		<Content Include="Templates\ExcelMappingInputLogistic.yaml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<None Remove="Templates\ExcelMappingOutput.yaml" />
+		<None Remove="Templates\ExcelMappingOutputLogistic.yml" />
+		<None Remove="Templates\ExcelSapMappingInput.yml" />
+		<None Remove="Templates\template_sap_output.xlsx" />
+		<None Remove="Templates\template_output_logistica.xlsx" />
+		<None Remove="Templates\template_output.xlsx" />
+		<None Remove="Templates\ExcelMappingInputQualityv.yaml" />
+		<Content Include="Templates\ExcelMappingInputQuality.yaml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<None Remove="Templates\TemplateSapOutput - copia.xlsx" />
+		<Content Include="Templates\TemplateOutputSap.xlsx">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<None Remove="Templates\TemplateOutputLogistic - copia.xlsx" />
+		<Content Include="Templates\TemplateOutputLogistic.xlsx">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<None Remove="Templates\ExcelMappingOutputQuality - copia.yaml" />
+		<Content Include="Templates\ExcelMappingOutputQuality.yaml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<None Remove="Templates\TemplateOutputQuality - copia.xlsx" />
+		<Content Include="Templates\TemplateOutputQuality.xlsx">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<None Remove="Templates\ExcelSapMappingInput.yaml" />
+		<Content Include="Templates\ExcelMappingInputSap.yaml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<None Remove="Templates\ExcelMappingOutputLogistic.yaml" />
+		<Content Include="Templates\ExcelMappingOutputLogistic.yaml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+</Project>

@@ -1,0 +1,58 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Function.Blending.Opt.Domain.Abstractions.Models.Catalogs;
+using Function.Blending.Opt.Domain.Abstractions.Services;
+using Function.Blending.Opt.Infrastructure.Configuration.Options;
+using Microsoft.Extensions.Options;
+
+namespace Function.Blending.Opt.Infrastructure.Services.Catalog;
+
+public sealed class EstadoLogisticaCatalogService(IAuxCatalogReader aux, IOptions<EstadoLogisticaOptions> opt) : IEstadoLogisticaCatalogService
+{
+  private readonly EstadoLogisticaOptions _opts = opt.Value;
+
+  public async Task<EstadoLogisticaSnapshot?> GetByIdAsync(Guid id, CancellationToken ct)
+  {
+    var head = await aux.GetRowHeaderAsync(id, ct);
+    if (head is null) return null;
+
+    if (_opts.EstadoTableId.HasValue && head.TableId != _opts.EstadoTableId.Value)
+      return null;
+
+    string? color = null;
+    if (_opts.ExposeColor && !string.IsNullOrWhiteSpace(_opts.ColorPropClave))
+      color = await aux.GetRowPropValueAsync(id, _opts.ColorPropClave!, ct);
+
+    return new EstadoLogisticaSnapshot(head.Id) { Nombre = head.Nombre, Color = color };
+  }
+
+  public async Task<IDictionary<Guid, EstadoLogisticaSnapshot>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ct)
+  {
+    var unique = ids.Distinct().ToArray();
+    if (unique.Length == 0) return new Dictionary<Guid, EstadoLogisticaSnapshot>();
+
+    var names = await aux.GetRowNamesAsync(unique, ct);
+    var dict = new Dictionary<Guid, EstadoLogisticaSnapshot>(names.Count);
+
+    if (!_opts.EstadoTableId.HasValue)
+    {
+      foreach (var kv in names)
+        dict[kv.Key] = new EstadoLogisticaSnapshot(kv.Key) { Nombre = kv.Value };
+      return dict;
+    }
+
+    foreach (var kv in names)
+    {
+      var head = await aux.GetRowWithPropsAsync(kv.Key, [_opts.ColorPropClave], ct);
+      if (head is null) continue;
+      if (head.TableId != _opts.EstadoTableId.Value) continue;
+
+      var color = head.Props.ContainsKey(_opts.ColorPropClave) ? head.Props[_opts.ColorPropClave] : null;
+      dict[kv.Key] = new EstadoLogisticaSnapshot(kv.Key) { Nombre = kv.Value, Color = color };
+    }
+    return dict;
+  }
+}

@@ -1,0 +1,34 @@
+﻿using FluentValidation;
+using Function.Blending.Opt.Application.Features.LogEjecucion.Validators.Input;
+
+namespace Function.Blending.Opt.Application.Features.LogEjecucion.Commands.Start
+{
+  public sealed class StartLogEjecucionCommandValidator : AbstractValidator<StartLogEjecucionCommand>
+  {
+    public StartLogEjecucionCommandValidator()
+    {
+      RuleFor(x => x.CreadoPorId).NotEmpty();
+      RuleFor(x => x.Start.Mensaje).MaximumLength(250);
+
+      When(x => x.Start.Info is not null, () =>
+      {
+        RuleFor(x => x.Start.Info!).SetValidator(new LogInpInfoDtoValidator());
+      });
+
+      When(x => x.Start.Filtro is not null, () =>
+      {
+        RuleFor(x => x.Start.Filtro!).SetValidator(new LogInpFiltroDtoValidator());
+      });
+
+      When(x => x.Start.Demanda is not null, () =>
+      {
+        RuleFor(x => x.Start.Demanda!).SetValidator(new LogInpDemandaDtoValidator());
+      });
+
+      When(x => x.Start.Oferta is not null, () =>
+      {
+        RuleFor(x => x.Start.Oferta!).SetValidator(new LogInpOfertaListValidator());
+      });
+    }
+  }
+}

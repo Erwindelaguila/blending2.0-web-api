@@ -1,0 +1,120 @@
+using System.Text.Json;
+using FluentValidation;
+using Function.Blending.Core.Application.Common.Exceptions;
+using Function.Blending.Core.Application.Common.Helpers;
+using Function.Blending.Core.Application.Common.Wrappers;
+using Function.Blending.Core.Application.Constants;
+using Function.Blending.Core.Functions.Support.Authorization;
+
+using Function.Blending.Core.Application.Producto.Commands;
+using Function.Blending.Core.Application.Producto.DTOs;
+
+using MediatR;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.EntityFrameworkCore;
+
+namespace Function.Blending.Core.Functions.Producto;
+
+
+public class UpdateProductoFunction
+{
+    private readonly IMediator _mediator;
+
+    public UpdateProductoFunction(IMediator mediator)
+    {
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+    }
+
+    [RequireScopes("Administrador")]
+    [Function(FunctionNames.Producto.Update)]
+    public async Task<HttpResponseData> Run(
+        [HttpTrigger(AuthorizationLevel.Anonymous, HttpMethods.Put, Route = ApiRoutes.Core.Production.ProductoGetById)] HttpRequestData req)
+    {
+        try
+        {
+            var body = await req.ReadAsStringAsync();
+            if (string.IsNullOrEmpty(body))
+            {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req,
+                    BaseResponse<object>.Fail("El cuerpo de la solicitud está vacío.", "Error de validación", 400));
+            }
+
+            // Validar propiedades booleanas usando helper común
+            var (isValid, errorField) = JsonValidationHelper.ValidateBooleanProperties(body, "activo");
+            if (!isValid)
+            {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req,
+                    BaseResponse<object>.Fail($"El campo '{errorField}' debe ser booleano (true o false o null).", "Error de validación", 400));
+            }
+
+            // Deserializar usando DTO con validaciones declarativas
+            var dto = JsonSerializer.Deserialize<UpdateProductoRequestDTO>(body, HttpResponseHelper.GetJsonDeserializerOptions());
+            if (dto == null)
+            {
+                return await HttpResponseHelper.WriteBaseResponseAsync(req,
+                    BaseResponse<object>.Fail("Error al deserializar el comando.", "Error de validación", 400));
+            }
+
+            // Crear comando desde DTO usando constructor
+            var command = new UpdateProductoCommand(
+                dto.Id,
+                dto.Codigo,
+                dto.Nombre,
+                dto.Descripcion,
+                dto.CalidadId,
+                dto.TipoProduccionId,
+                dto.Activo
+            );
+            
+            var result = await _mediator.Send(command);
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<ProductoDTO>.Success(result, "Producto actualizado exitosamente"));
+        }
+        catch (ValidationException ex)
+        {
+            var errors = ex.Errors.Select(e => new { Campo = e.PropertyName, Error = e.ErrorMessage }).ToList();
+            
+            var errorSummary = errors.Count == 1 
+                ? errors.First().Error
+                : $"Se encontraron {errors.Count} errores de validación";
+            
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                errors,
+                errorSummary,
+                400
+            ));
+        }
+        catch (DbUpdateException ex) when (ex.InnerException?.Message?.Contains("Cannot insert duplicate key") == true && ex.InnerException.Message.Contains("UQ_Producto_Codigo_Activo"))
+        {
+            var error = new { Field = "codigo", Error = "Ya existe un producto activo con este código" };
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                error,
+                "Código duplicado",
+                409
+            ));
+        }
+        catch (BusinessRuleException ex)
+        {
+            var error = new { Message = ex.Message };
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                error,
+                "No se puede activar por elementos inactivos",
+                400
+            ));
+        }
+        catch (Exception ex)
+        {
+            var errorMessage = new
+            {
+                Message = "Ocurrió un error inesperado.",
+                Exception = ex.Message,
+                InnerException = ex.InnerException?.Message,
+            };
+            return await HttpResponseHelper.WriteBaseResponseAsync(req, BaseResponse<object>.Fail(
+                errorMessage,
+                null,
+                500
+            ));
+        }
+    }
+}

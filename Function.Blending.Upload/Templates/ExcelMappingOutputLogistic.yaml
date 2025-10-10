@@ -1,0 +1,98 @@
+﻿version: 1.0
+
+homogenizacion:
+  sheetName: "Homogenización"
+  startRow: 10
+  
+  puertos:
+    VEG25PH403:
+      column: "B"
+      nombre: "VEGUETA"
+      soporte: 1000
+      codeAfla: "TVEG"
+    VEG25PH399:
+      column: "C"
+      nombre: "VEGUETA"
+      soporte: 960
+      codeAfla: "TVEG" 
+    VEG25PH383:
+      column: "D"
+      nombre: "VEGUETA"
+      soporte: 1000
+      codeAfla: "TVEG" 
+    CNO2511253:
+      column: "E"
+      nombre: "TASA CALLAO NORTE"
+      soporte: 1000
+      codeAfla: "S03-16"
+    VEG25PH411:
+      column: "F"
+      nombre: "VEGUETA"
+      soporte: 1000
+      codeAfla: "TVEG"
+    VEG25PH421:
+      column: "G"
+      nombre: "VEGUETA"
+      soporte: 1000
+      codeAfla: "TVEG"
+    CNO25PH333:
+      column: "H"
+      nombre: "TASA CALLAO NORTE"
+      soporte: 800
+      codeAfla: "S16-02"
+    DESCO00234:
+      column: "I"
+      nombre: "DESCONOCIDO"
+      soporte: 800
+      codeAfla: "SDES-03"
+  
+  pametrosCalidad:
+    proteinaProm:
+      header: "% Min."
+      name: "Proteina"
+      cantidad: 66
+    tvnProm:
+      header: "Max."
+      name: "TVN mg/100 gr."
+      cantidad: 120
+    histaminaProm:
+      header: "Max."
+      name: "Histamina ppm"
+      cantidad: 0
+    humedadProm:
+      header: "% Max."
+      name: "Humedad"
+      cantidad: 10
+    grasaProm:
+      header: "% Max."
+      name: "Grasa"
+      cantidad: 10
+    cenizaProm:
+      header: "% Max."
+      name: "Cenizas"
+      cantidad: 17
+    salProm:
+      header: "% Max."
+      name: "Sal y Arena"
+      cantidad: 5
+    arenaProm:
+      header: "% Max."
+      name: "Arena"
+      cantidad: 1
+    acidezProm:
+      header: "% Max."
+      name: "Acidez"
+      cantidad: 10
+    aOProm:
+      header: "Min."
+      name: "A/O ppm"
+      cantidad: 150
+    
+sap:
+  sheetName: "SAP"
+  startRow: 3 
+    
+  
+  
+  
+    

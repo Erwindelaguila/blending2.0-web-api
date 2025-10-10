@@ -1,0 +1,25 @@
+﻿namespace Function.Blending.Upload.Shared.Constants;
+
+public static partial class ConfigurationKeys
+{
+  public static partial class Auth
+  {
+    public static class Scopes
+    {
+      public static class Quality
+      {
+        public const string ReadById = "Auth_Allow_Quality_ReadById";
+        public const string ReadHistory = "Auth_Allow_Quality_ReadHistory";
+        public const string WriteStart = "Auth_Allow_Quality_WriteStart";
+        public const string ChangeAccepted = "Auth_Allow_Quality_ChangeAccepted";
+      }
+      public static class Logistics
+      {
+        public const string ReadById = "Auth_Allow_Logistics_ReadById";
+        public const string ReadHistory = "Auth_Allow_Logistics_ReadHistory";
+        public const string WriteStart = "Auth_Allow_Logistics_WriteStart";
+        public const string ToggleConfirmed = "Auth_Allow_Logistics_ToggleConfirmed";
+      }
+    }
+  }
+}
