@@ -101,7 +101,7 @@ var host = new HostBuilder()
         }
             
         Console.WriteLine("✅ Todos los servicios configurados correctamente");
-        //Deploy v10.4.0 - FUNCTION DISCOVERY FIX
+        //Deploy v11.4.0 - FUNCTION DISCOVERY FIX
         }
         catch (Exception ex)
         {
