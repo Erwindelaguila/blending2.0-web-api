@@ -21,11 +21,13 @@ namespace Function.Blending.Auth.Infrastructure.Services
         private readonly AzureAdConfiguration _azureAdConfig;
         private readonly ConfigurationManager<OpenIdConnectConfiguration> _configurationManager;
         private readonly bool _allowOfflineValidation;
+        private readonly IConfiguration _configuration;
 
         public AzureAdTokenService(ILogger<AzureAdTokenService> logger, ITokenClaimExtractor claimExtractor, IConfiguration configuration)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _claimExtractor = claimExtractor ?? throw new ArgumentNullException(nameof(claimExtractor));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             
             // Configuración desde settings (usando formato Azure Portal)
             var tenantId = configuration["AzureAd__TenantId"] ?? configuration["AzureAd:TenantId"] ?? throw new InvalidOperationException("AzureAd TenantId no configurado");
@@ -82,7 +84,10 @@ namespace Function.Blending.Auth.Infrastructure.Services
                 var jsonToken = handler.ReadJwtToken(jwtToken);
                 
                 // Configurar parámetros de validación
-                var validAudiences = new List<string> { _azureAdConfig.ClientId, $"api://{_azureAdConfig.ClientId}" };
+                var validAudiencesConfig = _configuration["AzureAd__ValidAudiences"] ?? _configuration["AzureAd:ValidAudiences"];
+                var validAudiences = !string.IsNullOrEmpty(validAudiencesConfig) 
+                    ? validAudiencesConfig.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList()
+                    : new List<string> { _azureAdConfig.ClientId, $"api://{_azureAdConfig.ClientId}" };
                 var validIssuers = new List<string> 
                 { 
                     $"https://login.microsoftonline.com/{_azureAdConfig.TenantId}/v2.0",
